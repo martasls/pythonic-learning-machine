@@ -1,9 +1,9 @@
 from copy import copy, deepcopy
 from numpy import array
+from random import choice, uniform
 from algorithms.common.neural_network.node import Neuron, Sensor
 from algorithms.common.neural_network.activation_function import _ACTIVATION_FUNCTIONS
 from algorithms.common.neural_network.connection import Connection
-from random import choice, uniform
 
 
 class NeuralNetwork(object):

@@ -1,4 +1,4 @@
-from src.data.io import remove_extension, list_files, read_standardized_data_set, data_set_to_pickle
+from data.io_plm import remove_extension, list_files, read_standardized_data_set, data_set_to_pickle
 from os.path import join
 
 
@@ -23,21 +23,27 @@ def _resample_data_set(data_set, train_frac=None, valid_frac=None, test_frac=Non
 
     return train_data, validation_data, test_data
 
+
 def _resample_data_set_iter(data_set, train_frac=None, valid_frac=None, test_frac=None, iterations=30):
     """"""
     return list(_resample_data_set(data_set, train_frac, valid_frac, test_frac) for i in range(iterations))
+
 
 def _to_pickle_sample(data_samples, data_set_name, index):
 
     file_path = join('04_resampled', data_set_name)
 
-    file_names = [sample_name + "_" + str(index) for sample_name in ['training', 'validation', 'testing']]
+    file_names = [sample_name + "_" + str(index)
+                  for sample_name in ['training', 'validation', 'testing']]
 
-    [data_set_to_pickle(data_sample, file_path, file_name) for data_sample, file_name in zip(data_samples, file_names)]
+    [data_set_to_pickle(data_sample, file_path, file_name)
+     for data_sample, file_name in zip(data_samples, file_names)]
+
 
 def _to_pickle(data_samples_list, data_set_name):
     [_to_pickle_sample(data_samples, data_set_name, index) for data_samples, index
      in zip(data_samples_list, range(len(data_samples_list)))]
+
 
 def process_all_data_sets():
     """"""
@@ -48,4 +54,5 @@ def process_all_data_sets():
           [read_standardized_data_set(data_set_name) for data_set_name in data_set_names]],
          data_set_names)]
 
-# process_all_data_sets()
+
+process_all_data_sets()

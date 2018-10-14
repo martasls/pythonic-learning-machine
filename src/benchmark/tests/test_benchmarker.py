@@ -1,11 +1,12 @@
 from benchmark.benchmarker import Benchmarker, continue_benchmark
 import unittest
 
+
 class TestAlgorithm(unittest.TestCase):
 
     # def setUp(self):
-    #     self.benchmarker = Benchmarker('r_concrete')
-    #
+    #    self.benchmarker = Benchmarker('r_concrete')
+
     # def test_run(self):
     #     self.benchmarker.run()
     #     print(1)

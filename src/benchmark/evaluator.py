@@ -19,6 +19,7 @@ tqdm.monitor_interval = 0
 TIME_LIMIT_SECONDS = 300
 TIME_BUFFER = 0.1
 
+
 class Evaluator(object):
 
     def __init__(self, model, configurations, training_set, validation_set, testing_set, metric):
@@ -43,7 +44,8 @@ class Evaluator(object):
         # Validation error list.
         validation_value_list = list()
         # Current time in seconds.
-        time_seconds = lambda: default_timer()
+
+        def time_seconds(): return default_timer()
         # Random order of configurations.
         shuffle(self.configurations)
         # Number of configurations run.
@@ -51,18 +53,19 @@ class Evaluator(object):
         # Start of run.
         run_start = time_seconds()
         # Time left.
-        time_left = lambda: time_limit - (time_seconds() - run_start)
+
+        def time_left(): return time_limit - (time_seconds() - run_start)
         # Iterate though all configurations.
         for configuration in tqdm(self.configurations):
             # Create learner from configuration.
             learner = self.model(**configuration)
             # Train learner.
             if self.__class__.__bases__[0] == EvaluatorSklearn:
-                learner.fit(get_input_variables(self.training_set).as_matrix(),
-                            get_target_variable(self.training_set).as_matrix())
+                learner.fit(get_input_variables(self.training_set).values,
+                            get_target_variable(self.training_set).values)
             else:
-                learner.fit(get_input_variables(self.training_set).as_matrix(), get_target_variable(self.training_set).as_matrix(),
-                        self.metric, verbose)
+                learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
+                            self.metric, verbose)
             # Calculate validation value.
             validation_value = self._calculate_value(learner, self.validation_set)
             # If validation error lower than best validation error, set learner as best learner and validation error as best validation error.
@@ -87,8 +90,8 @@ class Evaluator(object):
         }
 
     def _calculate_value(self, learner, data_set):
-        prediction = learner.predict(get_input_variables(data_set).as_matrix())
-        target = get_target_variable(data_set).as_matrix()
+        prediction = learner.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
         return self.metric.evaluate(prediction, target)
 
     def run(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
@@ -96,6 +99,7 @@ class Evaluator(object):
         learner_meta = self._get_learner_meta(log['best_learner'])
         learner_meta['validation_value_list'] = log['validation_value_list']
         return learner_meta
+
 
 class EvaluatorSLM(Evaluator):
 
@@ -123,8 +127,8 @@ class EvaluatorSLM(Evaluator):
         return [self._calculate_network_value(solution.neural_network, self.testing_set) for solution in solutions]
 
     def _calculate_network_value(self, network, data_set):
-        predictions = network.predict(get_input_variables(data_set).as_matrix())
-        target = get_target_variable(data_set).as_matrix()
+        predictions = network.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
         return self.metric.evaluate(predictions, target)
 
     def _get_processing_time(self, learner):
@@ -133,6 +137,7 @@ class EvaluatorSLM(Evaluator):
     def _get_topology(self, learner):
         solutions = self._get_solutions(learner)
         return [solution.neural_network.get_topology() for solution in solutions]
+
 
 class EvaluatorNEAT(Evaluator):
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -162,8 +167,8 @@ class EvaluatorNEAT(Evaluator):
         return [self._calculate_solution_value(solution, self.testing_set, learner) for solution in solutions]
 
     def _calculate_solution_value(self, solution, data_set, learner):
-        X = get_input_variables(data_set).as_matrix()
-        target = get_target_variable(data_set).as_matrix()
+        X = get_input_variables(data_set).values
+        target = get_target_variable(data_set).values
         neural_network = FeedForwardNetwork.create(solution, learner.configuration)
         prediction = self._predict_neural_network(neural_network, X)
         return self.metric.evaluate(prediction, target)
@@ -187,10 +192,13 @@ class EvaluatorNEAT(Evaluator):
             'connections': len(genome.connections)
         }
 
+
 class EvaluatorSGA(EvaluatorSLM):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
-        Evaluator.__init__(self, BenchmarkSGA, configurations, training_set, validation_set, testing_set, metric)
+        Evaluator.__init__(self, BenchmarkSGA, configurations, training_set,
+                           validation_set, testing_set, metric)
+
 
 class EvaluatorSklearn(Evaluator):
 
@@ -199,15 +207,18 @@ class EvaluatorSklearn(Evaluator):
         learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
         return learner_meta
 
+
 class EvaluatorSVC(EvaluatorSklearn):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
         super().__init__(SVC, configurations, training_set, validation_set, testing_set, metric)
 
+
 class EvaluatorSVR(EvaluatorSklearn):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
         super().__init__(SVR, configurations, training_set, validation_set, testing_set, metric)
+
 
 class EvaluatorMLPC(EvaluatorSklearn):
 
@@ -219,6 +230,7 @@ class EvaluatorMLPC(EvaluatorSklearn):
             warnings.filterwarnings("ignore")
             return super()._select_best_learner(time_limit, time_buffer, verbose)
 
+
 class EvaluatorMLPR(EvaluatorSklearn):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -229,15 +241,20 @@ class EvaluatorMLPR(EvaluatorSklearn):
             warnings.filterwarnings("ignore")
             return super()._select_best_learner(time_limit, time_buffer, verbose)
 
+
 class EvaluatorRFC(EvaluatorSklearn):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
-        super().__init__(RandomForestClassifier, configurations, training_set, validation_set, testing_set, metric)
+        super().__init__(RandomForestClassifier, configurations,
+                         training_set, validation_set, testing_set, metric)
+
 
 class EvaluatorRFR(EvaluatorSklearn):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
-        super().__init__(RandomForestRegressor, configurations, training_set, validation_set, testing_set, metric)
+        super().__init__(RandomForestRegressor, configurations,
+                         training_set, validation_set, testing_set, metric)
+
 
 class EvaluatorEnsemble(Evaluator):
 

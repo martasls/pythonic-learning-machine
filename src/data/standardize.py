@@ -1,11 +1,10 @@
-from src.data.io import read_cleaned_data_set, data_set_to_pickle, remove_extension, list_files
+from src.data.io_plm import read_cleaned_data_set, data_set_to_pickle, remove_extension, list_files
 from os.path import join
 from data.extract import is_classification
 
 data_set_names = [
     'beauty_5'
 ]
-
 
 
 def _standardize_data_set(data_set):
@@ -19,12 +18,15 @@ def _standardize_data_set(data_set):
         data_set_ext[c] = (data_set_ext[c] - data_set_ext[c].mean()) / data_set_ext[c].std()
     return data_set_ext
 
+
 def _categorize_target_variable(data_set):
     data_set_ext = data_set.copy()
     target = data_set_ext[data_set_ext.columns[len(data_set_ext.columns) - 1]]
     if all(map(lambda x: x in (0, 1), target)):
-        data_set_ext[data_set_ext.columns[len(data_set_ext.columns) - 1]] = target.astype('category')
+        data_set_ext[data_set_ext.columns[len(
+            data_set_ext.columns) - 1]] = target.astype('category')
     return data_set_ext
+
 
 def _remove_unary_features(data_set):
     """"""
@@ -35,11 +37,13 @@ def _remove_unary_features(data_set):
             data_set_ext.drop([c], axis=1, inplace=True)
     return data_set_ext
 
+
 def _to_pickle(data_set, data_set_name):
 
     file_path = join('03_standardized')
 
     data_set_to_pickle(data_set, file_path, data_set_name)
+
 
 def process_all_data_sets():
     """"""

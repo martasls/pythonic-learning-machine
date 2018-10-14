@@ -1,12 +1,12 @@
+from copy import copy, deepcopy
+from random import uniform, sample, randint
+from numpy import array, matrix, dot, resize, shape
+from numpy.linalg import pinv
 from algorithms.common.neural_network.node import Sensor
 from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron
 from algorithms.common.neural_network.connection import Connection
 from algorithms.semantic_learning_machine.solution import Solution
 from algorithms.common.algorithm import EvolutionaryAlgorithm
-from numpy import array, matrix, dot, resize, shape
-from numpy.linalg import pinv
-from random import uniform, sample, randint
-from copy import copy, deepcopy
 
 
 class SemanticLearningMachine(EvolutionaryAlgorithm):

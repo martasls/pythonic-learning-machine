@@ -1,4 +1,4 @@
-# Statlog (German Credit Data) Data Set 
+# Statlog (German Credit Data) Data Set
 # https://archive.ics.uci.edu/ml/datasets/statlog+(german+credit+data)
 
 require(magrittr)
@@ -10,10 +10,10 @@ args <- commandArgs(trailingOnly = TRUE)
 working_directory = args[1]
 
 # Set working directory.
-setwd(working_directory)
+setwd("C:\\Users\\Marta\\Documents\\GitHub\\pythonic-learning-machine\\data_sets\\")
 
 # Load data set.
-data_set <- read_csv("01_raw/c_credit/data_set.csv", 
+data_set <- read_csv("01_raw/c_credit/data_set.csv",
                      col_names = FALSE)
 
 #Changing labels of target.

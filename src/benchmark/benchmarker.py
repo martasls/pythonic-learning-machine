@@ -6,7 +6,7 @@ from benchmark.configuration import SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIO
 from benchmark.formatter import _format_static_table
 from algorithms.common.metric import RootMeanSquaredError
 from data.extract import is_classification
-from data.io import load_samples, benchmark_to_pickle, benchmark_from_pickle
+from data.io_plm import load_samples, benchmark_to_pickle, benchmark_from_pickle
 from tqdm import tqdm
 import datetime
 
@@ -135,7 +135,6 @@ class Benchmarker():
 
     def _format_tables(self):
         pass
-
 
 
 def continue_benchmark(data_set_name, file_name):

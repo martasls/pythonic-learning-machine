@@ -1,26 +1,29 @@
-from benchmark.benchmarker import Benchmarker, continue_benchmark
+import argparse
+import os
 from threading import Thread
 from sys import argv
 from time import sleep
-import argparse
-from data.io import get_benchmark_folder, read_pickle
+from benchmark.benchmarker import Benchmarker, continue_benchmark
+from data.io_plm import get_benchmark_folder, read_pickle
 from benchmark.formatter import format_benchmark
-import os
+
 
 def start_b(data_set_name, file_name=None):
+    """ starts benchmark """
     benchmarker = Benchmarker(data_set_name)
     benchmarker.run()
 
 
 def continue_b(data_set_name, file_name):
+    """ continues benchmark """
     continue_benchmark(data_set_name, file_name)
 
 
 if __name__ == '__main__':
-
-
+    start_b("c_diabetes")
+    """ this block of code formats the benchmark files into csv files """
+    """
     benchmark_paths = []
-
     for folder in os.listdir(get_benchmark_folder()):
         path = os.path.join(get_benchmark_folder(), folder)
         for file in os.listdir(path):
@@ -29,10 +32,7 @@ if __name__ == '__main__':
     for benchmark_path in benchmark_paths:
         benchmark = read_pickle(benchmark_path)
         benchmark_formatted = format_benchmark(benchmark)
-
-
-
-
+    """
 
     # parser = argparse.ArgumentParser(description='Runs benchmark for data set.')
     # parser.add_argument('-d', metavar='data_set_name', type=str, dest='data_set_name',

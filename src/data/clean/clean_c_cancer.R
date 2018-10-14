@@ -1,7 +1,6 @@
 # Breast Cancer Wisconsin (Diagnostic) Data Set
 # http://archive.ics.uci.edu/ml/data_sets/Breast+Cancer+Wisconsin+%28Diagnostic%29
 
-
 require(magrittr)
 require(readr)
 
@@ -10,10 +9,10 @@ args <- commandArgs(trailingOnly = TRUE)
 working_directory = args[1]
 
 # Set working directory.
-setwd(working_directory)
+setwd("C:\\Users\\Marta\\Documents\\GitHub\\pythonic-learning-machine\\data_sets\\")
 
 # Load raw data.
-data_set <- read_csv("01_raw/c_cancer/data_set.csv", 
+data_set <- read_csv("01_raw/c_cancer/data_set.csv",
                      col_names = FALSE)
 
 # Removing ID variable.

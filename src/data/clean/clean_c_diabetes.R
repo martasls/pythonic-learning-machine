@@ -7,10 +7,10 @@ args <- commandArgs(trailingOnly = TRUE)
 working_directory = args[1]
 
 # Set working directory.
-setwd(working_directory)
+setwd("C:\\Users\\Marta\\Documents\\GitHub\\pythonic-learning-machine\\data_sets\\")
 
 # Load raw data.
-data_set <- read_csv("01_raw/c_diabetes/data_set.csv", 
+data_set <- read_csv("01_raw/c_diabetes/data_set.csv",
                      col_names = FALSE)
 
 # Export cleaned data.

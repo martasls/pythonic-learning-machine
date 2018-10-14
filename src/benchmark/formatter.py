@@ -2,8 +2,9 @@ from numpy import mean, median, std, sqrt
 from scipy.stats import sem
 import pandas as pd
 import numpy as np
-from data.io import _get_path_to_data_dir
+from data.io_plm import _get_path_to_data_dir
 import os
+
 
 def _metric_in_dict(metric, d):
     return metric in d[0].keys()
@@ -29,7 +30,8 @@ def _format_static_table(results, metric):
 
 def _format_processing_time_table(results):
     dictionaries = _get_dictionaries_by_metric(results, 'processing_time')
-    values = {k: _get_values_from_dictionary(dictionaries[k], 'processing_time') for k in dictionaries.keys()}
+    values = {k: _get_values_from_dictionary(
+        dictionaries[k], 'processing_time') for k in dictionaries.keys()}
     for key, value in values.items():
         values[key] = [sum(item) for item in value]
     return pd.DataFrame.from_dict(values)
@@ -37,7 +39,8 @@ def _format_processing_time_table(results):
 
 def _format_topology_table(results, component):
     dictionaries = _get_dictionaries_by_metric(results, 'topology')
-    values = {k: _get_values_from_dictionary(dictionaries[k], 'topology') for k in dictionaries.keys()}
+    values = {k: _get_values_from_dictionary(
+        dictionaries[k], 'topology') for k in dictionaries.keys()}
     values = {key: [item[-1] for item in value] for key, value in values.items()}
     values = {key: [item[component] for item in value] for key, value in values.items()}
     return pd.DataFrame.from_dict(values)
@@ -53,7 +56,8 @@ def _format_evo_table(results, metric):
 
     mean_dict = {key: [mean(item) for item in value] for key, value in values.items()}
 
-    se_dict = {key: [std(item) / sqrt(len(item)) for item in value] for key, value in values.items()}
+    se_dict = {key: [std(item) / sqrt(len(item)) for item in value]
+               for key, value in values.items()}
 
     for key, value in mean_dict.items():
         delta_len = max_len - len(value)
@@ -73,8 +77,10 @@ def format_results(results):
     formatted_results['processing_time'] = _format_processing_time_table(results)
     formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     formatted_results['number_connections'] = _format_topology_table(results, 'connections')
-    formatted_results['training_value_evolution'] = _format_evo_table(results, 'training_value_evolution')
-    formatted_results['testing_value_evolution'] = _format_evo_table(results, 'testing_value_evolution')
+    formatted_results['training_value_evolution'] = _format_evo_table(
+        results, 'training_value_evolution')
+    formatted_results['testing_value_evolution'] = _format_evo_table(
+        results, 'testing_value_evolution')
     formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
 
     return formatted_results
@@ -93,9 +99,9 @@ def format_benchmark(benchmark):
     if not os.path.exists(output_path):
         os.makedirs(output_path)
 
-    if _is_classification(benchmark):
-        del benchmark.results['mlpr']
-        del benchmark.results['rfr']
+    # if _is_classification(benchmark):
+    #    del benchmark.results['mlpr']
+    #    del benchmark.results['rfr']
 
     formatted_benchmark = format_results(benchmark.results)
 

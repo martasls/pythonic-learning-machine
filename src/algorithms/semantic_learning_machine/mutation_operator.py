@@ -1,6 +1,7 @@
 from random import randint, sample
 from algorithms.common.neural_network.neural_network import create_neuron
 
+
 class Mutation(object):
     """
     Class represents mutation operator for semantic learning machine.
@@ -12,6 +13,7 @@ class Mutation(object):
     def _create_final_hidden_neuron(self, bias):
         """Creates the final hidden neuron, which must have a hyperbolic tangent activation function."""
         return create_neuron('tanh', bias)
+
 
 class Mutation1(Mutation):
     """Adds one neuron to the last hidden layer."""
@@ -25,6 +27,7 @@ class Mutation1(Mutation):
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
 
+
 class Mutation2(Mutation):
     """Adds one neuron the each hidden layer."""
 
@@ -36,6 +39,7 @@ class Mutation2(Mutation):
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
 
+
 class Mutation3(Mutation):
     """Adds an equal, random number of neurons to each hidden layer."""
 
@@ -46,9 +50,11 @@ class Mutation3(Mutation):
         neural_network = algorithm.champion.neural_network
         bias = neural_network.bias
         neurons = randint(1, self.max_neurons)
-        hidden_layers = [[create_neuron() for i in range(neurons)] for j in range(len(neural_network.hidden_layers) - 1)]
+        hidden_layers = [[create_neuron() for i in range(neurons)]
+                         for j in range(len(neural_network.hidden_layers) - 1)]
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
+
 
 class Mutation4(Mutation):
     """Adds a distinct, random number of neurons to each hidden layer."""
@@ -65,3 +71,8 @@ class Mutation4(Mutation):
         hidden_layers = [[create_neuron() for i in range(neuron)] for neuron in neurons]
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
+
+
+class Mutation5(Mutation):
+    """adds a new hidden layer"""
+    pass
