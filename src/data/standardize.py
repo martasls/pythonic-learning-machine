@@ -1,6 +1,6 @@
-from src.data.io_plm import read_cleaned_data_set, data_set_to_pickle, remove_extension, list_files
+from io_plm import read_cleaned_data_set, data_set_to_pickle, remove_extension, list_files
 from os.path import join
-from data.extract import is_classification
+from extract import is_classification
 
 data_set_names = [
     'beauty_5'

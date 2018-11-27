@@ -8,7 +8,7 @@ from numpy import append, array
 from sklearn.svm import SVC, SVR
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from algorithms.common.ensemble import Ensemble
+from algorithms.common.ensemble import Ensemble, EnsembleBagging, EnsembleRandomIndependentWeighting, EnsembleBoosting
 from tqdm import tqdm
 import warnings
 
@@ -16,8 +16,10 @@ import warnings
 # Disable the monitor thread. (https://github.com/tqdm/tqdm/issues/481)
 tqdm.monitor_interval = 0
 
-TIME_LIMIT_SECONDS = 300
+TIME_LIMIT_SECONDS = 500 #changed from 300
 TIME_BUFFER = 0.1
+
+MAX_COMBINATIONS = 50 
 
 
 class Evaluator(object):
@@ -45,16 +47,16 @@ class Evaluator(object):
         validation_value_list = list()
         # Current time in seconds.
 
-        def time_seconds(): return default_timer()
+        # def time_seconds(): return default_timer()
         # Random order of configurations.
         shuffle(self.configurations)
         # Number of configurations run.
         number_of_runs = 0
-        # Start of run.
-        run_start = time_seconds()
+        # # Start of run.
+        # run_start = time_seconds()
         # Time left.
 
-        def time_left(): return time_limit - (time_seconds() - run_start)
+        # def time_left(): return time_limit - (time_seconds() - run_start)
         # Iterate though all configurations.
         for configuration in tqdm(self.configurations):
             # Create learner from configuration.
@@ -77,12 +79,15 @@ class Evaluator(object):
             # Increase number of runs.
             number_of_runs += 1
             # Calculate time left.
-            run_end = time_left()
+            # run_end = time_left()
             # Calculate time expected for next run.
-            run_expected = (time_limit - run_end) / number_of_runs
+            # run_expected = (time_limit - run_end) / number_of_runs
             # If no time left or time expected for next run is greater than time left, break.
-            if run_end < 0 or run_end * (1+time_buffer) < run_expected:
-                break
+            # if run_end < 0 or run_end * (1+time_buffer) < run_expected:
+            #     print("break!!!!!")
+            #     break
+            if number_of_runs == MAX_COMBINATIONS: 
+                break 
         # When all configurations tested, return best learner.
         return {
             'best_learner': best_learner,
@@ -92,7 +97,7 @@ class Evaluator(object):
     def _calculate_value(self, learner, data_set):
         prediction = learner.predict(get_input_variables(data_set).values)
         target = get_target_variable(data_set).values
-        return self.metric.evaluate(prediction, target)
+        return self.metric.evaluate(prediction, target.astype(int))
 
     def run(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
         log = self._select_best_learner(time_limit, time_buffer, verbose)
@@ -265,3 +270,38 @@ class EvaluatorEnsemble(Evaluator):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
         return learner_meta
+
+class EvaluatorEnsembleBagging(Evaluator):
+    
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric):
+        super().__init__(EnsembleBagging, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, learner):
+        learner_meta = super()._get_learner_meta(learner)
+        learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
+        return learner_meta
+
+class EvaluatorEnsembleRandomIndependentWeighting(Evaluator):
+    
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric):
+        super().__init__(EnsembleRandomIndependentWeighting, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, learner):
+        learner_meta = super()._get_learner_meta(learner)
+        learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
+        return learner_meta
+
+
+class EvaluatorEnsembleBoosting(Evaluator):
+    
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric):
+        super().__init__(EnsembleBoosting, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, learner):
+        learner_meta = super()._get_learner_meta(learner)
+        learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
+        return learner_meta
+
+
+
+     

@@ -1,4 +1,4 @@
-from algorithms.common.ensemble import Ensemble
+from algorithms.common.ensemble import EnsembleBagging
 from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
 from algorithms.common.stopping_criterion import MaxGenerationsCriterion
 from algorithms.semantic_learning_machine.mutation_operator import Mutation2
@@ -7,11 +7,11 @@ from data.io_plm import load_samples
 from data.extract import get_input_variables, get_target_variable
 import unittest
 
-class TestEnsemble(unittest.TestCase):
+class TestEnsembleBagging(unittest.TestCase):
 
     def setUp(self):
         base_learner = SemanticLearningMachine(50, MaxGenerationsCriterion(10), 2, 'optimized', 10, Mutation2())
-        self.ensemble_learner = Ensemble(base_learner, 50)
+        self.ensemble_learner = EnsembleBagging(base_learner, 50)
         self.training, self.validation, self.testing = load_samples('c_diabetes', 0)
 
     def test_fit(self):

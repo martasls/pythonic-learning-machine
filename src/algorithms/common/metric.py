@@ -16,6 +16,17 @@ class RootMeanSquaredError(Metric):
     def evaluate(prediction, target):
         return sqrt(mean(square(prediction - target)))
 
+class WeightedRootMeanSquaredError(Metric):
+
+    greater_is_better = False 
+    
+    def __init__(self, weight_vector):
+        self.weight_vector = weight_vector
+
+    def evaluate(self, prediction, target):
+        """Calculates RMSE taking into account a weight vector"""
+        return sqrt(mean(square((prediction - target) * self.weight_vector)))
+    
 class Accuracy(Metric):
 
     greater_is_better = True

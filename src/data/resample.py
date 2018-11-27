@@ -1,4 +1,4 @@
-from data.io_plm import remove_extension, list_files, read_standardized_data_set, data_set_to_pickle
+from io_plm import remove_extension, list_files, read_standardized_data_set, data_set_to_pickle
 from os.path import join
 
 

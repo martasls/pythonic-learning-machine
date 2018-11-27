@@ -1,8 +1,11 @@
 from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, \
-    EvaluatorSVC, EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR, EvaluatorEnsemble
+    EvaluatorSVC, EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR, EvaluatorEnsemble, \
+    EvaluatorEnsembleBagging, EvaluatorEnsembleRandomIndependentWeighting, EvaluatorEnsembleBoosting
 from benchmark.configuration import SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
     NEAT_CONFIGURATIONS, SGA_CONFIGURATIONS, SVC_CONFIGURATIONS, SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, \
-    RF_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS
+    RF_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS, ENSEMBLE_BAGGING_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS, \
+    ENSEMBLE_BOOSTING_CONFIGURATIONS, SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, \
+    ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_RWT_CONFIGURATIONS, ENSEMBLE_BAGGING_RST_CONFIGURATIONS, ENSEMBLE_BAGGING_RWT_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
 from algorithms.common.metric import RootMeanSquaredError
 from data.extract import is_classification
@@ -18,56 +21,101 @@ _now = datetime.datetime.now()
 
 # Default models to be compared.
 _MODELS = {
-    'slm_ols': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
-        'name_short': 'SLM (OLS)',
-        'algorithms': EvaluatorSLM,
-        'configurations': SLM_OLS_CONFIGURATIONS},
-    'neat': {
-        'name_long': 'Neuroevolution of Augmenting Topologies',
-        'name_short': 'NEAT',
-        'algorithms': EvaluatorNEAT,
-        'configurations': NEAT_CONFIGURATIONS},
-    'sga': {
-        'name_long': 'Simple Genetic Algorithm',
-        'name_short': 'SGA',
-        'algorithms': EvaluatorSGA,
-        'configurations': SGA_CONFIGURATIONS},
-    'svc': {
-        'name_long': 'Support Vector Machine',
-        'name_short': 'SVM',
-        'algorithms': EvaluatorSVC,
-        'configurations': SVC_CONFIGURATIONS},
-    'svr': {
-        'name_long': 'Support Vector Machine',
-        'name_short': 'SVM',
-        'algorithms': EvaluatorSVR,
-        'configurations': SVR_CONFIGURATIONS},
-    'mlpc': {
-        'name_long': 'Multilayer Perceptron',
-        'name_short': 'MLP',
-        'algorithms': EvaluatorMLPC,
-        'configurations': MLP_CONFIGURATIONS},
-    'mlpr': {
-        'name_long': 'Multilayer Perceptron',
-        'name_short': 'MLP',
-        'algorithms': EvaluatorMLPR,
-        'configurations': MLP_CONFIGURATIONS},
     'slm_ensemble': {
         'name_long': 'Semantic Learning Machine Ensemble',
         'name_short': 'SLM (Ensemble)',
         'algorithms': EvaluatorEnsemble,
         'configurations': ENSEMBLE_CONFIGURATIONS},
-    'rfc': {
-        'name_long': 'Random Forest',
-        'name_short': 'RF',
-        'algorithms': EvaluatorRFC,
-        'configurations': RF_CONFIGURATIONS},
-    'rfr': {
-        'name_long': 'Random Forest',
-        'name_short': 'RF',
-        'algorithms': EvaluatorRFR,
-        'configurations': RF_CONFIGURATIONS}
+    'slm_ensemble_rst': {
+        'name_long': 'Semantic Learning Machine Ensemble with Random Sampling Technique',
+        'name_short': 'SLM (Ensemble) + RST',
+        'algorithms': EvaluatorEnsemble,
+        'configurations': ENSEMBLE_RST_CONFIGURATIONS},
+    'slm_ensemble_rwt': {
+        'name_long': 'Semantic Learning Machine Ensemble with Random Weighting Technique',
+        'name_short': 'SLM (Ensemble) + RWT',
+        'algorithms': EvaluatorEnsemble,
+        'configurations': ENSEMBLE_RWT_CONFIGURATIONS},    
+    'slm_ensemble_bagging': {
+        'name_long': 'Semantic Learning Machine Ensemble with Bagging',
+        'name_short': 'SLM (Ensemble-Bagging)',
+        'algorithms': EvaluatorEnsembleBagging,
+        'configurations': ENSEMBLE_BAGGING_CONFIGURATIONS}, 
+    'slm_ensemble_bagging_rst': {
+        'name_long': 'Semantic Learning Machine Ensemble with Bagging and Random Sampling Technique',
+        'name_short': 'SLM (Ensemble-Bagging) + RST',
+        'algorithms': EvaluatorEnsembleBagging,
+        'configurations': ENSEMBLE_BAGGING_RST_CONFIGURATIONS},
+    'slm_ensemble_bagging_rwt': {
+        'name_long': 'Semantic Learning Machine Ensemble with Bagging and Random Weighting Technique',
+        'name_short': 'SLM (Ensemble-Bagging) + RWT',
+        'algorithms': EvaluatorEnsembleBagging,
+        'configurations': ENSEMBLE_BAGGING_RWT_CONFIGURATIONS},   
+    'slm_ensemble_bagging_variant': {
+        'name_long': 'Semantic Learning Machine Ensemble with Random Independent Weighting',
+        'name_short': 'SLM (Ensemble-RIW)',
+        'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
+        'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS}, 
+    'slm_ensemble_boosting': {
+        'name_long': 'Semantic Learning Machine Ensemble with Boosting',
+        'name_short': 'SLM (Ensemble-Boosting)',
+        'algorithms': EvaluatorEnsembleBoosting,
+        'configurations': ENSEMBLE_BOOSTING_CONFIGURATIONS},      
+    'slm_ols': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
+        'name_short': 'SLM (OLS)',
+        'algorithms': EvaluatorSLM,
+        'configurations': SLM_OLS_CONFIGURATIONS},
+    'slm-ols-rst': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
+        'name_short': 'SLM (OLS) + RST',
+        'algorithms': EvaluatorSLM, 
+        'configurations': SLM_OLS_RST_CONFIGURATIONS},
+    'slm-ols-rwt': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
+        'name_short': 'SLM (OLS) + RWT',
+        'algorithms': EvaluatorSLM, 
+        'configurations': SLM_OLS_RWT_CONFIGURATIONS}
+    # 'neat': {
+    #     'name_long': 'Neuroevolution of Augmenting Topologies',
+    #     'name_short': 'NEAT',
+    #     'algorithms': EvaluatorNEAT,
+    #     'configurations': NEAT_CONFIGURATIONS},
+    # 'sga': {
+    #     'name_long': 'Simple Genetic Algorithm',
+    #     'name_short': 'SGA',
+    #     'algorithms': EvaluatorSGA,
+    #     'configurations': SGA_CONFIGURATIONS},
+    # 'svc': {
+    #     'name_long': 'Support Vector Machine',
+    #     'name_short': 'SVM',
+    #     'algorithms': EvaluatorSVC,
+    #     'configurations': SVC_CONFIGURATIONS},
+    # 'svr': {
+    #     'name_long': 'Support Vector Machine',
+    #     'name_short': 'SVM',
+    #     'algorithms': EvaluatorSVR,
+    #     'configurations': SVR_CONFIGURATIONS},
+    # 'mlpc': {
+    #     'name_long': 'Multilayer Perceptron',
+    #     'name_short': 'MLP',
+    #     'algorithms': EvaluatorMLPC,
+    #     'configurations': MLP_CONFIGURATIONS},
+    # 'mlpr': {
+    #     'name_long': 'Multilayer Perceptron',
+    #     'name_short': 'MLP',
+    #     'algorithms': EvaluatorMLPR,
+    #     'configurations': MLP_CONFIGURATIONS},
+    # 'rfc': {
+    #     'name_long': 'Random Forest',
+    #     'name_short': 'RF',
+    #     'algorithms': EvaluatorRFC,
+    #     'configurations': RF_CONFIGURATIONS},
+    # 'rfr': {
+    #     'name_long': 'Random Forest',
+    #     'name_short': 'RF',
+    #     'algorithms': EvaluatorRFR,
+    #     'configurations': RF_CONFIGURATIONS}
 }
 
 
@@ -89,7 +137,7 @@ class Benchmarker():
         # Creates file name as combination of data set name and and date.
         self.file_name = self.data_set_name + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
         # Loads samples into object.
-        self.samples = [load_samples(data_set_name, index) for index in range(30)]
+        self.samples = [load_samples(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
         self.metric = metric
         self.models = models
         # If data set is classification problem, remove regression models. Else, vice versa.
@@ -125,7 +173,7 @@ class Benchmarker():
         for training, validation, testing in tqdm(self.samples):
             for key, value in tqdm(self.models.items()):
                 # If evaluation for key, iteration pair already exists, skip this pair.
-                if not self.results[key][i]:
+                if not self.results[key][i]:          
                     self.results[key][i] = self._evaluate_algorithm(
                         algorithm=value['algorithms'], configurations=value['configurations'], training_set=training,
                         validation_set=validation, testing_set=testing, metric=self.metric)

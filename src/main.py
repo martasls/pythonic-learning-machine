@@ -20,19 +20,19 @@ def continue_b(data_set_name, file_name):
 
 
 if __name__ == '__main__':
-    start_b("c_diabetes")
+    start_b("c_ionosphere")
     """ this block of code formats the benchmark files into csv files """
-    """
-    benchmark_paths = []
-    for folder in os.listdir(get_benchmark_folder()):
-        path = os.path.join(get_benchmark_folder(), folder)
-        for file in os.listdir(path):
-            benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
 
-    for benchmark_path in benchmark_paths:
-        benchmark = read_pickle(benchmark_path)
-        benchmark_formatted = format_benchmark(benchmark)
-    """
+    # benchmark_paths = []
+    # for folder in os.listdir(get_benchmark_folder()):
+    #     path = os.path.join(get_benchmark_folder(), folder)
+    #     for file in os.listdir(path):
+    #         benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
+
+    # for benchmark_path in benchmark_paths:
+    #     benchmark = read_pickle(benchmark_path)
+    #     benchmark_formatted = format_benchmark(benchmark)
+
 
     # parser = argparse.ArgumentParser(description='Runs benchmark for data set.')
     # parser.add_argument('-d', metavar='data_set_name', type=str, dest='data_set_name',

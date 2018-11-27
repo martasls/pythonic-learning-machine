@@ -6,11 +6,11 @@ from algorithms.simple_genetic_algorithm.mutation_operator import MutationOperat
 from algorithms.simple_genetic_algorithm.crossover_operator import CrossoverOperatorArithmetic
 from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
 from itertools import product
-from numpy import mean
+from numpy import mean, median
 
 
 _BASE_PARAMETERS = {
-    'number_generations': 200,
+    'number_generations': 200, #changed from 200
     'population_size': 100
 }
 
@@ -18,18 +18,46 @@ _SLM_FLS_PARAMETERS = {
     'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations'))],
     'population_size': [_BASE_PARAMETERS.get('population_size')],
     'layers': [1, 2, 3],
-    'learning_step': [0.01],
+    'learning_step': [1],
     'max_connections': [1, 10, 50],
     'mutation_operator': [Mutation2()]
 }
 
 _SLM_OLS_PARAMETERS = {
-    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25), ErrorDeviationVariationCriterion(0.5)],
+    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
     'population_size': [_BASE_PARAMETERS.get('population_size')],
     'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     'learning_step': ['optimized'],
     'max_connections': [1, 10, 50, 100],
-    'mutation_operator': [Mutation2()]
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [False],
+}
+
+#SLM OLS with Random Sampling Technique
+_SLM_OLS_RST_PARAMETERS = { 
+    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
+    'population_size': [_BASE_PARAMETERS.get('population_size')],
+    'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'learning_step': ['optimized'],
+    'max_connections': [1, 10, 50, 100],
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [True],
+    'random_weighting_technique': [False],
+    'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
+}
+
+#SLM OLS with Random Weighting Technique
+_SLM_OLS_RWT_PARAMETERS = {
+    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
+    'population_size': [_BASE_PARAMETERS.get('population_size')],
+    'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'learning_step': ['optimized'],
+    'max_connections': [1, 10, 50, 100],
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [True],
+    'weight_range' : [1, 2] 
 }
 
 _NEAT_PARAMETERS = {
@@ -73,6 +101,9 @@ _MLP_PARAMETERS = {
     'alpha': [10 ** -x for x in range(1, 7)],
     'learning_rate_init': [10 ** -x for x in range(1, 7)]
 }
+
+
+
 
 _RF_PARAMETERS = {
     'n_estimators': [25],
@@ -125,6 +156,10 @@ def _create_configuration_list(list_dict):
 
 SLM_FLS_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_PARAMETERS)
 SLM_OLS_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_PARAMETERS)
+
+SLM_OLS_RST_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RST_PARAMETERS)
+SLM_OLS_RWT_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RWT_PARAMETERS)
+
 NEAT_CONFIGURATIONS = _create_configuration_list(_NEAT_PARAMETERS)
 SGA_CONFIGURATIONS = _create_configuration_list(_SGA_PARAMETERS)
 SVC_CONFIGURATIONS = _create_svc_configuration_list(_SVM_PARAMETERS)
@@ -134,8 +169,63 @@ RF_CONFIGURATIONS = _create_configuration_list(_RF_PARAMETERS)
 
 _ENSEMBLE_PARAMETERS = {
     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
-    'number_learners': [25],
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean]
+}
+
+_ENSEMBLE_RST_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RST_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean]
+}
+
+_ENSEMBLE_RWT_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RWT_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
     'meta_learner': [mean]
 }
 
 ENSEMBLE_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_PARAMETERS)
+ENSEMBLE_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RST_PARAMETERS)
+ENSEMBLE_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RWT_PARAMETERS)
+
+_ENSEMBLE_BAGGING_PARAMETERS = { 
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS), 
+    'number_learners': [25, 50, 75, 100], 
+    'meta_learner': [mean]
+}
+
+_ENSEMBLE_BAGGING_RST_PARAMETERS = { 
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RST_CONFIGURATIONS), 
+    'number_learners': [25, 50, 75, 100], 
+    'meta_learner': [mean]
+}
+
+_ENSEMBLE_BAGGING_RWT_PARAMETERS = { 
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RWT_CONFIGURATIONS), 
+    'number_learners': [25, 50, 75, 100], 
+    'meta_learner': [mean]
+}
+
+_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean],
+    'weight_range': [1, 2]
+}
+
+_ENSEMBLE_BOOSTING_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean, median], 
+    'learning_rate': [1, 'random']
+
+}
+
+ENSEMBLE_BAGGING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_PARAMETERS)
+ENSEMBLE_BAGGING_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RST_PARAMETERS)
+ENSEMBLE_BAGGING_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RWT_PARAMETERS)
+
+ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS)
+
+ENSEMBLE_BOOSTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BOOSTING_PARAMETERS)

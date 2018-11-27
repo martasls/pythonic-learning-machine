@@ -1,5 +1,6 @@
 from algorithms.common.metric import is_better
 
+
 class EvolutionaryAlgorithm(object):
     """
     Abstract class for evolutionary algorithms.
@@ -8,7 +9,7 @@ class EvolutionaryAlgorithm(object):
         population_size: Number of individuals in population.
         metric: Evaluation metric of class Metric.
         population: List of individuals in current generation.
-        chamption: Best individual found.
+        champion: Best individual found.
         current_generation: Current generation of evolutionary process.
         input_matrix: Data for sensors of neural network (numpy nd_array).
         target_vector: Target data for training during evolutionary process (numpy nd_array).

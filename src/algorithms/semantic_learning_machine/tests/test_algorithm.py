@@ -14,34 +14,30 @@ class TestAlgorithm(unittest.TestCase):
 
     def test_fit(self):
         print("Basic tests of fit()...")
-        algorithm = SemanticLearningMachine(
-            100, MaxGenerationsCriterion(200), 3, 0.01, 50, Mutation2())
+        algorithm = SemanticLearningMachine(100, MaxGenerationsCriterion(200), 3, 0.01, 50, Mutation2(), RootMeanSquaredError, True)
         X = get_input_variables(self.training).values
         y = get_target_variable(self.training).values
-        algorithm.fit(X, y, RootMeanSquaredError, verbose=True)
+        algorithm.fit(X, y)
         self.assertTrue(expr=algorithm.champion)
         print()
 
     def test_ols(self):
         print('OLS tests of fit()...')
-        algorithm = SemanticLearningMachine(
-            100, MaxGenerationsCriterion(200), 3, 'optimized', 50, Mutation2())
+        algorithm = SemanticLearningMachine(100, MaxGenerationsCriterion(200), 3, 'optimized', 50, Mutation2(), RootMeanSquaredError, True)
         X = get_input_variables(self.training).values
         y = get_target_variable(self.training).values
-        algorithm.fit(X, y, RootMeanSquaredError, verbose=True)
+        algorithm.fit(X, y)
         self.assertTrue(expr=algorithm.champion)
         print()
 
     def test_edv(self):
         print('EDV tests of fit()...')
-        algorithm = SemanticLearningMachine(
-            100, ErrorDeviationVariationCriterion(0.25), 3, 0.01, 50, Mutation2())
+        algorithm = SemanticLearningMachine(100, ErrorDeviationVariationCriterion(0.25), 3, 0.01, 50, Mutation2(), RootMeanSquaredError, True)
         X = get_input_variables(self.training).values
         y = get_target_variable(self.training).values
-        algorithm.fit(X, y, RootMeanSquaredError, verbose=True)
+        algorithm.fit(X, y)
         self.assertTrue(expr=algorithm.champion)
         print()
-
 
 if __name__ == '__main__':
     unittest.main()

@@ -1,39 +1,44 @@
-from copy import copy, deepcopy
-from random import uniform, sample, randint
-from numpy import array, matrix, dot, resize, shape
-from numpy.linalg import pinv
 from algorithms.common.neural_network.node import Sensor
 from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron
 from algorithms.common.neural_network.connection import Connection
 from algorithms.semantic_learning_machine.solution import Solution
 from algorithms.common.algorithm import EvolutionaryAlgorithm
-
+from numpy import array, matrix, dot, resize, shape
+from numpy.linalg import pinv
+from random import uniform, sample, randint
+from copy import copy, deepcopy
+from algorithms.common.stopping_criterion import MaxGenerationsCriterion
+from algorithms.semantic_learning_machine.mutation_operator import Mutation2
+from algorithms.common.metric import RootMeanSquaredError, WeightedRootMeanSquaredError
 
 class SemanticLearningMachine(EvolutionaryAlgorithm):
     """
     Class represents Semantic Learning Machine (SLM) algorithms:
     https://www.researchgate.net/publication/300543369_Semantic_Learning_Machine_
     A_Feedforward_Neural_Network_Construction_Algorithm_Inspired_by_Geometric_Semantic_Genetic_Programming
-
     Attributes:
         layer: Number of layers for base topology.
         learning_step: Weight for connection to output neuron.
         max_connections: Maximum connections for neuron.
         mutation_operator: Operator that augments neural network.
         next_champion: Solution that will replace champion.
-
     Notes:
         learning_step can be positive numerical value of 'optimized' for optimized learning step.
     """
 
-    def __init__(self, population_size, stopping_criterion,
-                 layers, learning_step, max_connections, mutation_operator):
+    def __init__(self, population_size, stopping_criterion, layers, learning_step, 
+                max_connections, mutation_operator, subset_ratio=0.4, weight_range=1,
+                random_sampling_technique=False, random_weighting_technique=True):
         super().__init__(population_size, stopping_criterion)
         self.layers = layers
         self.learning_step = learning_step
         self.max_connections = max_connections
         self.mutation_operator = mutation_operator
         self.next_champion = None
+        self.random_sampling_technique = random_sampling_technique
+        self.random_weighting_technique = random_weighting_technique
+        self.subset_ratio = subset_ratio
+        self.weight_range = weight_range 
 
     def _get_learning_step(self, partial_semantics):
         """Returns learning step."""
@@ -65,13 +70,11 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
     def _connect_nodes(self, from_nodes, to_nodes, weight=None, random=False):
         """
         Connects list of from_nodes with list of to_nodes.
-
         Args:
             from_nodes: List of from_nodes.
             to_nodes: List of to_nodes.
             weight: Weight from connection.
             random: Flag if random number of connections.
-
         Notes:
             If weight is None, then weight will be chosen at random between -1 and 1.
         """
@@ -250,6 +253,11 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def _mutate_population(self):
         """"""
+        if(self.random_sampling_technique or self.random_weighting_technique):
+            #calculate the new predictions and update the champion's error according to the new input matrix prev generated
+            champ_predictions = self.champion.neural_network.predict(self.input_matrix)
+            self.champion.predictions = champ_predictions 
+            self.champion.value = self.metric.evaluate(champ_predictions, self.target_vector)
         for i in range(self.population_size):
             solution = self._mutate_solution()
             if not self.next_champion:
@@ -282,7 +290,9 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         self._wipe_population()
         return stopping_criterion
 
-    def fit(self, input_matrix, target_vector, metric, verbose=False):
+    def fit(self, input_matrix, target_vector, metric, verbose=False, sample_weight=None):
+        if sample_weight is not None: 
+            metric = WeightedRootMeanSquaredError(sample_weight)
         super().fit(input_matrix, target_vector, metric, verbose)
         self.champion.neural_network = deepcopy(self.champion.neural_network)
 

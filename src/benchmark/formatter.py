@@ -39,11 +39,11 @@ def _format_processing_time_table(results):
 
 def _format_topology_table(results, component):
     dictionaries = _get_dictionaries_by_metric(results, 'topology')
-    values = {k: _get_values_from_dictionary(
-        dictionaries[k], 'topology') for k in dictionaries.keys()}
+    values = {k: _get_values_from_dictionary(dictionaries[k], 'topology') for k in dictionaries.keys()}
     values = {key: [item[-1] for item in value] for key, value in values.items()}
     values = {key: [item[component] for item in value] for key, value in values.items()}
     return pd.DataFrame.from_dict(values)
+
 
 
 def _format_evo_table(results, metric):
@@ -75,14 +75,13 @@ def format_results(results):
     formatted_results['training_value'] = _format_static_table(results, 'training_value')
     formatted_results['testing_value'] = _format_static_table(results, 'testing_value')
     formatted_results['processing_time'] = _format_processing_time_table(results)
-    formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
-    formatted_results['number_connections'] = _format_topology_table(results, 'connections')
-    formatted_results['training_value_evolution'] = _format_evo_table(
-        results, 'training_value_evolution')
-    formatted_results['testing_value_evolution'] = _format_evo_table(
-        results, 'testing_value_evolution')
-    formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
-
+    #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
+    #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
+    #formatted_results['training_value_evolution'] = _format_evo_table(
+    #    results, 'training_value_evolution')
+    #formatted_results['testing_value_evolution'] = _format_evo_table(
+    #    results, 'testing_value_evolution')
+    #formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
     return formatted_results
 
 
