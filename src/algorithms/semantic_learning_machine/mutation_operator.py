@@ -72,7 +72,3 @@ class Mutation4(Mutation):
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
 
-
-class Mutation5(Mutation):
-    """adds a new hidden layer"""
-    pass

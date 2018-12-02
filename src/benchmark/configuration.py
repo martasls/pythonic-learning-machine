@@ -1,33 +1,36 @@
-from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion
+from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
 from algorithms.common.neural_network.neural_network import create_network_from_topology
 from algorithms.semantic_learning_machine.mutation_operator import Mutation2, Mutation3, Mutation4
 from algorithms.simple_genetic_algorithm.selection_operator import SelectionOperatorTournament
 from algorithms.simple_genetic_algorithm.mutation_operator import MutationOperatorGaussian
 from algorithms.simple_genetic_algorithm.crossover_operator import CrossoverOperatorArithmetic
 from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
+from benchmark.algorithm import BenchmarkSLM, BenchmarkSLM_RST, BenchmarkSLM_RWT
 from itertools import product
 from numpy import mean, median
 
-
 _BASE_PARAMETERS = {
-    'number_generations': 200, #changed from 200
+    'number_generations_ols': 20, #changed from 200
+    'number_generations_fls': 100, 
     'population_size': 100
 }
 
 _SLM_FLS_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations'))],
+    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations_fls'))],
     'population_size': [_BASE_PARAMETERS.get('population_size')],
     'layers': [1, 2, 3],
     'learning_step': [1],
     'max_connections': [1, 10, 50],
-    'mutation_operator': [Mutation2()]
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [False],
 }
 
 _SLM_OLS_PARAMETERS = {
     'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
     'population_size': [_BASE_PARAMETERS.get('population_size')],
     'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    'learning_step': ['optimized'],
+    'learning_step': ['optimized'], 
     'max_connections': [1, 10, 50, 100],
     'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
@@ -102,9 +105,6 @@ _MLP_PARAMETERS = {
     'learning_rate_init': [10 ** -x for x in range(1, 7)]
 }
 
-
-
-
 _RF_PARAMETERS = {
     'n_estimators': [25],
     'max_depth': [1, 2, 5, None],
@@ -173,19 +173,27 @@ _ENSEMBLE_PARAMETERS = {
     'meta_learner': [mean]
 }
 
+_ENSEMBLE_FLS_PARAMETERS = { 
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean]
+}
+
 _ENSEMBLE_RST_PARAMETERS = {
-    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RST_CONFIGURATIONS),
+    'base_learner': _create_base_learner(BenchmarkSLM_RST, SLM_OLS_RST_CONFIGURATIONS),
     'number_learners': [25, 50, 75, 100],
     'meta_learner': [mean]
 }
 
 _ENSEMBLE_RWT_PARAMETERS = {
-    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RWT_CONFIGURATIONS),
+    'base_learner': _create_base_learner(BenchmarkSLM_RWT, SLM_OLS_RWT_CONFIGURATIONS),
     'number_learners': [25, 50, 75, 100],
     'meta_learner': [mean]
 }
 
 ENSEMBLE_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_PARAMETERS)
+ENSEMBLE_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_FLS_PARAMETERS)
+
 ENSEMBLE_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RST_PARAMETERS)
 ENSEMBLE_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RWT_PARAMETERS)
 
@@ -195,14 +203,20 @@ _ENSEMBLE_BAGGING_PARAMETERS = {
     'meta_learner': [mean]
 }
 
+_ENSEMBLE_BAGGING_FLS_PARAMETERS = { 
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS), 
+    'number_learners': [25, 50, 75, 100], 
+    'meta_learner': [mean]
+}
+
 _ENSEMBLE_BAGGING_RST_PARAMETERS = { 
-    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RST_CONFIGURATIONS), 
+    'base_learner': _create_base_learner(BenchmarkSLM_RST, SLM_OLS_RST_CONFIGURATIONS), 
     'number_learners': [25, 50, 75, 100], 
     'meta_learner': [mean]
 }
 
 _ENSEMBLE_BAGGING_RWT_PARAMETERS = { 
-    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_RWT_CONFIGURATIONS), 
+    'base_learner': _create_base_learner(BenchmarkSLM_RWT, SLM_OLS_RWT_CONFIGURATIONS), 
     'number_learners': [25, 50, 75, 100], 
     'meta_learner': [mean]
 }
@@ -214,18 +228,35 @@ _ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS = {
     'weight_range': [1, 2]
 }
 
+_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean],
+    'weight_range': [1, 2]
+}
+
 _ENSEMBLE_BOOSTING_PARAMETERS = {
     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
     'number_learners': [25, 50, 75, 100],
     'meta_learner': [mean, median], 
     'learning_rate': [1, 'random']
+}
 
+_ENSEMBLE_BOOSTING_FLS_PARAMETERS = {
+    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
+    'number_learners': [25, 50, 75, 100],
+    'meta_learner': [mean, median], 
+    'learning_rate': [1, 'random']
 }
 
 ENSEMBLE_BAGGING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_PARAMETERS)
+ENSEMBLE_BAGGING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_FLS_PARAMETERS)
+
 ENSEMBLE_BAGGING_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RST_PARAMETERS)
 ENSEMBLE_BAGGING_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RWT_PARAMETERS)
 
 ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS)
+ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_PARAMETERS)
 
 ENSEMBLE_BOOSTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BOOSTING_PARAMETERS)
+ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BOOSTING_FLS_PARAMETERS)

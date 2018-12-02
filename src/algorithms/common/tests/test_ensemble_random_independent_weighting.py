@@ -7,7 +7,7 @@ from data.io_plm import load_samples
 from data.extract import get_input_variables, get_target_variable
 import unittest
 
-class TestEnsembleBaggingVariant(unittest.TestCase):
+class Test_EnsembleRandomIndependentWeighting(unittest.TestCase):
 
     def setUp(self):
         base_learner = SemanticLearningMachine(50, MaxGenerationsCriterion(10), 2, 'optimized', 10, Mutation2())

@@ -9,7 +9,8 @@ from random import uniform, sample, randint
 from copy import copy, deepcopy
 from algorithms.common.stopping_criterion import MaxGenerationsCriterion
 from algorithms.semantic_learning_machine.mutation_operator import Mutation2
-from algorithms.common.metric import RootMeanSquaredError, WeightedRootMeanSquaredError
+from algorithms.common.metric import RootMeanSquaredError, WeightedRootMeanSquaredError 
+from timeit import default_timer
 
 class SemanticLearningMachine(EvolutionaryAlgorithm):
     """
@@ -27,8 +28,8 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
     """
 
     def __init__(self, population_size, stopping_criterion, layers, learning_step, 
-                max_connections, mutation_operator, subset_ratio=0.4, weight_range=1,
-                random_sampling_technique=False, random_weighting_technique=True):
+                max_connections, mutation_operator, subset_ratio=1, weight_range=1,
+                random_sampling_technique=False, random_weighting_technique=False):
         super().__init__(population_size, stopping_criterion)
         self.layers = layers
         self.learning_step = learning_step
@@ -201,7 +202,8 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def _initialize_population(self):
         """Initializes population in first generation."""
-
+        #def time_seconds(): return default_timer()
+        #start_time = time_seconds() 
         # Initializes neural network topology.
         topology = self._initialize_topology()
         # Create initial population from topology.
@@ -215,6 +217,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
             else:
                 solution.neural_network = None
             self.population.append(solution)
+        #print("time to initialize population: ", time_seconds()-start_time)
 
     def _mutate_network(self):
         """Creates mutated offspring from champion neural network."""
@@ -291,8 +294,6 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         return stopping_criterion
 
     def fit(self, input_matrix, target_vector, metric, verbose=False, sample_weight=None):
-        if sample_weight is not None: 
-            metric = WeightedRootMeanSquaredError(sample_weight)
         super().fit(input_matrix, target_vector, metric, verbose)
         self.champion.neural_network = deepcopy(self.champion.neural_network)
 
@@ -301,3 +302,4 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         neural_network.load_sensors(input_matrix)
         neural_network.calculate()
         return neural_network.get_predictions()
+

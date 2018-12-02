@@ -6,6 +6,9 @@ from copy import deepcopy
 from data.extract import generate_sub_training_set
 from utils.useful_methods import generate_random_weight_vector, generate_weight_vector
 from algorithms.common.metric import WeightedRootMeanSquaredError, RootMeanSquaredError
+import time
+from threading import Thread 
+from multiprocessing import Process
 
 class Ensemble(object):
     """
@@ -28,18 +31,39 @@ class Ensemble(object):
         self.number_learners = number_learners
         self.meta_learner = meta_learner
         self.learners = list()
-
+    
+    def _fit_learner(self, i, input_matrix, target_vector, metric, verbose):
+        if verbose: print(i)
+        # Creates deepcopy of base learner.
+        learner = deepcopy(self.base_learner)
+        # Trains base learner.
+        learner.fit(input_matrix, target_vector, metric) 
+        # Adds base learner to list.
+        self.learners.append(learner)
+        print()
+    
     def fit(self, input_matrix, target_vector, metric, verbose=False):
         """Trains learner to approach target vector, given an input matrix, based on a defined metric."""
-
+        # threads = [] 
         for i in range(self.number_learners):
+        #     t = Process(target=self._fit_learner, args=(i, input_matrix, target_vector, metric, verbose))
+        #     t.daemon = True
+        #     threads.append(t) 
+
+        # for t in threads: 
+        #     t.start() 
+
+        # for t in threads: 
+        #     t.join()
             if verbose: print(i)
             # Creates deepcopy of base learner.
             learner = deepcopy(self.base_learner)
             # Trains base learner.
-            learner.fit(input_matrix, target_vector, metric) 
+            learner.fit(input_matrix, target_vector, metric, verbose) 
             # Adds base learner to list.
             self.learners.append(learner)
+            
+
 
     def predict(self, input_matrix):
         """Predicts target vector, given input_matrix, based on trained ensemble."""
@@ -72,7 +96,7 @@ class EnsembleBagging(Ensemble):
             input_matrix = original_input_matrix[idx]
             target_vector = original_target_vector[idx]
             # Trains base learner.
-            learner.fit(input_matrix, target_vector, metric) 
+            learner.fit(input_matrix, target_vector, metric, verbose) 
             # Adds base learner to list.
             self.learners.append(learner)
 

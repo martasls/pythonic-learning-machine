@@ -1,4 +1,5 @@
-from algorithms.common.metric import is_better
+from algorithms.common.metric import is_better, Accuracy
+from data.extract import is_classification_target
 
 
 class EvolutionaryAlgorithm(object):
@@ -55,6 +56,8 @@ class EvolutionaryAlgorithm(object):
             if verbose:
                 self._print_generation()
             self.current_generation += 1
+        if(is_classification_target(self.target_vector)): 
+            self.champion.accuracy = Accuracy.evaluate(self.champion.predictions, self.target_vector) 
 
     def fit(self, input_matrix, target_vector, metric, verbose=False):
         """Trains model to approximate y with X."""

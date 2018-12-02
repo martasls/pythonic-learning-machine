@@ -1,8 +1,8 @@
 from random import shuffle
-from data.extract import get_input_variables, get_target_variable
-from algorithms.common.metric import is_better
+from data.extract import get_input_variables, get_target_variable, is_classification_target
+from algorithms.common.metric import is_better, Accuracy
 from timeit import default_timer
-from benchmark.algorithm import BenchmarkSLM, BenchmarkNEAT, BenchmarkSGA
+from benchmark.algorithm import BenchmarkSLM, BenchmarkNEAT, BenchmarkSGA, BenchmarkSLM_RST, BenchmarkSLM_RWT
 from neat.nn import FeedForwardNetwork
 from numpy import append, array
 from sklearn.svm import SVC, SVR
@@ -11,6 +11,8 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from algorithms.common.ensemble import Ensemble, EnsembleBagging, EnsembleRandomIndependentWeighting, EnsembleBoosting
 from tqdm import tqdm
 import warnings
+# from multiprocessing import Process 
+# from threading import Thread
 
 
 # Disable the monitor thread. (https://github.com/tqdm/tqdm/issues/481)
@@ -19,7 +21,7 @@ tqdm.monitor_interval = 0
 TIME_LIMIT_SECONDS = 500 #changed from 300
 TIME_BUFFER = 0.1
 
-MAX_COMBINATIONS = 50 
+MAX_COMBINATIONS = 1
 
 
 class Evaluator(object):
@@ -38,6 +40,30 @@ class Evaluator(object):
         }
         return learner_meta
 
+    def _fit_learner(self, configuration, verbose):
+        def time_seconds(): return default_timer()   
+        # Create learner from configuration.
+        learner = self.model(**configuration)
+        # Train learner.
+        if self.__class__.__bases__[0] == EvaluatorSklearn:
+            learner.fit(get_input_variables(self.training_set).values,
+                            get_target_variable(self.training_set).values)
+        else:
+            start_time = time_seconds()
+            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
+                            self.metric, verbose)
+            print("\ntime to fit algorithm: ", configuration, time_seconds()-start_time)
+        # Calculate validation value.
+        validation_value = self._calculate_value(learner, self.validation_set)
+        # If validation error lower than best validation error, set learner as best learner and validation error as best validation error.
+        if is_better(validation_value, self.best_validation_value, self.metric):
+            self.best_learner = learner
+            self.best_validation_value = validation_value
+        #Add configuration and validation error to validation error list.
+        self.validation_value_list.append((configuration, validation_value)) 
+         
+    
+
     def _select_best_learner(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
         # Best learner found (lowest validation error).
         best_learner = None
@@ -46,8 +72,7 @@ class Evaluator(object):
         # Validation error list.
         validation_value_list = list()
         # Current time in seconds.
-
-        # def time_seconds(): return default_timer()
+        def time_seconds(): return default_timer()
         # Random order of configurations.
         shuffle(self.configurations)
         # Number of configurations run.
@@ -56,9 +81,12 @@ class Evaluator(object):
         # run_start = time_seconds()
         # Time left.
 
+
         # def time_left(): return time_limit - (time_seconds() - run_start)
         # Iterate though all configurations.
         for configuration in tqdm(self.configurations):
+            # p = Thread(target=self._fit_learner, args=(configuration, verbose))
+            
             # Create learner from configuration.
             learner = self.model(**configuration)
             # Train learner.
@@ -66,8 +94,10 @@ class Evaluator(object):
                 learner.fit(get_input_variables(self.training_set).values,
                             get_target_variable(self.training_set).values)
             else:
+                start_time = time_seconds()
                 learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
                             self.metric, verbose)
+                print("\ntime to fit algorithm: ", configuration, time_seconds()-start_time)
             # Calculate validation value.
             validation_value = self._calculate_value(learner, self.validation_set)
             # If validation error lower than best validation error, set learner as best learner and validation error as best validation error.
@@ -86,8 +116,17 @@ class Evaluator(object):
             # if run_end < 0 or run_end * (1+time_buffer) < run_expected:
             #     print("break!!!!!")
             #     break
+            # p.start() 
+            # p.join()
             if number_of_runs == MAX_COMBINATIONS: 
                 break 
+        # for p in processes: 
+        #     print("process ", p, " starting")
+        #     p.daemon = True
+        #     p.start()
+        # for p in processes:
+        #     print("process ", p, " joining")
+        #     p.join()
         # When all configurations tested, return best learner.
         return {
             'best_learner': best_learner,
@@ -114,6 +153,9 @@ class EvaluatorSLM(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
+        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
+            learner_meta['training_accuracy'] = learner.champion.accuracy
+            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
         learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
@@ -122,6 +164,12 @@ class EvaluatorSLM(Evaluator):
 
     def _get_solutions(self, learner):
         return learner.log['solution_log']
+
+    """calculates accuracy for testing set"""
+    def _calculate_accuracy(self, learner, data_set):
+        prediction = learner.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return Accuracy.evaluate(prediction, target.astype(int))
 
     def _get_training_value_evolution(self, learner):
         solutions = self._get_solutions(learner)
@@ -143,6 +191,97 @@ class EvaluatorSLM(Evaluator):
         solutions = self._get_solutions(learner)
         return [solution.neural_network.get_topology() for solution in solutions]
 
+class EvaluatorSLM_RST(Evaluator):
+
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric):
+        super().__init__(BenchmarkSLM_RST, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, learner):
+        learner_meta = super()._get_learner_meta(learner)
+        learner_meta['training_value'] = learner.champion.value
+        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
+            learner_meta['training_accuracy'] = learner.champion.accuracy
+            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
+        learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
+        learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
+        learner_meta['processing_time'] = self._get_processing_time(learner)
+        learner_meta['topology'] = self._get_topology(learner)
+        return learner_meta
+
+    def _get_solutions(self, learner):
+        return learner.log['solution_log']
+
+    """calculates accuracy for testing set"""
+    def _calculate_accuracy(self, learner, data_set):
+        prediction = learner.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return Accuracy.evaluate(prediction, target.astype(int))
+
+    def _get_training_value_evolution(self, learner):
+        solutions = self._get_solutions(learner)
+        return [solution.value for solution in solutions]
+
+    def _get_testing_value_evolution(self, learner):
+        solutions = self._get_solutions(learner)
+        return [self._calculate_network_value(solution.neural_network, self.testing_set) for solution in solutions]
+
+    def _calculate_network_value(self, network, data_set):
+        predictions = network.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return self.metric.evaluate(predictions, target)
+
+    def _get_processing_time(self, learner):
+        return learner.log['time_log']
+
+    def _get_topology(self, learner):
+        solutions = self._get_solutions(learner)
+        return [solution.neural_network.get_topology() for solution in solutions]
+
+class EvaluatorSLM_RWT(Evaluator):
+
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric):
+        super().__init__(BenchmarkSLM_RWT, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, learner):
+        learner_meta = super()._get_learner_meta(learner)
+        learner_meta['training_value'] = learner.champion.value
+        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
+            learner_meta['training_accuracy'] = learner.champion.accuracy
+            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
+        learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
+        learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
+        learner_meta['processing_time'] = self._get_processing_time(learner)
+        learner_meta['topology'] = self._get_topology(learner)
+        return learner_meta
+
+    def _get_solutions(self, learner):
+        return learner.log['solution_log']
+
+    """calculates accuracy for testing set"""
+    def _calculate_accuracy(self, learner, data_set):
+        prediction = learner.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return Accuracy.evaluate(prediction, target.astype(int))
+
+    def _get_training_value_evolution(self, learner):
+        solutions = self._get_solutions(learner)
+        return [solution.value for solution in solutions]
+
+    def _get_testing_value_evolution(self, learner):
+        solutions = self._get_solutions(learner)
+        return [self._calculate_network_value(solution.neural_network, self.testing_set) for solution in solutions]
+
+    def _calculate_network_value(self, network, data_set):
+        predictions = network.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return self.metric.evaluate(predictions, target)
+
+    def _get_processing_time(self, learner):
+        return learner.log['time_log']
+
+    def _get_topology(self, learner):
+        solutions = self._get_solutions(learner)
+        return [solution.neural_network.get_topology() for solution in solutions]
 
 class EvaluatorNEAT(Evaluator):
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):

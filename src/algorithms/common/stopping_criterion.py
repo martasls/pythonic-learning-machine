@@ -1,4 +1,5 @@
 from numpy import std, abs
+from algorithms.common.metric import is_better
 
 class StoppingCriterion():
 
@@ -48,4 +49,31 @@ class ErrorDeviationVariationCriterion(StoppingCriterion):
         if percentage_lower < self.threshold:
             return True
         else:
+            return super().evaluate(algorithm)
+
+class TrainingImprovementEffectivenessCriterion(StoppingCriterion): 
+    """ stops evolutionary process if the mutation effectiveness (ie percentage of solutions better than the champion) drops 
+    to a value lower than a certain threshold"""
+
+    def __init__(self, threshold):
+        self.threshold = threshold 
+    
+    def evaluate(self, algorithm):
+    
+        #if current generation is 0, return False (since there exists no champion)
+        if algorithm.current_generation == 0:
+            return False 
+        champion = algorithm.champion
+        # subsets offspring that are better than the current champion 
+        superior_solutions = [solution for solution in algorithm.population if is_better(solution.value, champion.value, algorithm.metric)]
+        # if not superior offspring exist, determine parent stopping criterion
+        if not superior_solutions: 
+            return super().evaluate(algorithm)
+        # calculates nr of superior solutions 
+        # nr_superior_solutions = len(superior_solutions) 
+        # calculate percentage of superior solutions 
+        percentage_superior_solutions = len(superior_solutions)/len(algorithm.population)
+        if percentage_superior_solutions < self.threshold: 
+            return True
+        else: 
             return super().evaluate(algorithm)

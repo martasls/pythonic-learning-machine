@@ -7,6 +7,5 @@ def generate_random_weight_vector(length, max_range):
     return np.array(random_weights)
 
 def generate_weight_vector(length):
-    weights = [(1/length) for i in range(length)]
-    return np.array(weights)
+    return np.array([(1/length) for i in range(length)])
 

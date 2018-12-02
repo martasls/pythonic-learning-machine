@@ -15,6 +15,9 @@ def is_classification(data_set):
     target = data_set[data_set.columns[len(data_set.columns) - 1]]
     return all(map(lambda x: x in (0, 1), target))
 
+def is_classification_target(target_vector):
+    return all(map(lambda x: x in (0, 1), target_vector))
+
 def generate_sub_training_set(training_set_values, ratio=1.0):
     """Reorganizes a given training set. It doesn't change its size (because ratio=1), but reorganizes it with replacement
     (ie the same instance can show up more than once)"""
