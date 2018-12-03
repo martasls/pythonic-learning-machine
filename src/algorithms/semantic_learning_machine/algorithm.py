@@ -59,7 +59,8 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         if self.champion:
             delta_target -= self.champion.neural_network.get_predictions()
         # Calculates pseudo-inverse of partial_semantics.
-        inverse = array(pinv(matrix(partial_semantics)))
+        inverse = array(pinv(resize(partial_semantics, (1, partial_semantics.size))))
+        # inverse = array(pinv(matrix(partial_semantics)))
         # Returns dot product between inverse and delta.
         return dot(inverse.transpose(), delta_target)[0]
 

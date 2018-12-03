@@ -21,7 +21,7 @@ tqdm.monitor_interval = 0
 TIME_LIMIT_SECONDS = 500 #changed from 300
 TIME_BUFFER = 0.1
 
-MAX_COMBINATIONS = 1
+MAX_COMBINATIONS = 50
 
 
 class Evaluator(object):
@@ -63,7 +63,6 @@ class Evaluator(object):
         self.validation_value_list.append((configuration, validation_value)) 
          
     
-
     def _select_best_learner(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
         # Best learner found (lowest validation error).
         best_learner = None

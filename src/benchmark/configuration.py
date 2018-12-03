@@ -27,7 +27,7 @@ _SLM_FLS_PARAMETERS = {
 }
 
 _SLM_OLS_PARAMETERS = {
-    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
+    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations_ols'))], 
     'population_size': [_BASE_PARAMETERS.get('population_size')],
     'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     'learning_step': ['optimized'], 

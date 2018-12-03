@@ -1,4 +1,5 @@
 import numpy as np 
+from numpy.random import uniform
 from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
 from algorithms.neat_python.algorithm import Neat
 from algorithms.simple_genetic_algorithm.algorithm import SimpleGeneticAlgorithm
@@ -27,7 +28,7 @@ def _benchmark_run(algorithm, verbose=False):
         start_time = _time_seconds()
         stopping_criterion = parent._epoch(algorithm)
         end_time = _time_seconds()
-        print("generation time: ", end_time-start_time)
+        #print("generation time: ", end_time-start_time)
         time_log.append(end_time - start_time)
         solution_log.append(algorithm.champion)
         if verbose:
@@ -56,7 +57,7 @@ def _benchmark_run_rst(algorithm, verbose):
         algorithm.target_vector = original_target_vector[idx]
         stopping_criterion = parent._epoch(algorithm)
         end_time = _time_seconds()
-        print("generation time: ", end_time-start_time)
+        # print("generation time: ", end_time-start_time)
         time_log.append(end_time - start_time)
         solution_log.append(algorithm.champion)
         if verbose:
@@ -79,10 +80,10 @@ def _benchmark_run_rwt(algorithm, verbose):
     original_metric = algorithm.metric 
     while (not stopping_criterion):
         start_time = _time_seconds() 
-        algorithm.metric = WeightedRootMeanSquaredError(generate_random_weight_vector(algorithm.input_matrix.shape[0], algorithm.weight_range))
+        algorithm.metric = WeightedRootMeanSquaredError(uniform(0, algorithm.weight_range, algorithm.shape[0]))
         stopping_criterion = parent._epoch(algorithm)
         end_time = _time_seconds()
-        print("generation time: ", end_time-start_time)
+        # print("generation time: ", end_time-start_time)
         time_log.append(end_time - start_time)
         solution_log.append(algorithm.champion)
         if verbose:
