@@ -40,7 +40,7 @@ class Ensemble():
         # Creates deepcopy of base learner.
         learner = deepcopy(self.base_learner)
         # Trains base learner.
-        learner.fit(input_matrix, target_vector, metric) 
+        learner.fit(input_matrix, target_vector, metric, verbose) 
         # Adds base learner to list.
         return learner
       

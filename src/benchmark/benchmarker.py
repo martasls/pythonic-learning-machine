@@ -24,26 +24,26 @@ _now = datetime.datetime.now()
 
 # Default models to be compared.
 _MODELS = {  
-    'slm_fls': {
-        'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
-        'name_short': 'SLM (FLS)',
-        'algorithms': EvaluatorSLM,
-        'configurations': SLM_FLS_CONFIGURATIONS},      
-    'slm_ols': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
-        'name_short': 'SLM (OLS)',
-        'algorithms': EvaluatorSLM,
-        'configurations': SLM_OLS_CONFIGURATIONS},
-    'slm_ensemble': {
-        'name_long': 'Semantic Learning Machine Ensemble',
-        'name_short': 'SLM (Ensemble)',
-        'algorithms': EvaluatorEnsemble,
-        'configurations': ENSEMBLE_CONFIGURATIONS},
-    'slm_fls_ensemble':{
-        'name_long': 'Semantic Learning Machine(FLS) Ensemble',
-        'name_short': 'SLM-FLS (Ensemble)',
-        'algorithms': EvaluatorEnsemble,
-        'configurations': ENSEMBLE_FLS_CONFIGURATIONS},
+    # 'slm_fls': {
+    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
+    #     'name_short': 'SLM (FLS)',
+    #     'algorithms': EvaluatorSLM,
+    #     'configurations': SLM_FLS_CONFIGURATIONS},      
+    # 'slm_ols': {
+    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
+    #     'name_short': 'SLM (OLS)',
+    #     'algorithms': EvaluatorSLM,
+    #     'configurations': SLM_OLS_CONFIGURATIONS},
+    # 'slm_ensemble': {
+    #     'name_long': 'Semantic Learning Machine Ensemble',
+    #     'name_short': 'SLM (Ensemble)',
+    #     'algorithms': EvaluatorEnsemble,
+    #     'configurations': ENSEMBLE_CONFIGURATIONS},
+    # 'slm_fls_ensemble':{
+    #     'name_long': 'Semantic Learning Machine(FLS) Ensemble',
+    #     'name_short': 'SLM-FLS (Ensemble)',
+    #     'algorithms': EvaluatorEnsemble,
+    #     'configurations': ENSEMBLE_FLS_CONFIGURATIONS},
     # 'slm_ensemble_rst': {
     #     'name_long': 'Semantic Learning Machine Ensemble with Random Sampling Technique',
     #     'name_short': 'SLM (Ensemble) + RST',
@@ -54,16 +54,16 @@ _MODELS = {
     #     'name_short': 'SLM (Ensemble) + RWT',
     #     'algorithms': EvaluatorEnsemble,
     #     'configurations': ENSEMBLE_RWT_CONFIGURATIONS},    
-    'slm_ensemble_bagging': {
-        'name_long': 'Semantic Learning Machine Ensemble with Bagging',
-        'name_short': 'SLM (Ensemble-Bagging)',
-        'algorithms': EvaluatorEnsembleBagging,
-        'configurations': ENSEMBLE_BAGGING_CONFIGURATIONS}, 
-    'slm_fls_ensemble_bagging': {
-        'name_long': 'Semantic Learning Machine (FLS) Ensemble with Bagging',
-        'name_short': 'SLM-FLS (Ensemble-Bagging)',
-        'algorithms': EvaluatorEnsembleBagging,
-        'configurations': ENSEMBLE_BAGGING_FLS_CONFIGURATIONS}, 
+    # 'slm_ensemble_bagging': {
+    #     'name_long': 'Semantic Learning Machine Ensemble with Bagging',
+    #     'name_short': 'SLM (Ensemble-Bagging)',
+    #     'algorithms': EvaluatorEnsembleBagging,
+    #     'configurations': ENSEMBLE_BAGGING_CONFIGURATIONS}, 
+    # 'slm_fls_ensemble_bagging': {
+    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Bagging',
+    #     'name_short': 'SLM-FLS (Ensemble-Bagging)',
+    #     'algorithms': EvaluatorEnsembleBagging,
+    #     'configurations': ENSEMBLE_BAGGING_FLS_CONFIGURATIONS}, 
     # 'slm_ensemble_bagging_rst': {
     #     'name_long': 'Semantic Learning Machine Ensemble with Bagging and Random Sampling Technique',
     #     'name_short': 'SLM (Ensemble-Bagging) + RST',
@@ -74,36 +74,36 @@ _MODELS = {
     #     'name_short': 'SLM (Ensemble-Bagging) + RWT',
     #     'algorithms': EvaluatorEnsembleBagging,
     #     'configurations': ENSEMBLE_BAGGING_RWT_CONFIGURATIONS},   
-    'slm_random_independent_weighting': {
-        'name_long': 'Semantic Learning Machine Ensemble with Random Independent Weighting',
-        'name_short': 'SLM (Ensemble-RIW)',
-        'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
-        'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS}, 
-    'slm_fls_random_independent_weighting': {
-        'name_long': 'Semantic Learning Machine (FLS) Ensemble with Random Independent Weighting',
-        'name_short': 'SLM-FLS (Ensemble-RIW)',
-        'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
-        'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS},
-    'slm_ensemble_boosting': {
-        'name_long': 'Semantic Learning Machine Ensemble with Boosting',
-        'name_short': 'SLM (Ensemble-Boosting)',
-        'algorithms': EvaluatorEnsembleBoosting,
-        'configurations': ENSEMBLE_BOOSTING_CONFIGURATIONS},  
-    'slm_fls_ensemble_boosting': {
-        'name_long': 'Semantic Learning Machine (FLS) Ensemble with Boosting',
-        'name_short': 'SLM-FLS (Ensemble-Boosting)',
-        'algorithms': EvaluatorEnsembleBoosting,
-        'configurations': ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS},
+    # 'slm_random_independent_weighting': {
+    #     'name_long': 'Semantic Learning Machine Ensemble with Random Independent Weighting',
+    #     'name_short': 'SLM (Ensemble-RIW)',
+    #     'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
+    #     'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS}, 
+    # 'slm_fls_random_independent_weighting': {
+    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Random Independent Weighting',
+    #     'name_short': 'SLM-FLS (Ensemble-RIW)',
+    #     'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
+    #     'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS},
+    # 'slm_ensemble_boosting': {
+    #     'name_long': 'Semantic Learning Machine Ensemble with Boosting',
+    #     'name_short': 'SLM (Ensemble-Boosting)',
+    #     'algorithms': EvaluatorEnsembleBoosting,
+    #     'configurations': ENSEMBLE_BOOSTING_CONFIGURATIONS},  
+    # 'slm_fls_ensemble_boosting': {
+    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Boosting',
+    #     'name_short': 'SLM-FLS (Ensemble-Boosting)',
+    #     'algorithms': EvaluatorEnsembleBoosting,
+    #     'configurations': ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS},
     # 'slm-ols-rst': {
     #     'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
     #     'name_short': 'SLM (OLS) + RST',
     #     'algorithms': EvaluatorSLM_RST, 
     #     'configurations': SLM_OLS_RST_CONFIGURATIONS},
-    # 'slm-ols-rwt': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
-    #     'name_short': 'SLM (OLS) + RWT',
-    #     'algorithms': EvaluatorSLM_RWT, 
-    #     'configurations': SLM_OLS_RWT_CONFIGURATIONS}
+    'slm-ols-rwt': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
+        'name_short': 'SLM (OLS) + RWT',
+        'algorithms': EvaluatorSLM_RWT, 
+        'configurations': SLM_OLS_RWT_CONFIGURATIONS}
     # 'neat': {
     #     'name_long': 'Neuroevolution of Augmenting Topologies',
     #     'name_short': 'NEAT',

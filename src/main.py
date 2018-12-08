@@ -20,7 +20,7 @@ def continue_b(data_set_name, file_name):
 
 
 if __name__ == '__main__':
-    start_b("c_ionosphere")
+    start_b("c_cancer")
     """ this block of code formats the benchmark files into csv files """
 
     # benchmark_paths = []

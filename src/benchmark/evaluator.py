@@ -21,7 +21,7 @@ tqdm.monitor_interval = 0
 TIME_LIMIT_SECONDS = 500 #changed from 300
 TIME_BUFFER = 0.1
 
-MAX_COMBINATIONS = 50
+MAX_COMBINATIONS = 1
 
 
 class Evaluator(object):
@@ -38,7 +38,16 @@ class Evaluator(object):
         learner_meta = {
             'testing_value': self._calculate_value(learner, self.testing_set)
         }
+        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
+            learner_meta['training_accuracy'] = self._calculate_accuracy(learner, self.training_set)
+            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)    
         return learner_meta
+
+    """calculates accuracy for testing set"""
+    def _calculate_accuracy(self, learner, data_set):
+        prediction = learner.predict(get_input_variables(data_set).values)
+        target = get_target_variable(data_set).values
+        return Accuracy.evaluate(prediction, target.astype(int))
 
     def _fit_learner(self, configuration, verbose):
         def time_seconds(): return default_timer()   
@@ -152,9 +161,6 @@ class EvaluatorSLM(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
-        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
-            learner_meta['training_accuracy'] = learner.champion.accuracy
-            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
         learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
@@ -163,12 +169,6 @@ class EvaluatorSLM(Evaluator):
 
     def _get_solutions(self, learner):
         return learner.log['solution_log']
-
-    """calculates accuracy for testing set"""
-    def _calculate_accuracy(self, learner, data_set):
-        prediction = learner.predict(get_input_variables(data_set).values)
-        target = get_target_variable(data_set).values
-        return Accuracy.evaluate(prediction, target.astype(int))
 
     def _get_training_value_evolution(self, learner):
         solutions = self._get_solutions(learner)
@@ -198,9 +198,6 @@ class EvaluatorSLM_RST(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
-        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
-            learner_meta['training_accuracy'] = learner.champion.accuracy
-            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
         learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
@@ -244,9 +241,6 @@ class EvaluatorSLM_RWT(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
-        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
-            learner_meta['training_accuracy'] = learner.champion.accuracy
-            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
         learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)

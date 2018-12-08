@@ -1,5 +1,4 @@
 from numpy import sqrt, mean, square, array, count_nonzero
-from numba import jit
 
 class Metric():
 
@@ -14,8 +13,7 @@ class RootMeanSquaredError(Metric):
     greater_is_better = False
 
     
-    @staticmethod 
-    @jit(nopython=True, nogil=True)
+    @staticmethod
     def evaluate(prediction, target):
         return sqrt(mean(square(prediction - target)))
 

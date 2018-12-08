@@ -261,7 +261,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
             #calculate the new predictions and update the champion's error according to the new input matrix prev generated
             champ_predictions = self.champion.neural_network.predict(self.input_matrix)
             self.champion.predictions = champ_predictions 
-            self.champion.value = self.metric.evaluate(champ_predictions, self.target_vector)
+            self.champion.value = self.metric.evaluate(self.champion.predictions, self.target_vector)
         for i in range(self.population_size):
             solution = self._mutate_solution()
             if not self.next_champion:

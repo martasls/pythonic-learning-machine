@@ -52,7 +52,7 @@ def _benchmark_run_rst(algorithm, verbose):
     size = int(original_input_matrix.shape[0] * algorithm.subset_ratio)
     while (not stopping_criterion):
         start_time = _time_seconds() 
-        idx = np.random.choice(np.arange(size), size, replace=False)
+        idx = np.random.choice(np.arange(original_input_matrix.shape[0]), size, replace=False)
         algorithm.input_matrix = original_input_matrix[idx]
         algorithm.target_vector = original_target_vector[idx]
         stopping_criterion = parent._epoch(algorithm)
@@ -68,8 +68,8 @@ def _benchmark_run_rst(algorithm, verbose):
         'solution_log': solution_log}
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(original_input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, original_target_vector)
-    if(is_classification_target(original_target_vector)): 
-        algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, original_target_vector) 
+    # if(is_classification_target(original_target_vector)): 
+    #     algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, original_target_vector) 
 
 def _benchmark_run_rwt(algorithm, verbose):
     """if random_weighting_technique is set to true then the weights change at each iteration """
@@ -80,7 +80,7 @@ def _benchmark_run_rwt(algorithm, verbose):
     original_metric = algorithm.metric 
     while (not stopping_criterion):
         start_time = _time_seconds() 
-        algorithm.metric = WeightedRootMeanSquaredError(uniform(0, algorithm.weight_range, algorithm.shape[0]))
+        algorithm.metric = WeightedRootMeanSquaredError(uniform(0, algorithm.weight_range, algorithm.input_matrix.shape[0]))
         stopping_criterion = parent._epoch(algorithm)
         end_time = _time_seconds()
         # print("generation time: ", end_time-start_time)
@@ -94,8 +94,8 @@ def _benchmark_run_rwt(algorithm, verbose):
         'solution_log': solution_log}
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(algorithm.input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, algorithm.target_vector)
-    if(is_classification_target(algorithm.target_vector)): 
-        algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)   
+    # if(is_classification_target(algorithm.target_vector)): 
+    #     algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)   
 
 class BenchmarkSLM(SemanticLearningMachine):
 

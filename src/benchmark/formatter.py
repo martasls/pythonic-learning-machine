@@ -69,12 +69,16 @@ def _format_evo_table(results, metric):
 
     return pd.DataFrame.from_dict(mean_dict), pd.DataFrame.from_dict(se_dict)
 
+    
+
 
 def format_results(results):
     formatted_results = {}
     formatted_results['training_value'] = _format_static_table(results, 'training_value')
     formatted_results['testing_value'] = _format_static_table(results, 'testing_value')
     formatted_results['processing_time'] = _format_processing_time_table(results)
+    formatted_results['training_accuracy'] = _format_static_table(results, 'training_accuracy')
+    formatted_results['testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(
