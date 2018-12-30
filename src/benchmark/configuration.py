@@ -16,35 +16,67 @@ _BASE_PARAMETERS = {
 }
 
 _SLM_FLS_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations_fls'))],
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'layers': [1, 2, 3],
-    'learning_step': [1],
-    'max_connections': [1, 10, 50],
+    'stopping_criterion': [MaxGenerationsCriterion(10), MaxGenerationsCriterion(25), MaxGenerationsCriterion(50), 
+                    MaxGenerationsCriterion(75), MaxGenerationsCriterion(100), MaxGenerationsCriterion(125), MaxGenerationsCriterion(150), 
+                    MaxGenerationsCriterion(175), MaxGenerationsCriterion(200)],
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
     'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
-    'random_weighting_technique': [False],
+    'random_weighting_technique': [False]
 }
 
 _SLM_OLS_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations_ols'))], 
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-    'learning_step': ['optimized'], 
-    'max_connections': [1, 10, 50, 100],
+    'stopping_criterion': [MaxGenerationsCriterion(5), MaxGenerationsCriterion(10), MaxGenerationsCriterion(20), 
+                    MaxGenerationsCriterion(30), MaxGenerationsCriterion(40), MaxGenerationsCriterion(50), MaxGenerationsCriterion(60), 
+                    MaxGenerationsCriterion(70), MaxGenerationsCriterion(80), MaxGenerationsCriterion(90), MaxGenerationsCriterion(100)], 
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': ['optimized'],
     'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
-    'random_weighting_technique': [False],
+    'random_weighting_technique': [False]
+}
+
+_SLM_OLS_EDV_PARAMETERS = { 
+    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
+    'population_size': [100],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': ['optimized'], 
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [False]
+}
+
+_SLM_FLS_EDV_PARAMETERS = { 
+    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
+    'population_size': [100],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001], 
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [False]
+}
+
+_SLM_FLS_TIE_PARAMETERS = {
+    'stopping_criterion': [TrainingImprovementEffectivenessCriterion(0.25)], 
+    'population_size': [100],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
+    'mutation_operator': [Mutation2()],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [False]
 }
 
 #SLM OLS with Random Sampling Technique
 _SLM_OLS_RST_PARAMETERS = { 
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations_ols'))], 
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'stopping_criterion': [MaxGenerationsCriterion(5), MaxGenerationsCriterion(10), MaxGenerationsCriterion(20), 
+                    MaxGenerationsCriterion(30), MaxGenerationsCriterion(40), MaxGenerationsCriterion(50), MaxGenerationsCriterion(60), 
+                    MaxGenerationsCriterion(70), MaxGenerationsCriterion(80), MaxGenerationsCriterion(90), MaxGenerationsCriterion(100)], 
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
     'learning_step': ['optimized'],
-    'max_connections': [1, 10, 50, 100],
-    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [True],
     'random_weighting_technique': [False],
     'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
@@ -52,15 +84,41 @@ _SLM_OLS_RST_PARAMETERS = {
 
 #SLM OLS with Random Weighting Technique
 _SLM_OLS_RWT_PARAMETERS = {
-    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'layers': [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    'stopping_criterion': [MaxGenerationsCriterion(5), MaxGenerationsCriterion(10), MaxGenerationsCriterion(20), 
+                    MaxGenerationsCriterion(30), MaxGenerationsCriterion(40), MaxGenerationsCriterion(50), MaxGenerationsCriterion(60), 
+                    MaxGenerationsCriterion(70), MaxGenerationsCriterion(80), MaxGenerationsCriterion(90), MaxGenerationsCriterion(100)], 
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
     'learning_step': ['optimized'],
-    'max_connections': [1, 10, 50, 100],
-    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
     'random_weighting_technique': [True],
     'weight_range' : [1, 2] 
+}
+
+#SLM FLS with Random Sampling Technique 
+_SLM_FLS_RST_PARAMETERS = { 
+    'stopping_criterion': [MaxGenerationsCriterion(10), MaxGenerationsCriterion(25), MaxGenerationsCriterion(50), 
+                    MaxGenerationsCriterion(75), MaxGenerationsCriterion(100), MaxGenerationsCriterion(125), MaxGenerationsCriterion(150), 
+                    MaxGenerationsCriterion(175), MaxGenerationsCriterion(200)], 
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
+    'random_sampling_technique': [True],
+    'random_weighting_technique': [False],
+    'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
+}
+
+#SLM FLS with Random Weighting Technique 
+_SLM_FLS_RWT_PARAMETERS = { 
+    'stopping_criterion': [MaxGenerationsCriterion(10), MaxGenerationsCriterion(25), MaxGenerationsCriterion(50), 
+                    MaxGenerationsCriterion(75), MaxGenerationsCriterion(100), MaxGenerationsCriterion(125), MaxGenerationsCriterion(150), 
+                    MaxGenerationsCriterion(175), MaxGenerationsCriterion(200)], 
+    'population_size': [10],
+    'layers': [1, 2, 3, 4, 5],
+    'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
+    'random_sampling_technique': [False],
+    'random_weighting_technique': [True],
+    'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
 }
 
 _NEAT_PARAMETERS = {
@@ -159,6 +217,9 @@ SLM_OLS_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_PARAMETERS)
 
 SLM_OLS_RST_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RST_PARAMETERS)
 SLM_OLS_RWT_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RWT_PARAMETERS)
+
+SLM_FLS_RST_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_RST_PARAMETERS)
+SLM_FLS_RWT_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_RWT_PARAMETERS)
 
 NEAT_CONFIGURATIONS = _create_configuration_list(_NEAT_PARAMETERS)
 SGA_CONFIGURATIONS = _create_configuration_list(_SGA_PARAMETERS)

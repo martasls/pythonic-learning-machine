@@ -8,7 +8,7 @@ from benchmark.configuration import SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIO
     ENSEMBLE_BOOSTING_CONFIGURATIONS, SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, \
     ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_RWT_CONFIGURATIONS, ENSEMBLE_BAGGING_RST_CONFIGURATIONS, ENSEMBLE_BAGGING_RWT_CONFIGURATIONS, \
     ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
-    ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS
+    ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
 from algorithms.common.metric import RootMeanSquaredError, is_better
 from data.extract import is_classification, get_input_variables, get_target_variable
@@ -28,16 +28,36 @@ _now = datetime.datetime.now()
 
 # Default models to be compared.
 _MODELS = {  
-    # 'slm_fls': {
-    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
-    #     'name_short': 'SLM (FLS)',
-    #     'algorithms': EvaluatorSLM,
-    #     'configurations': SLM_FLS_CONFIGURATIONS},      
-    # 'slm_ols': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
-    #     'name_short': 'SLM (OLS)',
-    #     'algorithms': EvaluatorSLM,
-    #     'configurations': SLM_OLS_CONFIGURATIONS},
+    'slm_fls': {
+        'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
+        'name_short': 'SLM (FLS)',
+        'algorithms': EvaluatorSLM,
+        'configurations': SLM_FLS_CONFIGURATIONS},      
+    'slm_ols': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
+        'name_short': 'SLM (OLS)',
+        'algorithms': EvaluatorSLM,
+        'configurations': SLM_OLS_CONFIGURATIONS},
+    'slm-ols-rst': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
+        'name_short': 'SLM (OLS) + RST',
+        'algorithms': EvaluatorSLM_RST, 
+        'configurations': SLM_OLS_RST_CONFIGURATIONS},
+    'slm-ols-rwt': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
+        'name_short': 'SLM (OLS) + RWT',
+        'algorithms': EvaluatorSLM_RWT, 
+        'configurations': SLM_OLS_RWT_CONFIGURATIONS},
+    'slm-fls-rst': {
+        'name_long': 'Semantic Learning Machine (Fixed Learning Step) + Random Sampling Technique',
+        'name_short': 'SLM (FLS) + RST',
+        'algorithms': EvaluatorSLM_RST, 
+        'configurations': SLM_FLS_RST_CONFIGURATIONS},
+    'slm-fls-rwt': {
+        'name_long': 'Semantic Learning Machine (Fixed Learning Step) + Random Weighting Technique',
+        'name_short': 'SLM (FLS) + RWT',
+        'algorithms': EvaluatorSLM_RWT, 
+        'configurations': SLM_FLS_RWT_CONFIGURATIONS},
     # 'slm_ensemble': {
     #     'name_long': 'Semantic Learning Machine Ensemble',
     #     'name_short': 'SLM (Ensemble)',
@@ -98,16 +118,6 @@ _MODELS = {
     #     'name_short': 'SLM-FLS (Ensemble-Boosting)',
     #     'algorithms': EvaluatorEnsembleBoosting,
     #     'configurations': ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS},
-    'slm-ols-rst': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
-        'name_short': 'SLM (OLS) + RST',
-        'algorithms': EvaluatorSLM_RST, 
-        'configurations': SLM_OLS_RST_CONFIGURATIONS},
-    'slm-ols-rwt': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
-        'name_short': 'SLM (OLS) + RWT',
-        'algorithms': EvaluatorSLM_RWT, 
-        'configurations': SLM_OLS_RWT_CONFIGURATIONS}
     # 'neat': {
     #     'name_long': 'Neuroevolution of Augmenting Topologies',
     #     'name_short': 'NEAT',
@@ -150,9 +160,9 @@ _MODELS = {
     #     'configurations': RF_CONFIGURATIONS}
 }
 
-MAX_COMBINATIONS = 3 
-OUTER_FOLDS = 30
-INNER_FOLDS = 3
+MAX_COMBINATIONS = 30 # to be 30
+OUTER_FOLDS = 30 # to be 30
+INNER_FOLDS = 5 # to be 5
 
 
 class Benchmarker():

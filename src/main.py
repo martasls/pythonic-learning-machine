@@ -29,20 +29,20 @@ if __name__ == '__main__':
     #     start_b(folder)
 
 
-    # start_b("c_diabetes")
+    start_b("c_diabetes")
 
     """ this block of code formats the benchmark files into csv files """
-    benchmark_paths = []
-    for folder in os.listdir(get_benchmark_folder()):
-        path = os.path.join(get_benchmark_folder(), folder)
-        for file in os.listdir(path):
-            benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
+    # benchmark_paths = []
+    # for folder in os.listdir(get_benchmark_folder()):
+    #     path = os.path.join(get_benchmark_folder(), folder)
+    #     for file in os.listdir(path):
+    #         benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
 
-    for benchmark_path in benchmark_paths:
-        benchmark = read_pickle(benchmark_path)
-        benchmark_formatted = format_benchmark(benchmark)
+    # for benchmark_path in benchmark_paths:
+    #     benchmark = read_pickle(benchmark_path)
+    #     benchmark_formatted = format_benchmark(benchmark)
 
-    # """ this block of code is supposed to generate the results automatically""" 
+    """ this block of code is supposed to generate the results automatically""" 
     # results_paths = [] 
     # for folder in os.listdir(get_formatted_folder()):
     #     path = os.path.join(get_formatted_folder(), folder)
