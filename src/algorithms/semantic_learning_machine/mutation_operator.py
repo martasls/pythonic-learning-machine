@@ -13,6 +13,7 @@ class Mutation(object):
     def _create_final_hidden_neuron(self, bias):
         """Creates the final hidden neuron, which must have a hyperbolic tangent activation function."""
         return create_neuron('tanh', bias)
+    
 
 
 class Mutation1(Mutation):
@@ -39,7 +40,9 @@ class Mutation2(Mutation):
         hidden_layers.append([self._create_final_hidden_neuron(bias)])
         return hidden_layers
 
-
+    def __repr__(self):
+        return self.__class__.__name__ 
+        
 class Mutation3(Mutation):
     """Adds an equal, random number of neurons to each hidden layer."""
 

@@ -36,6 +36,14 @@ def _format_processing_time_table(results):
         values[key] = [sum(item) for item in value]
     return pd.DataFrame.from_dict(values)
 
+def _format_best_config(results):
+    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
+    values = {k: _get_values_from_dictionary(
+        dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
+    values = { }
+    for key, value in values.items():
+        values[key] = [item for item in value]
+    return pd.DataFrame.from_dict(values)
 
 def _format_topology_table(results, component):
     dictionaries = _get_dictionaries_by_metric(results, 'topology')
@@ -79,6 +87,7 @@ def format_results(results):
     formatted_results['processing_time'] = _format_processing_time_table(results)
     formatted_results['training_accuracy'] = _format_static_table(results, 'training_accuracy')
     formatted_results['testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    formatted_results['best_configuration'] = _format_static_table(results, 'best_configuration')
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(

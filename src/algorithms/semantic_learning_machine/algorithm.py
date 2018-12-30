@@ -28,7 +28,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
     """
 
     def __init__(self, population_size, stopping_criterion, layers, learning_step, 
-                max_connections, mutation_operator, subset_ratio=1, weight_range=1,
+                max_connections=None, mutation_operator=Mutation2, subset_ratio=1, weight_range=1,
                 random_sampling_technique=False, random_weighting_technique=False):
         super().__init__(population_size, stopping_criterion)
         self.layers = layers
@@ -84,7 +84,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         for to_node in to_nodes:
             # If random, create random sample of connection partners
             if random:
-                max_connections = self.max_connections if len(from_nodes) > self.max_connections else len(from_nodes)
+                max_connections = len(from_nodes)
                 random_connections = randint(1, max_connections)
                 from_nodes_sample = sample(from_nodes, random_connections)
             else:
@@ -178,7 +178,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         self._connect_nodes(neural_network.sensors, neural_network.hidden_layers[0], random=True)
         previous_neurons = neural_network.hidden_layers[0]
         for hidden_layer in neural_network.hidden_layers[1:]:
-            self._connect_nodes(previous_neurons, hidden_layer, random=False)
+            self._connect_nodes(previous_neurons, hidden_layer, random=True)
             previous_neurons = hidden_layer
         # Calculate hidden neurons.
         for layer in neural_network.hidden_layers:

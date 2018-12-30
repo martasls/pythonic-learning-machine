@@ -1,7 +1,7 @@
 from os.path import join, dirname, exists
 from os import pardir, makedirs, listdir
 from pandas import read_csv, read_pickle
-from utils.environment_constants import SAMPLE_LABELS
+from utils.environment_constants import SAMPLE_LABELS, SAMPLE_LABELS_NO_VAL
 import utils
 from pickle import dump, load
 
@@ -102,6 +102,25 @@ def load_samples(data_set_name, index):
 
     return [data_set_from_pickle(file_path, file_name) for file_name in file_names]
 
+def load_samples_no_val(data_set_name, index):
+    file_path = join('04_resampled', data_set_name)
+    file_names = [sample_label + "_" + str(index) for sample_label in SAMPLE_LABELS_NO_VAL]
+
+    return [data_set_from_pickle(file_path, file_name) for file_name in file_names]
+
+def load_standardized_samples(data_set_name):
+    file_path = '03_standardized'
+    
+    return data_set_from_pickle(file_path, data_set_name)
 
 def get_benchmark_folder():
     return join(_get_path_to_data_dir(), '05_benchmark')
+
+def get_resampled_folder(): 
+    return join(_get_path_to_data_dir(), '04_resampled')
+
+def get_formatted_folder(): 
+    return join(_get_path_to_data_dir(), '06_formatted')
+
+def read_csv_(path): 
+    return read_csv(path) #remove 1st column!!! 

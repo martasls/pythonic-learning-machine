@@ -21,7 +21,7 @@ tqdm.monitor_interval = 0
 TIME_LIMIT_SECONDS = 500 #changed from 300
 TIME_BUFFER = 0.1
 
-MAX_COMBINATIONS = 1
+MAX_COMBINATIONS = 30
 
 
 class Evaluator(object):
@@ -49,28 +49,33 @@ class Evaluator(object):
         target = get_target_variable(data_set).values
         return Accuracy.evaluate(prediction, target.astype(int))
 
-    def _fit_learner(self, configuration, verbose):
-        def time_seconds(): return default_timer()   
-        # Create learner from configuration.
-        learner = self.model(**configuration)
-        # Train learner.
+    #################################################################################################################
+    """ beginning of code for nested cv"""
+
+    def _fit_learner(self, verbose=False):
+        # Create learner from configuration
+        learner = self.model(**self.configurations)
+        # Train learner 
         if self.__class__.__bases__[0] == EvaluatorSklearn:
-            learner.fit(get_input_variables(self.training_set).values,
-                            get_target_variable(self.training_set).values)
-        else:
-            start_time = time_seconds()
-            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
-                            self.metric, verbose)
-            print("\ntime to fit algorithm: ", configuration, time_seconds()-start_time)
-        # Calculate validation value.
-        validation_value = self._calculate_value(learner, self.validation_set)
-        # If validation error lower than best validation error, set learner as best learner and validation error as best validation error.
-        if is_better(validation_value, self.best_validation_value, self.metric):
-            self.best_learner = learner
-            self.best_validation_value = validation_value
-        #Add configuration and validation error to validation error list.
-        self.validation_value_list.append((configuration, validation_value)) 
-         
+            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values)
+        else: 
+            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values, 
+                        self.metric, verbose)
+        testing_value = self._calculate_value(learner, self.testing_set)
+        return {
+            'learner': learner,
+            'testing_value': testing_value
+        }
+
+    def run_nested_cv(self, verbose=False):
+        log = self._fit_learner(verbose)
+        learner_meta = self._get_learner_meta(log['learner'])
+        # learner_meta['validation_value'] = log['validation_value']
+        return learner_meta
+    
+
+    """ end of code for nested cv"""
+    #################################################################################################################     
     
     def _select_best_learner(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
         # Best learner found (lowest validation error).
@@ -124,17 +129,10 @@ class Evaluator(object):
             # if run_end < 0 or run_end * (1+time_buffer) < run_expected:
             #     print("break!!!!!")
             #     break
-            # p.start() 
-            # p.join()
+
             if number_of_runs == MAX_COMBINATIONS: 
                 break 
-        # for p in processes: 
-        #     print("process ", p, " starting")
-        #     p.daemon = True
-        #     p.start()
-        # for p in processes:
-        #     print("process ", p, " joining")
-        #     p.join()
+
         # When all configurations tested, return best learner.
         return {
             'best_learner': best_learner,

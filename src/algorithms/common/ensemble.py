@@ -155,7 +155,6 @@ class EnsembleBoosting(Ensemble):
         return 1 
       
     def fit(self, input_matrix, target_vector, metric, verbose=False):
-        """Trains learner to approach target vector, given an input matrix, based on a defined metric."""
         # Initialize the weights with 1/n where n is the size of the input matrix
         size = input_matrix.shape[0]
         weight_vector = empty(size)

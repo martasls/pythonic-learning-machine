@@ -10,11 +10,15 @@ from benchmark.configuration import SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIO
     ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
     ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
-from algorithms.common.metric import RootMeanSquaredError
-from data.extract import is_classification
-from data.io_plm import load_samples, benchmark_to_pickle, benchmark_from_pickle
+from algorithms.common.metric import RootMeanSquaredError, is_better
+from data.extract import is_classification, get_input_variables, get_target_variable
+from data.io_plm import load_samples, load_samples_no_val, benchmark_to_pickle, benchmark_from_pickle, load_standardized_samples
 from tqdm import tqdm
+from random import shuffle
 import datetime
+import pandas as pd
+from numpy import mean 
+from sklearn.model_selection import KFold, StratifiedKFold
 
 # Disable the monitor thread. (https://github.com/tqdm/tqdm/issues/481)
 tqdm.monitor_interval = 0
@@ -94,11 +98,11 @@ _MODELS = {
     #     'name_short': 'SLM-FLS (Ensemble-Boosting)',
     #     'algorithms': EvaluatorEnsembleBoosting,
     #     'configurations': ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS},
-    # 'slm-ols-rst': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
-    #     'name_short': 'SLM (OLS) + RST',
-    #     'algorithms': EvaluatorSLM_RST, 
-    #     'configurations': SLM_OLS_RST_CONFIGURATIONS},
+    'slm-ols-rst': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
+        'name_short': 'SLM (OLS) + RST',
+        'algorithms': EvaluatorSLM_RST, 
+        'configurations': SLM_OLS_RST_CONFIGURATIONS},
     'slm-ols-rwt': {
         'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
         'name_short': 'SLM (OLS) + RWT',
@@ -146,6 +150,10 @@ _MODELS = {
     #     'configurations': RF_CONFIGURATIONS}
 }
 
+MAX_COMBINATIONS = 3 
+OUTER_FOLDS = 30
+INNER_FOLDS = 3
+
 
 class Benchmarker():
     """
@@ -165,11 +173,12 @@ class Benchmarker():
         # Creates file name as combination of data set name and and date.
         self.file_name = self.data_set_name + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
         # Loads samples into object.
-        self.samples = [load_samples(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
+        self.samples = [load_samples_no_val(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
+        self.samples = load_standardized_samples(data_set_name)
         self.metric = metric
         self.models = models
         # If data set is classification problem, remove regression models. Else, vice versa.
-        if is_classification(self.samples[0][0]):
+        if is_classification(self.samples):
             if 'svr' in self.models.keys():
                 del self.models['svr']
             if 'mlpr' in self.models.keys():
@@ -184,7 +193,7 @@ class Benchmarker():
             if 'rfc' in self.models.keys():
                 del self.models['rfc']
         # Create results dictionary with models under study.
-        self.results = {k: [None for i in self.samples] for k in self.models.keys()}
+        self.results = {k: [None for i in range(OUTER_FOLDS)] for k in self.models.keys()}
         # Serialize benchmark environment.
         benchmark_to_pickle(self)
 
@@ -192,7 +201,11 @@ class Benchmarker():
         """Creates evaluator, based on algorithms and configurations."""
 
         evaluator = algorithm(configurations, training_set, validation_set, testing_set, metric)
-        return evaluator.run()
+        return evaluator.run_nested_cv()
+
+    def _evaluate_outer(self, algorithm, configurations, training_set, validation_set, testing_set, metric):
+        evaluator = algorithm(configurations, training_set, validation_set, testing_set, metric)
+        return evaluator.run_outer()
 
     def run(self):
         """Runs benchmark study, where it evaluates every algorithms on every sample set."""
@@ -208,6 +221,63 @@ class Benchmarker():
                     # Serialize benchmark.
                     benchmark_to_pickle(self)
             i += 1
+                    
+    def _get_folds(self, outer_iteration):
+        if(is_classification(self.samples)):
+            return StratifiedKFold(n_splits=INNER_FOLDS, random_state=outer_iteration, shuffle=True)
+        return KFold(n_splits=INNER_FOLDS, random_state=outer_iteration, shuffle=True)
+
+    def _get_outer_folds(self, outer_iteration):
+        if(is_classification(self.samples)):
+            return StratifiedKFold(n_splits=OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
+        return KFold(n_splits=OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
+
+    def run_nested_cv(self):
+        """ runs benchmark study on a nested cross-validation environment for a regression prob"""
+        
+        outer_cv = 0
+        outer_folds = self._get_outer_folds(outer_cv)
+        for training_outer_index, testing_index in tqdm(outer_folds.split(get_input_variables(self.samples).values, get_target_variable(self.samples).values)):
+            training_outer, testing = pd.DataFrame(self.samples.values[training_outer_index]), pd.DataFrame(self.samples.values[testing_index])
+            for key, value in tqdm(self.models.items()):
+
+                if not self.results[key][outer_cv]:
+                    shuffle(value['configurations'])
+                    nr_configurations = 0
+                    best_validation_value = float('-Inf') if self.metric.greater_is_better else float('Inf')
+                    validation_value_list = list()
+                    for configuration in tqdm(value['configurations']):
+                        folds = self._get_folds(outer_cv)
+                        tmp_validation_value_list = list()
+                        for training_inner_index, validation_index in folds.split(get_input_variables(training_outer).values, get_target_variable(training_outer).values):
+                            training_inner, validation = pd.DataFrame(training_outer.values[training_inner_index]), pd.DataFrame(training_outer.values[validation_index])
+                            
+                            results = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=configuration, 
+                                                    training_set=training_inner, validation_set=None, testing_set=validation, metric=self.metric)
+                            
+                            tmp_validation_value_list.append(results['testing_value'])
+
+                        nr_configurations += 1
+                        
+                        # Calculate average validation valueand check if the current value is better than the best one 
+                        average_validation_value = mean(tmp_validation_value_list)
+                        if is_better(average_validation_value, best_validation_value, self.metric):
+                            best_configuration = configuration
+                            best_validation_value = average_validation_value
+                        # Add configuration and validation error to validation error list.
+                        validation_value_list.append((configuration, average_validation_value))
+
+                        if nr_configurations == MAX_COMBINATIONS:
+                            break
+
+                    results_best_learner = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=best_configuration, 
+                                                training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
+                    self.results[key][outer_cv] = results_best_learner
+                    self.results[key][outer_cv]['best_configuration'] = best_configuration
+                    # Serialize benchmark 
+                    benchmark_to_pickle(self)
+                    
+            outer_cv += 1            
 
     def _format_tables(self):
         pass

@@ -8,7 +8,7 @@ class StoppingCriterion():
 
     def evaluate_final(self, algorithm):
         """Makes sure that all algorithms terminate."""
-        return algorithm.current_generation >= 200
+        return algorithm.current_generation >= 300
 
 class MaxGenerationsCriterion(StoppingCriterion):
     """Stops evolutionary process, if current generation of algorithms is greater than max generation."""
@@ -18,6 +18,9 @@ class MaxGenerationsCriterion(StoppingCriterion):
 
     def evaluate(self, algorithm):
         return algorithm.current_generation >= self.max_generation
+    
+    def __repr__(self):
+        return 'MaxGen' + '_' + str(self.max_generation)
 
 class ErrorDeviationVariationCriterion(StoppingCriterion):
     """Stops evolutionary process, if the share of solutions with lower error deviation variation amongst the
@@ -50,6 +53,9 @@ class ErrorDeviationVariationCriterion(StoppingCriterion):
             return True
         else:
             return super().evaluate(algorithm)
+    
+    def __repr__(self):
+        return 'EDV' + '_threshold_' + str(self.threshold)
 
 class TrainingImprovementEffectivenessCriterion(StoppingCriterion): 
     """ stops evolutionary process if the mutation effectiveness (ie percentage of solutions better than the champion) drops 
@@ -77,3 +83,6 @@ class TrainingImprovementEffectivenessCriterion(StoppingCriterion):
             return True
         else: 
             return super().evaluate(algorithm)
+
+    def __repr__(self):
+        return 'TIE' + '_threshold_' + str(self.threshold)
