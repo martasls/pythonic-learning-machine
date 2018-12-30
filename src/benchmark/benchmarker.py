@@ -28,16 +28,16 @@ _now = datetime.datetime.now()
 
 # Default models to be compared.
 _MODELS = {  
-    'slm_fls': {
-        'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
-        'name_short': 'SLM (FLS)',
-        'algorithms': EvaluatorSLM,
-        'configurations': SLM_FLS_CONFIGURATIONS},      
-    'slm_ols': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
-        'name_short': 'SLM (OLS)',
-        'algorithms': EvaluatorSLM,
-        'configurations': SLM_OLS_CONFIGURATIONS},
+    # 'slm_fls': {
+    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
+    #     'name_short': 'SLM (FLS)',
+    #     'algorithms': EvaluatorSLM,
+    #     'configurations': SLM_FLS_CONFIGURATIONS},      
+    # 'slm_ols': {
+    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
+    #     'name_short': 'SLM (OLS)',
+    #     'algorithms': EvaluatorSLM,
+    #     'configurations': SLM_OLS_CONFIGURATIONS},
     'slm-ols-rst': {
         'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
         'name_short': 'SLM (OLS) + RST',

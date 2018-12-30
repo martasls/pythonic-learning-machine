@@ -77,6 +77,7 @@ _SLM_OLS_RST_PARAMETERS = {
     'population_size': [10],
     'layers': [1, 2, 3, 4, 5],
     'learning_step': ['optimized'],
+    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [True],
     'random_weighting_technique': [False],
     'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
@@ -90,6 +91,7 @@ _SLM_OLS_RWT_PARAMETERS = {
     'population_size': [10],
     'layers': [1, 2, 3, 4, 5],
     'learning_step': ['optimized'],
+    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
     'random_weighting_technique': [True],
     'weight_range' : [1, 2] 
@@ -103,6 +105,7 @@ _SLM_FLS_RST_PARAMETERS = {
     'population_size': [10],
     'layers': [1, 2, 3, 4, 5],
     'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
+    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [True],
     'random_weighting_technique': [False],
     'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
@@ -116,6 +119,7 @@ _SLM_FLS_RWT_PARAMETERS = {
     'population_size': [10],
     'layers': [1, 2, 3, 4, 5],
     'learning_step': [0.5, 0.25, 0.125, 0.5, 0.1, 0.01, 0.001],
+    'mutation_operator': [Mutation2()],
     'random_sampling_technique': [False],
     'random_weighting_technique': [True],
     'subset_ratio': [0.05, 0.25, 0.5, 0.75, 0.95] 
