@@ -3,6 +3,7 @@ from data.extract import get_input_variables, get_target_variable, is_classifica
 from algorithms.common.metric import is_better, Accuracy
 from timeit import default_timer
 from benchmark.algorithm import BenchmarkSLM, BenchmarkNEAT, BenchmarkSGA, BenchmarkSLM_RST, BenchmarkSLM_RWT
+from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
 from neat.nn import FeedForwardNetwork
 from numpy import append, array
 from sklearn.svm import SVC, SVR
@@ -159,8 +160,9 @@ class EvaluatorSLM(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
+        learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
-        learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
+        # learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
         learner_meta['topology'] = self._get_topology(learner)
         return learner_meta
@@ -187,6 +189,9 @@ class EvaluatorSLM(Evaluator):
     def _get_topology(self, learner):
         solutions = self._get_solutions(learner)
         return [solution.neural_network.get_topology() for solution in solutions]
+    
+    def get_corresponding_algo():
+        return SemanticLearningMachine 
 
 class EvaluatorSLM_RST(Evaluator):
 
@@ -196,8 +201,9 @@ class EvaluatorSLM_RST(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
+        learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
-        learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
+        # learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
         learner_meta['topology'] = self._get_topology(learner)
         return learner_meta
@@ -230,6 +236,9 @@ class EvaluatorSLM_RST(Evaluator):
     def _get_topology(self, learner):
         solutions = self._get_solutions(learner)
         return [solution.neural_network.get_topology() for solution in solutions]
+
+    def get_corresponding_algo():
+        return BenchmarkSLM_RST
 
 class EvaluatorSLM_RWT(Evaluator):
 
@@ -239,8 +248,9 @@ class EvaluatorSLM_RWT(Evaluator):
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = learner.champion.value
+        learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
-        learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
+        # learner_meta['testing_value_evolution'] = self._get_testing_value_evolution(learner)
         learner_meta['processing_time'] = self._get_processing_time(learner)
         learner_meta['topology'] = self._get_topology(learner)
         return learner_meta
@@ -273,6 +283,9 @@ class EvaluatorSLM_RWT(Evaluator):
     def _get_topology(self, learner):
         solutions = self._get_solutions(learner)
         return [solution.neural_network.get_topology() for solution in solutions]
+
+    def get_corresponding_algo():
+        return BenchmarkSLM_RWT
 
 class EvaluatorNEAT(Evaluator):
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):

@@ -4,7 +4,8 @@ from threading import Thread
 from sys import argv
 from time import sleep
 from benchmark.benchmarker import Benchmarker, continue_benchmark
-from data.io_plm import get_benchmark_folder, read_pickle, get_resampled_folder, get_formatted_folder, read_csv_
+from data.io_plm import get_benchmark_folder, read_pickle, get_resampled_folder, get_formatted_folder, read_csv_, \
+                        get_standardized_folder, remove_extension
 from data.extract import is_classification
 from benchmark.formatter import format_benchmark
 from benchmark.extracter import extract_results 
@@ -25,8 +26,8 @@ def continue_b(data_set_name, file_name):
 
 if __name__ == '__main__':
 
-    # for folder in os.listdir(get_resampled_folder()):
-    #     start_b(folder)
+    for data_set in os.listdir(get_standardized_folder()):
+        start_b(remove_extension(data_set))
 
 
     start_b("c_diabetes")

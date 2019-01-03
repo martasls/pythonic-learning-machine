@@ -1,23 +1,29 @@
-from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, \
-    EvaluatorSVC, EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR, EvaluatorEnsemble, \
-    EvaluatorEnsembleBagging, EvaluatorEnsembleRandomIndependentWeighting, EvaluatorEnsembleBoosting, \
-    EvaluatorSLM_RST, EvaluatorSLM_RWT
-from benchmark.configuration import SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
-    NEAT_CONFIGURATIONS, SGA_CONFIGURATIONS, SVC_CONFIGURATIONS, SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, \
-    RF_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS, ENSEMBLE_BAGGING_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS, \
-    ENSEMBLE_BOOSTING_CONFIGURATIONS, SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, \
-    ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_RWT_CONFIGURATIONS, ENSEMBLE_BAGGING_RST_CONFIGURATIONS, ENSEMBLE_BAGGING_RWT_CONFIGURATIONS, \
-    ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
-    ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS
+from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, EvaluatorSLM_RST, EvaluatorSLM_RWT, \
+    EvaluatorEnsemble, \
+    EvaluatorEnsembleBagging, EvaluatorEnsembleRandomIndependentWeighting, EvaluatorEnsembleBoosting
+    # EvaluatorSVC, EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR,
+from benchmark.configuration import get_random_config_slm_fls_grouped, get_random_config_slm_ols_grouped, \
+    get_random_config_slm_fls_tie_edv, get_random_config_slm_ols_edv, get_config_simple_bagging_ensemble, \
+    get_config_riw_ensemble, get_config_boosting_ensemble
+    # , ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS
+#   SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
+#     SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS, \
+    # SLM_OLS_EDV_CONFIGURATIONS, SLM_FLS_TIE_CONFIGURATIONS, SLM_FLS_EDV_CONFIGURATIONS
+    # NEAT_CONFIGURATIONS, SGA_CONFIGURATIONS, SVC_CONFIGURATIONS, SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, # RF_CONFIGURATIONS, \
+    # ENSEMBLE_CONFIGURATIONS, ENSEMBLE_BAGGING_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS, \
+    # ENSEMBLE_BOOSTING_CONFIGURATIONS, ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_RWT_CONFIGURATIONS, ENSEMBLE_BAGGING_RST_CONFIGURATIONS, \
+    # ENSEMBLE_BAGGING_RWT_CONFIGURATIONS, \
+    # ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
+    # ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
 from algorithms.common.metric import RootMeanSquaredError, is_better
 from data.extract import is_classification, get_input_variables, get_target_variable
 from data.io_plm import load_samples, load_samples_no_val, benchmark_to_pickle, benchmark_from_pickle, load_standardized_samples
 from tqdm import tqdm
-from random import shuffle
+from random import shuffle, uniform
 import datetime
 import pandas as pd
-from numpy import mean 
+from numpy import mean
 from sklearn.model_selection import KFold, StratifiedKFold
 
 # Disable the monitor thread. (https://github.com/tqdm/tqdm/issues/481)
@@ -26,38 +32,37 @@ tqdm.monitor_interval = 0
 # Returns the current date and time.
 _now = datetime.datetime.now()
 
+_MAX_COMBINATIONS = 10 # to be 50
+_MAX_COMBINATIONS_SLM_OLS_EDV = 5 # to be 5
+_OUTER_FOLDS = 30 # to be 30
+_INNER_FOLDS = 3 # to be 3
+
 # Default models to be compared.
 _MODELS = {  
-    # 'slm_fls': {
-    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step)',
-    #     'name_short': 'SLM (FLS)',
-    #     'algorithms': EvaluatorSLM,
-    #     'configurations': SLM_FLS_CONFIGURATIONS},      
-    # 'slm_ols': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step)',
-    #     'name_short': 'SLM (OLS)',
-    #     'algorithms': EvaluatorSLM,
-    #     'configurations': SLM_OLS_CONFIGURATIONS},
-    'slm-ols-rst': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Sampling Technique',
-        'name_short': 'SLM (OLS) + RST',
-        'algorithms': EvaluatorSLM_RST, 
-        'configurations': SLM_OLS_RST_CONFIGURATIONS},
-    'slm-ols-rwt': {
-        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Random Weighting Technique',
-        'name_short': 'SLM (OLS) + RWT',
-        'algorithms': EvaluatorSLM_RWT, 
-        'configurations': SLM_OLS_RWT_CONFIGURATIONS},
-    'slm-fls-rst': {
-        'name_long': 'Semantic Learning Machine (Fixed Learning Step) + Random Sampling Technique',
-        'name_short': 'SLM (FLS) + RST',
-        'algorithms': EvaluatorSLM_RST, 
-        'configurations': SLM_FLS_RST_CONFIGURATIONS},
-    'slm-fls-rwt': {
-        'name_long': 'Semantic Learning Machine (Fixed Learning Step) + Random Weighting Technique',
-        'name_short': 'SLM (FLS) + RWT',
-        'algorithms': EvaluatorSLM_RWT, 
-        'configurations': SLM_FLS_RWT_CONFIGURATIONS},
+    'slm_fls_group': {
+        'name_long': 'Semantic Learning Machine (Fixed Learning Step) Group',
+        'name_short': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT',
+        'algorithms': [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
+        'configuration_method': get_random_config_slm_fls_grouped,
+        'max_combinations': _MAX_COMBINATIONS},      
+    'slm_ols_group': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) Group',
+        'name_short': 'SLM (OLS), SLM (OLS) + RST, SLM (OLS) + RWT',
+        'algorithms': [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
+        'configuration_method': get_random_config_slm_ols_grouped,
+        'max_combinations': _MAX_COMBINATIONS},
+    'slm_fls_tie_edv_group': {
+        'name_long': 'Semantic Learning Machine (Fixed Learning Step) Stopping Criteria Group',
+        'name_short': 'SLM (FLS) + TIE, SLM (FLS) + EDV',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': get_random_config_slm_fls_tie_edv,
+        'max_combinations': _MAX_COMBINATIONS},
+    'slm_ols_edv': {
+        'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Error Deviation Variation Crit',
+        'name_short': 'SLM (OLS) + EDV',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': get_random_config_slm_ols_edv,
+        'max_combinations': _MAX_COMBINATIONS_SLM_OLS_EDV},
     # 'slm_ensemble': {
     #     'name_long': 'Semantic Learning Machine Ensemble',
     #     'name_short': 'SLM (Ensemble)',
@@ -160,10 +165,43 @@ _MODELS = {
     #     'configurations': RF_CONFIGURATIONS}
 }
 
-MAX_COMBINATIONS = 30 # to be 30
-OUTER_FOLDS = 30 # to be 30
-INNER_FOLDS = 5 # to be 5
-
+_ENSEMBLES = { 
+    'simple': {
+        'name_long': 'Simple Ensemble', 
+        'name_short': 'Simple Ensemble',
+        'algorithms': EvaluatorEnsemble, 
+        'configuration_method': get_config_simple_bagging_ensemble},
+    'bagging': {
+        'name_long': 'Bagging Ensemble',
+        'name_short': 'Bagging Ensemble', 
+        'algorithms': EvaluatorEnsembleBagging,
+        'configuration_method': get_config_simple_bagging_ensemble}, 
+    'riw': { 
+        'name_long': 'Random Independent Weighting Ensemble',
+        'name_short': 'RIW Ensemble', 
+        'algorithms': EvaluatorEnsembleRandomIndependentWeighting, 
+        'configuration_method': get_config_riw_ensemble}, 
+    'boosting_1': {
+        'name_long': 'Boosting Ensemble with Median and Fixed Learning Rate', 
+        'name_short': 'Boosting Ensemble (Median + FLR)', 
+        'algorithms': EvaluatorEnsembleBoosting,
+        'configuration_method': get_config_boosting_ensemble},
+    'boosting_2': {
+        'name_long': 'Boosting Ensemble with Median and Random Learning Rate', 
+        'name_short': 'Boosting Ensemble (Median + RLR)', 
+        'algorithms': EvaluatorEnsembleBoosting,
+        'configuration_method': get_config_boosting_ensemble},
+    'boosting_3': {
+        'name_long': 'Boosting Ensemble with Mean and Fixed Learning Rate', 
+        'name_short': 'Boosting Ensemble (Mean + FLR)', 
+        'algorithms': EvaluatorEnsembleBoosting,
+        'configuration_method': get_config_boosting_ensemble},
+    'boosting_4': {
+        'name_long': 'Boosting Ensemble with Mean and Random Learning Rate', 
+        'name_short': 'Boosting Ensemble (Mean + RLR)', 
+        'algorithms': EvaluatorEnsembleBoosting,
+        'configuration_method': get_config_boosting_ensemble}
+}
 
 class Benchmarker():
     """
@@ -176,19 +214,22 @@ class Benchmarker():
         models: Dictionary of models and their corresponding parameter configurations.
     """
 
-    def __init__(self, data_set_name, metric=RootMeanSquaredError, models=_MODELS):
+    def __init__(self, data_set_name, metric=RootMeanSquaredError, models=_MODELS, ensembles=_ENSEMBLES):
         """Initializes benchmark environment."""
 
         self.data_set_name = data_set_name
         # Creates file name as combination of data set name and and date.
         self.file_name = self.data_set_name + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
         # Loads samples into object.
-        self.samples = [load_samples_no_val(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
+        # self.samples = [load_samples(data_set_name, index) for index in range(10)]
+        # self.samples = [load_samples_no_val(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
         self.samples = load_standardized_samples(data_set_name)
         self.metric = metric
+        self.ensembles = ensembles
         self.models = models
         # If data set is classification problem, remove regression models. Else, vice versa.
-        if is_classification(self.samples):
+        if is_classification(self.samples): #original self.samples[0][0] new self.samples
+            self.classification = True
             if 'svr' in self.models.keys():
                 del self.models['svr']
             if 'mlpr' in self.models.keys():
@@ -196,6 +237,7 @@ class Benchmarker():
             if 'rfr' in self.models.keys():
                 del self.models['rfr']
         else:
+            self.classification = False
             if 'svc' in self.models.keys():
                 del self.models['svc']
             if 'mlpc' in self.models.keys():
@@ -203,7 +245,8 @@ class Benchmarker():
             if 'rfc' in self.models.keys():
                 del self.models['rfc']
         # Create results dictionary with models under study.
-        self.results = {k: [None for i in range(OUTER_FOLDS)] for k in self.models.keys()}
+        self.results = {k: [None for i in range(_OUTER_FOLDS)] for k in self.models.keys()}
+        self.results_ensemble = {k: [None for i in range(_OUTER_FOLDS)] for k in self.ensembles.keys()}
         # Serialize benchmark environment.
         benchmark_to_pickle(self)
 
@@ -212,6 +255,7 @@ class Benchmarker():
 
         evaluator = algorithm(configurations, training_set, validation_set, testing_set, metric)
         return evaluator.run_nested_cv()
+        # return evaluator.run()
 
     def _evaluate_outer(self, algorithm, configurations, training_set, validation_set, testing_set, metric):
         evaluator = algorithm(configurations, training_set, validation_set, testing_set, metric)
@@ -231,16 +275,18 @@ class Benchmarker():
                     # Serialize benchmark.
                     benchmark_to_pickle(self)
             i += 1
-                    
-    def _get_folds(self, outer_iteration):
-        if(is_classification(self.samples)):
-            return StratifiedKFold(n_splits=INNER_FOLDS, random_state=outer_iteration, shuffle=True)
-        return KFold(n_splits=INNER_FOLDS, random_state=outer_iteration, shuffle=True)
+    
+
+
+    def _get_inner_folds(self, outer_iteration):
+        if(self.classification):
+            return StratifiedKFold(n_splits=_INNER_FOLDS, random_state=outer_iteration, shuffle=True)
+        return KFold(n_splits=_INNER_FOLDS, random_state=outer_iteration, shuffle=True)
 
     def _get_outer_folds(self, outer_iteration):
-        if(is_classification(self.samples)):
-            return StratifiedKFold(n_splits=OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
-        return KFold(n_splits=OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
+        if(self.classification):
+            return StratifiedKFold(n_splits=_OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
+        return KFold(n_splits=_OUTER_FOLDS, random_state=outer_iteration, shuffle=True)
 
     def run_nested_cv(self):
         """ runs benchmark study on a nested cross-validation environment for a regression prob"""
@@ -252,42 +298,74 @@ class Benchmarker():
             for key, value in tqdm(self.models.items()):
 
                 if not self.results[key][outer_cv]:
-                    shuffle(value['configurations'])
-                    nr_configurations = 0
+                    # shuffle(value['configurations'])
+                    # nr_configurations = 0
                     best_validation_value = float('-Inf') if self.metric.greater_is_better else float('Inf')
                     validation_value_list = list()
-                    for configuration in tqdm(value['configurations']):
-                        folds = self._get_folds(outer_cv)
-                        tmp_validation_value_list = list()
-                        for training_inner_index, validation_index in folds.split(get_input_variables(training_outer).values, get_target_variable(training_outer).values):
+                    for configuration in tqdm(range(self.models[key]['max_combinations'])): #changed from tqdm(value['configurations'])
+                        if(len(self.models[key]['algorithms'])) > 1:
+                            option = int(uniform(0, 3))
+                            algorithm = self.models[key]['algorithms'][option]
+                            config = self.models[key]['configuration_method'](option)
+                        else: 
+                            algorithm = self.models[key]['algorithms'][0]
+                            config = self.models[key]['configuration_method']()
+                        
+                        inner_folds = self._get_inner_folds(outer_cv)
+                        tmp_valid_training_values_list = list()
+                        for training_inner_index, validation_index in inner_folds.split(get_input_variables(training_outer).values, get_target_variable(training_outer).values):
                             training_inner, validation = pd.DataFrame(training_outer.values[training_inner_index]), pd.DataFrame(training_outer.values[validation_index])
                             
-                            results = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=configuration, 
-                                                    training_set=training_inner, validation_set=None, testing_set=validation, metric=self.metric)
+                            results = self._evaluate_algorithm(algorithm=algorithm, configurations=config, 
+                                                               training_set=training_inner, validation_set=None, testing_set=validation, metric=self.metric)
                             
-                            tmp_validation_value_list.append(results['testing_value'])
+                            tmp_valid_training_values_list.append((results['testing_value'], results['training_value']))
 
-                        nr_configurations += 1
+                        # nr_configurations += 1
                         
                         # Calculate average validation valueand check if the current value is better than the best one 
-                        average_validation_value = mean(tmp_validation_value_list)
+                        average_validation_value = mean(tmp_valid_training_values_list, axis=0)[0]
+                        average_training_value = mean(tmp_valid_training_values_list, axis=0)[1]
                         if is_better(average_validation_value, best_validation_value, self.metric):
-                            best_configuration = configuration
+                            best_algorithm = algorithm
+                            best_configuration = config
                             best_validation_value = average_validation_value
+                            best_training_value = average_training_value
                         # Add configuration and validation error to validation error list.
                         validation_value_list.append((configuration, average_validation_value))
 
-                        if nr_configurations == MAX_COMBINATIONS:
-                            break
+                        # if nr_configurations == _MAX_COMBINATIONS:
+                        #     break
 
-                    results_best_learner = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=best_configuration, 
-                                                training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
-                    self.results[key][outer_cv] = results_best_learner
+                    self.results[key][outer_cv] = self._evaluate_algorithm(algorithm=best_algorithm, configurations=best_configuration, 
+                                                                    training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
+
                     self.results[key][outer_cv]['best_configuration'] = best_configuration
+                    self.results[key][outer_cv]['avg_inner_validation_error'] = best_validation_value
+                    self.results[key][outer_cv]['avg_inner_training_error'] = best_training_value
+                    self.results[key][outer_cv]['outer_training_time'] = sum(self.results[key][outer_cv]['processing_time'])
+                    
                     # Serialize benchmark 
                     benchmark_to_pickle(self)
                     
+                    self._run_ensembles(best_algorithm.get_corresponding_algo(), best_configuration, training_outer, testing, self.metric)
+
             outer_cv += 1            
+
+    def _run_ensembles(self, best_algorithm, best_configuration, training_outer, testing, metric):
+        i = 0
+        for key, value in tqdm(self.ensembles.items()):
+            if not self.results_ensemble[key][i]:
+                if '_' in key: # boosting
+                    nr_ensemble = key.split('_')[1]
+                    config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, nr_ensemble, training_outer, testing, metric)
+                else: # simple, bagging, riw 
+                    config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, training_outer, testing, metric) 
+                self.results_ensemble[key][i] = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=config, training_set=training_outer,
+                                                validation_set=None, testing_set=testing, metric=self.metric)
+
+                i+=1
+        
 
     def _format_tables(self):
         pass

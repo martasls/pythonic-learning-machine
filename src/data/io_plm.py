@@ -119,6 +119,9 @@ def get_benchmark_folder():
 def get_resampled_folder(): 
     return join(_get_path_to_data_dir(), '04_resampled')
 
+def get_standardized_folder(): 
+    return join(_get_path_to_data_dir(), '03_standardized')
+    
 def get_formatted_folder(): 
     return join(_get_path_to_data_dir(), '06_formatted')
 

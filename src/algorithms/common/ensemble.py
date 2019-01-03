@@ -132,7 +132,7 @@ class EnsembleRandomIndependentWeighting(Ensemble):
         # Instatiates the WeightedRootMeanSquaredError object with the weight vector
         metric = WeightedRootMeanSquaredError(uniform(0, self.weight_range, input_matrix.shape[0]))
         # Trains base learner #
-        learner.fit(input_matrix, target_vector, metric)
+        learner.fit(input_matrix, target_vector, metric, verbose)
         # Adds base learner to list.
         return learner 
     
@@ -171,7 +171,7 @@ class EnsembleBoosting(Ensemble):
             input_matrix = original_input_matrix[idx]
             target_vector = original_target_vector[idx]
             # Trains base learner.
-            learner.fit(input_matrix, target_vector, metric)
+            learner.fit(input_matrix, target_vector, metric, verbose)
             # calculate the output (semantics) of the model for every instance even the ones not used for the training 
             # learner.predict(self, input_matrix)
             y_predict = learner.predict(original_input_matrix)

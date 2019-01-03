@@ -8,7 +8,7 @@ class StoppingCriterion():
 
     def evaluate_final(self, algorithm):
         """Makes sure that all algorithms terminate."""
-        return algorithm.current_generation >= 300
+        return algorithm.current_generation >= 200
 
 class MaxGenerationsCriterion(StoppingCriterion):
     """Stops evolutionary process, if current generation of algorithms is greater than max generation."""
