@@ -13,9 +13,9 @@ import random
 
 def get_random_config_slm_fls_grouped(option=None): 
     config = {}
-    config['stopping_criterion'] = MaxGenerationsCriterion(int(random.uniform(1, 201))) # random value between 1 and 200
+    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
     config['population_size'] = 10
-    config['layers'] = int(random.uniform(1, 6)) # random value between 1 and 4 
+    config['layers'] = random.randint(1, 5) # random value between 1 and 5 
     config['learning_step'] = random.uniform(0.00001, 2)
     config['mutation_operator'] = Mutation2()
     if option == 0: #no RST and no RWT
@@ -28,14 +28,14 @@ def get_random_config_slm_fls_grouped(option=None):
     elif option == 2: #RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
-        config['weight_range'] = int(random.uniform(0, 2)) # random value between 0 and 1
+        config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1
     return config
 
 def get_random_config_slm_ols_grouped(option=None): 
     config = {}
-    config['stopping_criterion'] = MaxGenerationsCriterion(int(random.uniform(1, 201))) # random value between 1 and 200 
+    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200 
     config['population_size'] = 10
-    config['layers'] = int(random.uniform(1, 6)) # random value between 1 and 5
+    config['layers'] = random.randint(1, 5) # random value between 1 and 5
     config['learning_step'] = 'optimized'
     config['mutation_operator'] = Mutation2()
     if option == 0: #no RST and no RWT
@@ -48,18 +48,18 @@ def get_random_config_slm_ols_grouped(option=None):
     elif option == 2: #RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
-        config['weight_range'] = random.uniform(0, 1.01) # random value between 0 and 1 
+        config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1 
     return config
 
 def get_random_config_slm_fls_tie_edv():
     config = {}
-    stopping_crit = int(random.uniform(1, 3))
+    stopping_crit = random.randint(1, 2)
     if stopping_crit == 1: #EDV
         config['stopping_criterion'] = ErrorDeviationVariationCriterion(0.25)
     else: 
         config['stopping_criterion'] = TrainingImprovementEffectivenessCriterion(0.25)
     config['population_size'] = 100
-    config['layers'] = int(random.uniform(1, 5)) # random value between 1 and 5
+    config['layers'] = random.randint(1, 5) # random value between 1 and 5
     config['learning_step'] = random.uniform(0.00001, 2)
     config['mutation_operator'] = Mutation2()
     config['random_sampling_technique'] = False
@@ -70,7 +70,7 @@ def get_random_config_slm_ols_edv():
     config = {}
     config['stopping_criterion'] = ErrorDeviationVariationCriterion(0.25)
     config['population_size'] = 100
-    config['layers'] = int(random.uniform(1, 6)) # random value between 1 and 5
+    config['layers'] = random.randint(1, 5) # random value between 1 and 5
     config['learning_step'] = 'optimized'
     config['mutation_operator'] = Mutation2()
     config['random_sampling_technique'] = False
@@ -91,7 +91,7 @@ def get_config_riw_ensemble(base_learner, best_configuration, training_outer, te
     config['base_learner'] = _create_base_learner(base_learner, best_configuration, training_outer, testing, metric)
     config['number_learners'] = 30
     config['meta_learner'] = mean
-    config['weight_range'] = random.uniform(0, 1.01) # random value between 0 and 1 
+    config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1 
     return config
 
 def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, training_outer, testing, metric): 
