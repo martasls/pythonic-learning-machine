@@ -304,3 +304,6 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         neural_network.calculate()
         return neural_network.get_predictions()
 
+    def __repr__(self):
+        return 'SemanticLearningMachine'
+

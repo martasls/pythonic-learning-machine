@@ -1,10 +1,12 @@
 from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, EvaluatorSLM_RST, EvaluatorSLM_RWT, \
     EvaluatorEnsemble, \
-    EvaluatorEnsembleBagging, EvaluatorEnsembleRandomIndependentWeighting, EvaluatorEnsembleBoosting
-    # EvaluatorSVC, EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR,
+    EvaluatorEnsembleBagging, EvaluatorEnsembleRandomIndependentWeighting, EvaluatorEnsembleBoosting, \
+    EvaluatorMLPC, EvaluatorMLPR
+    # EvaluatorSVC, EvaluatorSVR, , EvaluatorRFC, EvaluatorRFR,
 from benchmark.configuration import get_random_config_slm_fls_grouped, get_random_config_slm_ols_grouped, \
     get_random_config_slm_fls_tie_edv, get_random_config_slm_ols_edv, get_config_simple_bagging_ensemble, \
-    get_config_riw_ensemble, get_config_boosting_ensemble
+    get_config_riw_ensemble, get_config_boosting_ensemble, get_config_mlp, \
+    get_testing_config_slm_rst
     # , ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS
 #   SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
 #     SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS, \
@@ -16,11 +18,12 @@ from benchmark.configuration import get_random_config_slm_fls_grouped, get_rando
     # ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
     # ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
+from benchmark.algorithm import BenchmarkSLM_RST
 from algorithms.common.metric import RootMeanSquaredError, is_better
 from data.extract import is_classification, get_input_variables, get_target_variable
 from data.io_plm import load_samples, load_samples_no_val, benchmark_to_pickle, benchmark_from_pickle, load_standardized_samples
 from tqdm import tqdm
-from random import shuffle, uniform
+from random import shuffle, uniform, randint
 import datetime
 import pandas as pd
 from numpy import mean
@@ -32,7 +35,7 @@ tqdm.monitor_interval = 0
 # Returns the current date and time.
 _now = datetime.datetime.now()
 
-_MAX_COMBINATIONS = 10 # to be 50
+_MAX_COMBINATIONS = 50 # to be 50
 _MAX_COMBINATIONS_SLM_OLS_EDV = 5 # to be 5
 _OUTER_FOLDS = 30 # to be 30
 _INNER_FOLDS = 3 # to be 3
@@ -42,7 +45,7 @@ _MODELS = {
     'slm_fls_group': {
         'name_long': 'Semantic Learning Machine (Fixed Learning Step) Group',
         'name_short': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT',
-        'algorithms': [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
+        'algorithms':  [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
         'configuration_method': get_random_config_slm_fls_grouped,
         'max_combinations': _MAX_COMBINATIONS},      
     'slm_ols_group': {
@@ -146,13 +149,17 @@ _MODELS = {
     # 'mlpc': {
     #     'name_long': 'Multilayer Perceptron',
     #     'name_short': 'MLP',
-    #     'algorithms': EvaluatorMLPC,
-    #     'configurations': MLP_CONFIGURATIONS},
+    #     'algorithms': [EvaluatorMLPC],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration_method': get_config_mlp,
+    #     'max_combinations': _MAX_COMBINATIONS},
     # 'mlpr': {
     #     'name_long': 'Multilayer Perceptron',
     #     'name_short': 'MLP',
-    #     'algorithms': EvaluatorMLPR,
-    #     'configurations': MLP_CONFIGURATIONS},
+    #     'algorithms': [EvaluatorMLPR],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration-method': get_config_mlp,
+    #     'max_combinations': _MAX_COMBINATIONS},
     # 'rfc': {
     #     'name_long': 'Random Forest',
     #     'name_short': 'RF',
@@ -246,7 +253,7 @@ class Benchmarker():
                 del self.models['rfc']
         # Create results dictionary with models under study.
         self.results = {k: [None for i in range(_OUTER_FOLDS)] for k in self.models.keys()}
-        self.results_ensemble = {k: [None for i in range(_OUTER_FOLDS)] for k in self.ensembles.keys()}
+        self.results_ensemble = {ensemble: {model: [None for i in range(_OUTER_FOLDS)] for model in self.models.keys()} for ensemble in self.ensembles.keys()}
         # Serialize benchmark environment.
         benchmark_to_pickle(self)
 
@@ -304,7 +311,7 @@ class Benchmarker():
                     validation_value_list = list()
                     for configuration in tqdm(range(self.models[key]['max_combinations'])): #changed from tqdm(value['configurations'])
                         if(len(self.models[key]['algorithms'])) > 1:
-                            option = int(uniform(0, 3))
+                            option = 1 #randint(0, 2)
                             algorithm = self.models[key]['algorithms'][option]
                             config = self.models[key]['configuration_method'](option)
                         else: 
@@ -343,29 +350,26 @@ class Benchmarker():
                     self.results[key][outer_cv]['best_configuration'] = best_configuration
                     self.results[key][outer_cv]['avg_inner_validation_error'] = best_validation_value
                     self.results[key][outer_cv]['avg_inner_training_error'] = best_training_value
-                    self.results[key][outer_cv]['outer_training_time'] = sum(self.results[key][outer_cv]['processing_time'])
                     
                     # Serialize benchmark 
                     benchmark_to_pickle(self)
                     
-                    self._run_ensembles(best_algorithm.get_corresponding_algo(), best_configuration, training_outer, testing, self.metric)
+                    self._run_ensembles(outer_cv, key, best_algorithm.get_corresponding_algo(), best_configuration, training_outer, testing, self.metric)
 
             outer_cv += 1            
 
-    def _run_ensembles(self, best_algorithm, best_configuration, training_outer, testing, metric):
-        i = 0
+    def _run_ensembles(self, iteration, current_model, best_algorithm, best_configuration, training_outer, testing, metric):
         for key, value in tqdm(self.ensembles.items()):
-            if not self.results_ensemble[key][i]:
+            if not self.results_ensemble[key][current_model][iteration]:
                 if '_' in key: # boosting
                     nr_ensemble = key.split('_')[1]
                     config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, nr_ensemble, training_outer, testing, metric)
                 else: # simple, bagging, riw 
-                    config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, training_outer, testing, metric) 
-                self.results_ensemble[key][i] = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=config, training_set=training_outer,
+                    config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, training_outer, testing, metric)
+                self.results_ensemble[key][current_model][iteration] = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=config, training_set=training_outer,
                                                 validation_set=None, testing_set=testing, metric=self.metric)
-
-                i+=1
-        
+                self.results_ensemble[key][current_model][iteration]['algorithm'] = best_algorithm
+                self.results_ensemble[key][current_model][iteration]['configuration'] = best_configuration
 
     def _format_tables(self):
         pass

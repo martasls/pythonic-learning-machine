@@ -10,6 +10,8 @@ from itertools import product
 from numpy import mean, median, linspace
 import random
 
+slm_ols_edv_config_layers_index = 0
+slm_ols_edv_config_layers = [1, 2, 3, 4, 5]
 
 def get_random_config_slm_fls_grouped(option=None): 
     config = {}
@@ -28,7 +30,18 @@ def get_random_config_slm_fls_grouped(option=None):
     elif option == 2: #RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
-        config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1
+        config['weight_range'] = 1
+    return config
+
+def get_testing_config_slm_rst():
+    config = {}
+    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
+    config['population_size'] = 10
+    config['layers'] = random.randint(1, 5) # random value between 1 and 5 
+    config['learning_step'] = random.uniform(0.00001, 2)
+    config['mutation_operator'] = Mutation2()
+    config['random_sampling_technique'] = True
+    config['random_weighting_technique'] = False
     return config
 
 def get_random_config_slm_ols_grouped(option=None): 
@@ -48,7 +61,7 @@ def get_random_config_slm_ols_grouped(option=None):
     elif option == 2: #RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
-        config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1 
+        config['weight_range'] = 1
     return config
 
 def get_random_config_slm_fls_tie_edv():
@@ -70,7 +83,10 @@ def get_random_config_slm_ols_edv():
     config = {}
     config['stopping_criterion'] = ErrorDeviationVariationCriterion(0.25)
     config['population_size'] = 100
-    config['layers'] = random.randint(1, 5) # random value between 1 and 5
+    global slm_ols_edv_config_layers
+    global slm_ols_edv_config_layers_index
+    config['layers'] = slm_ols_edv_config_layers[slm_ols_edv_config_layers_index]
+    slm_ols_edv_config_layers_index = (slm_ols_edv_config_layers_index + 1) % len(slm_ols_edv_config_layers)
     config['learning_step'] = 'optimized'
     config['mutation_operator'] = Mutation2()
     config['random_sampling_technique'] = False
@@ -91,7 +107,7 @@ def get_config_riw_ensemble(base_learner, best_configuration, training_outer, te
     config['base_learner'] = _create_base_learner(base_learner, best_configuration, training_outer, testing, metric)
     config['number_learners'] = 30
     config['meta_learner'] = mean
-    config['weight_range'] = random.uniform(0, 1) # random value between 0 and 1 
+    config['weight_range'] = 1
     return config
 
 def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, training_outer, testing, metric): 
@@ -113,6 +129,33 @@ def _create_base_learner(algorithm, configurations, training_outer, testing, met
     return algorithm(**configurations)
 
 
+
+
+""" MLP configurations """ 
+
+
+def get_config_mlp():
+    config = {}
+    config['solver'] = 'lbfgs'
+    config['learning_rate'] = 'constant'
+    config['learning_rate_init'] = random.uniform(0.00001, 2)
+    activation = random.randint(0, 2)
+    if activation == 0:
+        config['activation'] = 'logistic'
+    elif activation == 1: 
+        config['activation'] = 'tanh'
+    else: 
+        config['activation'] = 'relu'
+    nr_hidden_layers = random.randint(1, 5)
+    neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
+    config['hidden_layer_sizes'] = tuple(neurons)
+    alpha = random.randint(0, 1)
+    if alpha == 0:
+        config['alpha'] = 0
+    else: 
+        config['alpha'] = random.uniform(0.00001, 5)    
+    config['max_iter'] = random.randint(1, 1000)
+    return config
 """
 
 

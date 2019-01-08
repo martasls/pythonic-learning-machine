@@ -8,7 +8,7 @@ from data.io_plm import get_benchmark_folder, read_pickle, get_resampled_folder,
                         get_standardized_folder, remove_extension
 from data.extract import is_classification
 from benchmark.formatter import format_benchmark
-from benchmark.extracter import extract_results 
+from benchmark.results_extractor import extract_results 
 
 
 def start_b(data_set_name, file_name=None):
@@ -26,8 +26,8 @@ def continue_b(data_set_name, file_name):
 
 if __name__ == '__main__':
 
-    for data_set in os.listdir(get_standardized_folder()):
-        start_b(remove_extension(data_set))
+    # for data_set in os.listdir(get_standardized_folder()):
+    #     start_b(remove_extension(data_set))
 
 
     start_b("c_diabetes")
@@ -43,30 +43,27 @@ if __name__ == '__main__':
     #     benchmark = read_pickle(benchmark_path)
     #     benchmark_formatted = format_benchmark(benchmark)
 
-    """ this block of code is supposed to generate the results automatically""" 
-    # results_paths = [] 
+    """ this block of code generates the results automatically""" 
     # for folder in os.listdir(get_formatted_folder()):
     #     path = os.path.join(get_formatted_folder(), folder)
-    #     for file in os.listdir(path):
-    #         results_paths.append(os.path.join(get_formatted_folder(), folder, file))
+    #     extract_results(path)
 
-    # for results_path in results_paths: 
-    #     results = read_csv_(results_path)
-    #     results_extracted = extract_results(results)
+
+
 
     # parser = argparse.ArgumentParser(description='Runs benchmark for data set.')
     # parser.add_argument('-d', metavar='data_set_name', type=str, dest='data_set_name',
     #                     help='a name of a data set')
     # parser.add_argument('-f', metavar='file_name', type=str, dest='file_name',
     #                     help='a file name of an existing benchmark')
-    #
+    
     # args = parser.parse_args()
-    #
+    
     # if args.file_name:
     #     thread = Thread(target=continue_b, kwargs=vars(args))
     # else:
     #     thread = Thread(target=start_b, kwargs=vars(args))
-    #
+    
     # try:
     #     thread.daemon = True
     #     thread.start()

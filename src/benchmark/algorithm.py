@@ -48,8 +48,13 @@ def _benchmark_run_rst(algorithm, verbose):
     stopping_criterion = False
     original_input_matrix = algorithm.input_matrix
     original_target_vector = algorithm.target_vector
-    original_metric = algorithm.metric 
+    original_metric = algorithm.metric
+    algo = algorithm.metric.__class__.__name__
     size = int(original_input_matrix.shape[0] * algorithm.subset_ratio)
+    if algorithm.metric.__class__.__name__ == 'WeightedRootMeanSquaredError': 
+        original_weight_vector = algorithm.metric.weight_vector
+        idx = np.random.choice(np.arange(original_input_matrix.shape[0]), size, replace=False)
+        algorithm.metric.weight_vector = original_weight_vector[idx]
     while (not stopping_criterion):
         start_time = _time_seconds() 
         idx = np.random.choice(np.arange(original_input_matrix.shape[0]), size, replace=False)
@@ -66,10 +71,11 @@ def _benchmark_run_rst(algorithm, verbose):
         algorithm.log = {
         'time_log': time_log,
         'solution_log': solution_log}
+    if algorithm.metric.__class__.__name__ == 'WeightedRootMeanSquaredError':
+        algorithm.metric.weight_vector = original_weight_vector
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(original_input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, original_target_vector)
-    # if(is_classification_target(original_target_vector)): 
-    #     algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, original_target_vector) 
+
 
 def _benchmark_run_rwt(algorithm, verbose):
     """if random_weighting_technique is set to true then the weights change at each iteration """
@@ -94,8 +100,7 @@ def _benchmark_run_rwt(algorithm, verbose):
         'solution_log': solution_log}
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(algorithm.input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, algorithm.target_vector)
-    # if(is_classification_target(algorithm.target_vector)): 
-    #     algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)   
+ 
 
 class BenchmarkSLM(SemanticLearningMachine):
 
@@ -117,7 +122,13 @@ class BenchmarkSLM_RST(SemanticLearningMachine):
     fit = _benchmark_fit
     _run = _benchmark_run_rst 
 
+    def __repr__(self):
+        return 'BenchmarkSLM_RST'
+
 class BenchmarkSLM_RWT(SemanticLearningMachine):
     
     fit = _benchmark_fit
     _run = _benchmark_run_rwt 
+
+    def __repr__(self):
+        return 'BenchmarkSLM_RWT'

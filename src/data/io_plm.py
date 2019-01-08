@@ -113,17 +113,22 @@ def load_standardized_samples(data_set_name):
     
     return data_set_from_pickle(file_path, data_set_name)
 
-def get_benchmark_folder():
-    return join(_get_path_to_data_dir(), '05_benchmark')
+def get_standardized_folder(): 
+    return join(_get_path_to_data_dir(), '03_standardized')
 
 def get_resampled_folder(): 
     return join(_get_path_to_data_dir(), '04_resampled')
 
-def get_standardized_folder(): 
-    return join(_get_path_to_data_dir(), '03_standardized')
+def get_benchmark_folder():
+    return join(_get_path_to_data_dir(), '05_benchmark')
     
 def get_formatted_folder(): 
     return join(_get_path_to_data_dir(), '06_formatted')
 
-def read_csv_(path): 
-    return read_csv(path) #remove 1st column!!! 
+def get_results_folder(): 
+    return join(_get_path_to_data_dir(), '07_results')
+
+def read_csv_(path):
+    data_frame = read_csv(path)
+    data_frame = data_frame.drop(data_frame.columns[0], axis=1) 
+    return data_frame

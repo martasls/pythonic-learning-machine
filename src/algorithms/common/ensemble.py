@@ -129,8 +129,9 @@ class EnsembleRandomIndependentWeighting(Ensemble):
         # Creates deepcopy of base learner.
         learner = deepcopy(self.base_learner)
         def time_seconds(): return default_timer()
+        weight_vector = uniform(0, self.weight_range, input_matrix.shape[0])
         # Instatiates the WeightedRootMeanSquaredError object with the weight vector
-        metric = WeightedRootMeanSquaredError(uniform(0, self.weight_range, input_matrix.shape[0]))
+        metric = WeightedRootMeanSquaredError(weight_vector)
         # Trains base learner #
         learner.fit(input_matrix, target_vector, metric, verbose)
         # Adds base learner to list.

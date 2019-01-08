@@ -3,6 +3,7 @@ from scipy.stats import sem
 import pandas as pd
 import numpy as np
 from data.io_plm import _get_path_to_data_dir
+from algorithms.common.stopping_criterion import MaxGenerationsCriterion
 import os
 
 
@@ -27,6 +28,21 @@ def _format_static_table(results, metric):
     values = {k: _get_values_from_dictionary(dictionaries[k], metric) for k in dictionaries.keys()}
     return pd.DataFrame.from_dict(values)
 
+def _get_avg_value(results, dict_to_get, value_to_get):
+    dictionaries = _get_dictionaries_by_metric(results, dict_to_get)
+    values = {k: _get_values_from_dictionary(dictionaries[k], dict_to_get) for k in dictionaries.keys()}
+    values_to_get = {k: _get_values_from_dictionary(values[k], value_to_get) for k in dictionaries.keys()}
+    values_saved = {}
+    if value_to_get == 'stopping_criterion':
+        for key, value in values_to_get.items(): 
+            if type(value[0]) == MaxGenerationsCriterion:
+                nr_generations = [item.max_generation for item in value]
+                values_saved[key] = mean(nr_generations)
+    else: 
+        for key, value in values_to_get.items(): 
+            if type(value[0]) != str: 
+                values_saved[key] = mean(value)
+    return pd.DataFrame.from_dict(values_saved, orient='index')
 
 def _format_processing_time_table(results):
     dictionaries = _get_dictionaries_by_metric(results, 'processing_time')
@@ -36,23 +52,12 @@ def _format_processing_time_table(results):
         values[key] = [sum(item) for item in value]
     return pd.DataFrame.from_dict(values)
 
-def _format_best_config(results):
-    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
-    values = {k: _get_values_from_dictionary(
-        dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
-    values = { }
-    for key, value in values.items():
-        values[key] = [item for item in value]
-    return pd.DataFrame.from_dict(values)
-
 def _format_topology_table(results, component):
     dictionaries = _get_dictionaries_by_metric(results, 'topology')
     values = {k: _get_values_from_dictionary(dictionaries[k], 'topology') for k in dictionaries.keys()}
     values = {key: [item[-1] for item in value] for key, value in values.items()}
     values = {key: [item[component] for item in value] for key, value in values.items()}
     return pd.DataFrame.from_dict(values)
-
-
 
 def _format_evo_table(results, metric):
     dictionaries = _get_dictionaries_by_metric(results, metric)
@@ -80,14 +85,19 @@ def _format_evo_table(results, metric):
     
 
 
-def format_results(results):
+def format_results(results, classification):
     formatted_results = {}
+    if classification:
+        formatted_results['training_accuracy'] = _format_static_table(results, 'training_accuracy')
+        formatted_results['testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
     formatted_results['training_value'] = _format_static_table(results, 'training_value')
     formatted_results['testing_value'] = _format_static_table(results, 'testing_value')
     formatted_results['processing_time'] = _format_processing_time_table(results)
-    formatted_results['training_accuracy'] = _format_static_table(results, 'training_accuracy')
-    formatted_results['testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
     formatted_results['best_configuration'] = _format_static_table(results, 'best_configuration')
+    formatted_results['avg_nr_generations'] = _get_avg_value(results, 'best_configuration', 'stopping_criterion').T
+    formatted_results['avg_learning_step'] = _get_avg_value(results, 'best_configuration', 'learning_step').T
+    formatted_results['avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
+    formatted_results['avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(
@@ -97,11 +107,21 @@ def format_results(results):
     #formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
     return formatted_results
 
+def format_ensemble_results(ensemble_results, classification):
+    formatted_ensemble_results = {}
+    if classification: 
+        formatted_ensemble_results['training_accuracy'] = _format_static_table(ensemble_results, 'training_accuracy')
+        formatted_ensemble_results['testing_accuracy'] = _format_static_table(ensemble_results, 'testing_accuracy')
+    return formatted_ensemble_results
+
 
 def relabel_model_names(model_names, model_names_dict, short=True):
     key = 'name_short' if short else 'name_long'
     return [model_names_dict[model_name][key] for model_name in model_names]
 
+def relabel_model_names_diff_length(model_names, model_names_dict, short=True):
+    key = 'name_short' if short else 'name_longe'
+    return [model_names_dict[model_name][key] for model_name in model_names]
 
 def format_benchmark(benchmark):
 
@@ -115,7 +135,8 @@ def format_benchmark(benchmark):
     #    del benchmark.results['mlpr']
     #    del benchmark.results['rfr']
 
-    formatted_benchmark = format_results(benchmark.results)
+    formatted_benchmark = format_results(benchmark.results, benchmark.classification)
+    # formatted_ensemble_results = format_ensemble_results(benchmark.results_ensemble, benchmark.classification)
 
     model_names_dict = get_model_names_dict(benchmark)
     for key, value in formatted_benchmark.items():
@@ -130,7 +151,7 @@ def format_benchmark(benchmark):
                 path = os.path.join(output_path, key + '_' + ext + '.csv')
                 tbl.to_csv(path)
                 i += 1
-        else:
+        else: 
             formatted_benchmark[key].columns = relabel_model_names(value.columns, model_names_dict)
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
