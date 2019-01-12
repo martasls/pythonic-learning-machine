@@ -159,6 +159,7 @@ class EvaluatorSLM(Evaluator):
 
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
+        learner_meta['nr_generations'] = learner.current_generation-1
         learner_meta['training_value'] = learner.champion.value
         learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
@@ -200,6 +201,7 @@ class EvaluatorSLM_RST(Evaluator):
 
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
+        learner_meta['nr_generations'] = learner.current_generation
         learner_meta['training_value'] = learner.champion.value
         learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
@@ -247,6 +249,7 @@ class EvaluatorSLM_RWT(Evaluator):
 
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
+        learner_meta['nr_generations'] = learner.current_generation
         learner_meta['training_value'] = learner.champion.value
         learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
@@ -377,6 +380,9 @@ class EvaluatorMLPC(EvaluatorSklearn):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
             return super()._select_best_learner(time_limit, time_buffer, verbose)
+    
+    def get_corresponding_algo():
+        return MLPClassifier
 
 
 class EvaluatorMLPR(EvaluatorSklearn):
@@ -388,6 +394,9 @@ class EvaluatorMLPR(EvaluatorSklearn):
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore")
             return super()._select_best_learner(time_limit, time_buffer, verbose)
+
+    def get_corresponding_algo():
+        return MLPRegressor
 
 
 class EvaluatorRFC(EvaluatorSklearn):

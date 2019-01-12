@@ -33,17 +33,6 @@ def get_random_config_slm_fls_grouped(option=None):
         config['weight_range'] = 1
     return config
 
-def get_testing_config_slm_rst():
-    config = {}
-    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
-    config['population_size'] = 10
-    config['layers'] = random.randint(1, 5) # random value between 1 and 5 
-    config['learning_step'] = random.uniform(0.00001, 2)
-    config['mutation_operator'] = Mutation2()
-    config['random_sampling_technique'] = True
-    config['random_weighting_technique'] = False
-    return config
-
 def get_random_config_slm_ols_grouped(option=None): 
     config = {}
     config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200 
@@ -129,16 +118,11 @@ def _create_base_learner(algorithm, configurations, training_outer, testing, met
     return algorithm(**configurations)
 
 
-
-
 """ MLP configurations """ 
 
-
-def get_config_mlp():
+def get_config_mlp_lbfgs():
     config = {}
     config['solver'] = 'lbfgs'
-    config['learning_rate'] = 'constant'
-    config['learning_rate_init'] = random.uniform(0.00001, 2)
     activation = random.randint(0, 2)
     if activation == 0:
         config['activation'] = 'logistic'
@@ -156,6 +140,116 @@ def get_config_mlp():
         config['alpha'] = random.uniform(0.00001, 5)    
     config['max_iter'] = random.randint(1, 1000)
     return config
+
+def get_config_mlp_sgd(nr_instances):
+    config = {}
+    config['solver'] = 'sgd'
+    config['learning_rate'] = 'constant'
+    config['learning_rate_init'] = random.uniform(0.00001, 2)
+    activation = random.randint(0, 2)
+    if activation == 0:
+        config['activation'] = 'logistic'
+    elif activation == 1: 
+        config['activation'] = 'tanh'
+    else: 
+        config['activation'] = 'relu'
+    nr_hidden_layers = random.randint(1, 5)
+    neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
+    config['hidden_layer_sizes'] = tuple(neurons)
+    alpha = random.randint(0, 1)
+    if alpha == 0:
+        config['alpha'] = 0
+    else: 
+        config['alpha'] = random.uniform(0.00001, 5)
+    config['max_iter'] = random.randint(1, 1000)
+    
+    config['batch_size'] = random.randint(50, nr_instances) #changed from 250
+    
+    shuffle_option = random.randint(0, 1)
+    if shuffle_option == 0:
+        config['shuffle'] = False
+    else: 
+        config['shuffle'] = True
+    
+    config['momentum'] = random.uniform(10 ** -7, 1)
+    
+    nesterov = random.randint(0, 1)
+    if nesterov == 0:
+        config['nesterovs_momentum'] = False
+    else:
+        config['nesterovs_momentum'] = True
+
+    return config
+
+def get_config_mlp_adam(nr_instances):
+    config = {}
+    config['solver'] = 'adam'
+    config['learning_rate_init'] = random.uniform(0.00001, 2)
+    activation = random.randint(0, 2)
+    if activation == 0:
+        config['activation'] = 'logistic'
+    elif activation == 1: 
+        config['activation'] = 'tanh'
+    else: 
+        config['activation'] = 'relu'
+    nr_hidden_layers = random.randint(1, 5)
+    neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
+    config['hidden_layer_sizes'] = tuple(neurons)
+    alpha = random.randint(0, 1)
+    if alpha == 0:
+        config['alpha'] = 0
+    else: 
+        config['alpha'] = random.uniform(0.00001, 5)    
+    config['max_iter'] = random.randint(1, 1000)
+    
+    config['batch_size'] = random.randint(50, nr_instances)
+
+    shuffle_option = random.randint(0, 1)
+    if shuffle_option == 0:
+        config['shuffle'] = False
+    else: 
+        config['shuffle'] = True
+    
+    config['beta_1'] = random.uniform(0, 1 - 10 ** -7)
+    config['beta_2'] = random.uniform(0, 1 - 10 ** -7)
+    
+    return config
+
+
+""" Analyze configurations """ 
+
+def analyze_slm_fls_group_config(best_configuration):
+    pass
+
+    # config = {}
+    # config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
+    # config['population_size'] = 10
+    # config['layers'] = random.randint(1, 5) # random value between 1 and 5 
+    # config['learning_step'] = random.uniform(0.00001, 2)
+    # config['mutation_operator'] = Mutation2()
+    # if option == 0: #no RST and no RWT
+    #     config['random_sampling_technique'] = False
+    #     config['random_weighting_technique'] = False
+    # elif option == 1: #RST
+    #     config['random_sampling_technique'] = True
+    #     config['random_weighting_technique'] = False
+    #     config['subset_ratio'] = random.uniform(0.01, 0.99)
+    # elif option == 2: #RWT
+    #     config['random_sampling_technique'] = False
+    #     config['random_weighting_technique'] = True
+    #     config['weight_range'] = 1
+    # return config
+    
+def analyze_slm_ols_group_config(best_configuration):
+    pass
+    
+def analyze_slm_fls_tie_edv_group_config(best_configuration):
+    pass
+
+def analyze_slm_ols_edv_config(best_configuration):
+    pass
+
+
 """
 
 

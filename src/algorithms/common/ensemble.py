@@ -40,7 +40,10 @@ class Ensemble():
         # Creates deepcopy of base learner.
         learner = deepcopy(self.base_learner)
         # Trains base learner.
-        learner.fit(input_matrix, target_vector, metric, verbose) 
+        if learner.__class__.__name__ == 'MLPClassifier' or learner.__class__.__name__ == 'MLPRegressor':
+            learner.fit(input_matrix, target_vector)
+        else: 
+            learner.fit(input_matrix, target_vector, metric, verbose)        
         # Adds base learner to list.
         return learner
       
@@ -93,7 +96,10 @@ class EnsembleBagging(Ensemble):
         # input_matrix = input_matrix[idx]
         # target_vector = target_vector[idx]
         # Trains base learner.
-        learner.fit(input_matrix[idx], target_vector[idx], metric, verbose) 
+        if learner.__class__.__name__ == 'MLPClassifier' or learner.__class__.__name__ == 'MLPRegressor':
+            learner.fit(input_matrix[idx], target_vector[idx])
+        else: 
+            learner.fit(input_matrix[idx], target_vector[idx], metric, verbose)
         return learner
 
     def fit(self, input_matrix, target_vector, metric, verbose=False):
@@ -172,7 +178,10 @@ class EnsembleBoosting(Ensemble):
             input_matrix = original_input_matrix[idx]
             target_vector = original_target_vector[idx]
             # Trains base learner.
-            learner.fit(input_matrix, target_vector, metric, verbose)
+            if learner.__class__.__name__ == 'MLPClassifier' or learner.__class__.__name__ == 'MLPRegressor':
+                learner.fit(input_matrix, target_vector)
+            else: 
+                learner.fit(input_matrix, target_vector, metric, verbose)
             # calculate the output (semantics) of the model for every instance even the ones not used for the training 
             # learner.predict(self, input_matrix)
             y_predict = learner.predict(original_input_matrix)
