@@ -6,9 +6,7 @@ from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, Evalu
 from benchmark.configuration import get_random_config_slm_fls_grouped, get_random_config_slm_ols_grouped, \
     get_random_config_slm_fls_tie_edv, get_random_config_slm_ols_edv, get_config_simple_bagging_ensemble, \
     get_config_riw_ensemble, get_config_boosting_ensemble, get_config_mlp_lbfgs, \
-    get_config_mlp_adam, get_config_mlp_sgd, \
-    analyze_slm_fls_group_config, analyze_slm_ols_group_config, analyze_slm_fls_tie_edv_group_config, \
-    analyze_slm_ols_edv_config
+    get_config_mlp_adam, get_config_mlp_sgd
     # , ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS
 #   SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
 #     SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS, \
@@ -36,9 +34,9 @@ tqdm.monitor_interval = 0
 # Returns the current date and time.
 _now = datetime.datetime.now()
 
-_MAX_COMBINATIONS = 50 # to be 50
+_MAX_COMBINATIONS = 1 # to be 50
 _MAX_COMBINATIONS_SLM_OLS_EDV = 5 # to be 5
-_OUTER_FOLDS = 30 # to be 30
+_OUTER_FOLDS = 3 # to be 30
 _INNER_FOLDS = 3 # to be 3
 
 # Default models to be compared.
@@ -224,12 +222,12 @@ class Benchmarker():
         models: Dictionary of models and their corresponding parameter configurations.
     """
 
-    def __init__(self, data_set_name, metric=RootMeanSquaredError, models=None, ensembles=None):
+    def __init__(self, data_set_name, metric=RootMeanSquaredError, models=None, ensembles=None, benchmark_id=None):
         """Initializes benchmark environment."""
-
+        self.benchmark_id = benchmark_id
         self.data_set_name = data_set_name
         # Creates file name as combination of data set name and and date.
-        self.file_name = self.data_set_name + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
+        self.file_name = self.data_set_name + "_" + self.benchmark_id + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
         # Loads samples into object.
         # self.samples = [load_samples(data_set_name, index) for index in range(10)]
         # self.samples = [load_samples_no_val(data_set_name, index) for index in range(10)] # changed from 30 , change back at the end 
@@ -261,6 +259,7 @@ class Benchmarker():
         # Create results dictionary with models under study.
         self.results = {k: [None for i in range(_OUTER_FOLDS)] for k in self.models.keys()}
         self.results_ensemble = {ensemble: [None for i in range(_OUTER_FOLDS)] for ensemble in self.ensembles.keys()}
+        self.best_result = [None for i in range(_OUTER_FOLDS)]
         # Serialize benchmark environment.
         benchmark_to_pickle(self)
 
@@ -365,7 +364,9 @@ class Benchmarker():
                         best_overall_configuration = best_configuration
                         best_overall_validation_value = best_validation_value
 
-            self._run_ensembles(outer_cv, best_overall_algorithm.get_corresponding_algo(), best_overall_configuration, training_outer, testing, self.metric)
+            self.best_result[outer_cv] = self._evaluate_algorithm(algorithm=best_overall_algorithm, configurations=best_overall_configuration, 
+                                                        training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
+            # self._run_ensembles(outer_cv, best_overall_algorithm.get_corresponding_algo(), best_overall_configuration, training_outer, testing, self.metric)
 
             outer_cv += 1            
 

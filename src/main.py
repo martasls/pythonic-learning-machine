@@ -14,25 +14,21 @@ from benchmark.results_extractor import extract_results
 def start_b(data_set_name, file_name=None, models_to_run=SLM_MODELS, models_to_run_2=MLP_MODELS): #change to None to choose from console
     """ starts benchmark """
     if models_to_run == 'SLM_MODELS':
-        print(1)
         models_to_run = SLM_MODELS
     if models_to_run == 'MLP_MODELS':
-        print(2)
         models_to_run = MLP_MODELS
     if models_to_run_2 == 'SLM_MODELS':
-        print(3)
         models_to_run_2 = SLM_MODELS
     if models_to_run_2 == 'MLP_MODELS':
-        print(4)
         models_to_run_2 = MLP_MODELS
     # SLM MODELS 
     if models_to_run is not None:
-        benchmarker = Benchmarker(data_set_name, models=models_to_run, ensembles=ENSEMBLES)
+        benchmarker = Benchmarker(data_set_name, models=models_to_run, ensembles=ENSEMBLES, benchmark_id='slm')
         # benchmarker.run()
         benchmarker.run_nested_cv()
     # MLP MODELS 
     if models_to_run_2 is not None: 
-        benchmarker = Benchmarker(data_set_name, models=models_to_run_2, ensembles=ENSEMBLES)
+        benchmarker = Benchmarker(data_set_name, models=models_to_run_2, ensembles=ENSEMBLES, benchmark_id='mlp')
         benchmarker.run_nested_cv()
 
 def continue_b(data_set_name, file_name):
@@ -43,7 +39,6 @@ if __name__ == '__main__':
 
     # for data_set in os.listdir(get_standardized_folder()):
     #     start_b(remove_extension(data_set))
-
 
     # start_b("c_diabetes")
 

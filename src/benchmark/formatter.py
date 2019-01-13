@@ -16,7 +16,7 @@ def _get_dictionaries_by_metric(results, metric):
 
 
 def _get_values_from_dictionary(dictionary, metric):
-    return [d[metric] for d in dictionary if metric in d]
+    return [d[metric] for d in dictionary if d is not None and metric in d]
 
 
 def _summarize_metric(metric, summarizer=mean):
@@ -71,7 +71,7 @@ def _format_configuration_table(results, value_to_get):
         return df.T  
     return pd.DataFrame.from_dict(values_saved)
 
-def _format_RST_RWT_frequency(results):
+def _format_rst_rwt_frequency(results):
     dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
     best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
     values_saved = {}
@@ -92,7 +92,7 @@ def _format_RST_RWT_frequency(results):
     return pd.DataFrame(values_saved, index=['No RST and No RWT Frequency', 'RST Frequency', 'RWT Frequency'])
 
 
-def _format_TIE_EDV_frequency(results):
+def _format_tie_edv_frequency(results):
     dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
     best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
     values_saved = {}
@@ -108,6 +108,66 @@ def _format_TIE_EDV_frequency(results):
             values = [nr_EDV, nr_TIE]
             values_saved[key] = values
     return pd.DataFrame(values_saved, index=['EDV Frequency', 'TIE Frequency'])
+
+
+def _format_mlp_configuration_table(results, value_to_get, metric=None):
+    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
+    values = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
+    values_to_get = {k: _get_values_from_dictionary(values[k], value_to_get) for k in dictionaries.keys()}
+    values_saved = {}
+    if value_to_get == 'learning_rate_init':
+        for key, value in values_to_get.items(): 
+            if value:
+                learning_rate_values = [item for item in value]
+                values_saved[key] = learning_rate_values
+        return pd.DataFrame(values_saved) 
+    elif metric == 'number_layers': 
+        for key, value in values_to_get.items(): 
+            nr_layers = [len(item) for item in value] 
+            values_saved[key] = nr_layers
+        return pd.DataFrame(values_saved)
+    elif metric == 'number_neurons':
+        for key, value in values_to_get.items(): 
+            nr_neurons = [sum(item) for item in value]
+            values_saved[key] = nr_neurons
+        return pd.DataFrame(values_saved)
+    return pd.DataFrame.from_dict(values_to_get)
+
+
+def _format_mlp_activation_function_frequency(results):
+    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
+    best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
+    values_saved = {}
+    for key, value in best_configurations.items(): 
+        nr_logistic = 0 
+        nr_relu = 0
+        nr_tanh = 0
+        for run in value: 
+            if run['activation'] == 'logistic': 
+                nr_logistic += 1
+            elif run['activation'] == 'relu':
+                nr_relu += 1 
+            elif run['activation'] == 'tanh':
+                nr_tanh += 1
+        values = [nr_logistic, nr_relu, nr_tanh]
+        values_saved[key] = values
+    return pd.DataFrame(values_saved, index=['Logistic Frequency', 'Relu Frequency', 'Tanh Frequency'])
+
+def _format_mlp_penalty_frequency(results):
+    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
+    best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
+    values_saved = {}
+    for key, value in best_configurations.items(): 
+        nr_penalty = 0 
+        nr_no_penalty = 0
+        for run in value: 
+            if run['alpha'] == 0: 
+                nr_no_penalty += 1
+            elif run['alpha'] != 0:
+                nr_penalty += 1
+        values = [nr_no_penalty, nr_penalty]
+        values_saved[key] = values
+    return pd.DataFrame(values_saved, index=['No Penalty Frequency', 'Penalty Frequency'])
 
 def _format_processing_time_table(results):
     dictionaries = _get_dictionaries_by_metric(results, 'processing_time')
@@ -150,22 +210,19 @@ def _format_evo_table(results, metric):
 def format_results(results, classification):
     formatted_results = {}
     if classification:
-        formatted_results['training_accuracy'] = _format_static_table(results, 'training_accuracy')
-        formatted_results['testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
-    formatted_results['training_value'] = _format_static_table(results, 'training_value')
-    formatted_results['testing_value'] = _format_static_table(results, 'testing_value')
-    formatted_results['processing_time'] = _format_processing_time_table(results)
-    formatted_results['best_configuration'] = _format_static_table(results, 'best_configuration')
-    formatted_results['avg_nr_generations'] = _get_avg_value(results, 'best_configuration', 'stopping_criterion').T
-    formatted_results['avg_learning_step'] = _get_avg_value(results, 'best_configuration', 'learning_step').T
-    formatted_results['avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
-    formatted_results['avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
-    formatted_results['number_generations'] = _format_configuration_table(results, 'stopping_criterion')
-    formatted_results['learning_step_value'] = _format_configuration_table(results, 'learning_step')
-    formatted_results['number_layers'] = _format_configuration_table(results, 'layers')
-    formatted_results['subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
-    formatted_results['RST_RWT_frequency'] = _format_RST_RWT_frequency(results)
-    formatted_results['TIE_EDV_frequency'] = _format_TIE_EDV_frequency(results)
+        formatted_results['slm_training_accuracy'] = _format_static_table(results, 'training_accuracy')
+        formatted_results['slm_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    formatted_results['slm_training_value'] = _format_static_table(results, 'training_value')
+    formatted_results['slm_testing_value'] = _format_static_table(results, 'testing_value')
+    formatted_results['slm_processing_time'] = _format_processing_time_table(results)
+    formatted_results['slm_avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
+    formatted_results['slm_avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
+    formatted_results['slm_number_generations'] = _format_configuration_table(results, 'stopping_criterion')
+    formatted_results['slm_learning_step_value'] = _format_configuration_table(results, 'learning_step')
+    formatted_results['slm_number_layers'] = _format_configuration_table(results, 'layers')
+    formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
+    formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
+    formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(
@@ -175,15 +232,23 @@ def format_results(results, classification):
     #formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
     return formatted_results
 
-def format_results_mlp(results):
+def format_results_mlp(results, classification):
     formatted_results = {}
-    formatted_results['number_iterations']
-    formatted_results['learning_rate']
-    formatted_results['number_layers']
-    formatted_results['number_neurons'] #totals, considering all the hidden layers 
-    formatted_results['alpha']
-    formatted_results['activation_function_frequency']
-    formatted_results['penalty_frequency']
+    if classification:
+        formatted_results['mlp_training_accuracy'] = _format_static_table(results, 'training_accuracy')
+        formatted_results['mlp_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    formatted_results['mlp_training_value'] = _format_static_table(results, 'training_value')
+    formatted_results['mlp_testing_value'] = _format_static_table(results, 'testing_value')
+    formatted_results['mlp_avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
+    formatted_results['mlp_avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
+    formatted_results['mlp_number_iterations'] = _format_mlp_configuration_table(results, 'max_iter')
+    formatted_results['mlp_learning_rate'] = _format_mlp_configuration_table(results, 'learning_rate_init')
+    formatted_results['mlp_number_layers'] = _format_mlp_configuration_table(results, 'hidden_layer_sizes', 'number_layers')
+    formatted_results['mlp_number_neurons'] = _format_mlp_configuration_table(results, 'hidden_layer_sizes', 'number_neurons') #totals, considering all the hidden layers 
+    formatted_results['mlp_alpha'] = _format_mlp_configuration_table(results, 'alpha')
+    formatted_results['mlp_activation_function_frequency'] = _format_mlp_activation_function_frequency(results)
+    formatted_results['mlp_penalty_frequency'] = _format_mlp_penalty_frequency(results)
+    return formatted_results 
 
 
 def format_ensemble_results(formatted_benchmark, ensemble_results, classification):
@@ -213,7 +278,7 @@ def format_benchmark(benchmark):
         formatted_benchmark = format_results(benchmark.results, benchmark.classification)
         # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification)
     elif ('mlpc_lbfgs' in benchmark.models.keys() or 'mlpr_lbfgs' in benchmark.models.keys()):
-        formatted_benchmark = format_results_mlp(benchmark.results)
+        formatted_benchmark = format_results_mlp(benchmark.results, benchmark.classification)
 
     model_names_dict = get_model_names_dict(benchmark)
     for key, value in formatted_benchmark.items():

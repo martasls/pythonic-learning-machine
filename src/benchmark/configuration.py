@@ -216,40 +216,6 @@ def get_config_mlp_adam(nr_instances):
     return config
 
 
-""" Analyze configurations """ 
-
-def analyze_slm_fls_group_config(best_configuration):
-    pass
-
-    # config = {}
-    # config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
-    # config['population_size'] = 10
-    # config['layers'] = random.randint(1, 5) # random value between 1 and 5 
-    # config['learning_step'] = random.uniform(0.00001, 2)
-    # config['mutation_operator'] = Mutation2()
-    # if option == 0: #no RST and no RWT
-    #     config['random_sampling_technique'] = False
-    #     config['random_weighting_technique'] = False
-    # elif option == 1: #RST
-    #     config['random_sampling_technique'] = True
-    #     config['random_weighting_technique'] = False
-    #     config['subset_ratio'] = random.uniform(0.01, 0.99)
-    # elif option == 2: #RWT
-    #     config['random_sampling_technique'] = False
-    #     config['random_weighting_technique'] = True
-    #     config['weight_range'] = 1
-    # return config
-    
-def analyze_slm_ols_group_config(best_configuration):
-    pass
-    
-def analyze_slm_fls_tie_edv_group_config(best_configuration):
-    pass
-
-def analyze_slm_ols_edv_config(best_configuration):
-    pass
-
-
 """
 
 
