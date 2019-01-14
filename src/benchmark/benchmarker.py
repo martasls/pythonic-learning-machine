@@ -366,7 +366,9 @@ class Benchmarker():
 
             self.best_result[outer_cv] = self._evaluate_algorithm(algorithm=best_overall_algorithm, configurations=best_overall_configuration, 
                                                         training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
-            # self._run_ensembles(outer_cv, best_overall_algorithm.get_corresponding_algo(), best_overall_configuration, training_outer, testing, self.metric)
+            self.best_result[outer_cv]['best_overall_algorithm'] = best_overall_algorithm
+            self.best_result[outer_cv]['best_overall_configuration'] = best_overall_configuration
+            self._run_ensembles(outer_cv, best_overall_algorithm.get_corresponding_algo(), best_overall_configuration, training_outer, testing, self.metric)
 
             outer_cv += 1            
 

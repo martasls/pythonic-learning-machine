@@ -251,11 +251,23 @@ def format_results_mlp(results, classification):
     return formatted_results 
 
 
-def format_ensemble_results(formatted_benchmark, ensemble_results, classification):
+def format_ensemble_results(formatted_benchmark, ensemble_results, classification, algo):
     if classification: 
-        formatted_benchmark['ensemble_training_accuracy'] = _format_static_table(ensemble_results, 'training_accuracy')
-        formatted_benchmark['ensemble_testing_accuracy'] = _format_static_table(ensemble_results, 'testing_accuracy')
+        formatted_benchmark[algo + '_ensemble_training_accuracy'] = _format_static_table(ensemble_results, 'training_accuracy')
+        formatted_benchmark[algo + '_ensemble_testing_accuracy'] = _format_static_table(ensemble_results, 'testing_accuracy')
+    formatted_benchmark[algo + '_ensemble_training_value'] = _format_static_table(ensemble_results, 'training_value')
+    formatted_benchmark[algo + '_ensemble_testing_value'] = _format_static_table(ensemble_results, 'testing_value')
+    formatted_benchmark[algo + '_ensemble_base_algorithm'] = _format_static_table(ensemble_results, 'algorithm')
     return formatted_benchmark 
+
+def format_best_result(formatted_benchmark, best_result, classification, algo):
+    if classification: 
+        formatted_benchmark[algo + '_best_result_training_accuracy'] = _format_static_table(best_result, 'training_accuracy')
+        formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_table(best_result, 'testing_accuracy')
+    formatted_benchmark[algo + '_best_result_training_value'] = _format_static_table(best_result, 'training_value')
+    formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_table(best_result, 'testing_value')
+    formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_table(best_result, 'processing_time')
+    return formatted_benchmark
 
 
 def relabel_model_names(model_names, model_names_dict, short=True):
@@ -276,11 +288,17 @@ def format_benchmark(benchmark):
 
     if 'slm_fls_group' in benchmark.models.keys():
         formatted_benchmark = format_results(benchmark.results, benchmark.classification)
-        # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification)
+        formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
+        formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'slm')
     elif ('mlpc_lbfgs' in benchmark.models.keys() or 'mlpr_lbfgs' in benchmark.models.keys()):
         formatted_benchmark = format_results_mlp(benchmark.results, benchmark.classification)
+        formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
+        formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'mlp')
+
+# have to think about this because 'best_result' has not model keys 
 
     model_names_dict = get_model_names_dict(benchmark)
+    ensemble_names_dict = get_ensemble_names_dict(benchmark)
     for key, value in formatted_benchmark.items():
         if 'evolution' in key:
             i = 0
@@ -293,6 +311,10 @@ def format_benchmark(benchmark):
                 path = os.path.join(output_path, key + '_' + ext + '.csv')
                 tbl.to_csv(path)
                 i += 1
+        elif 'ensemble' in key:
+            formatted_benchmark[key].columns = relabel_model_names(value.columns, ensemble_names_dict)
+            path = os.path.join(output_path, key + '.csv')
+            formatted_benchmark[key].to_csv(path)
         else: 
             formatted_benchmark[key].columns = relabel_model_names(value.columns, model_names_dict)
             path = os.path.join(output_path, key + '.csv')
@@ -302,6 +324,9 @@ def format_benchmark(benchmark):
 def _is_classification(benchmark):
     return benchmark.data_set_name[0] == 'c'
 
+def get_ensemble_names_dict(benchmark):
+    return {key: {'name_short': value['name_short'],
+                    'name_long': value['name_long']} for key, value in benchmark.ensembles.items()}
 
 def get_model_names_dict(benchmark):
     return {key: {'name_short': value['name_short'],
