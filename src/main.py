@@ -40,7 +40,7 @@ if __name__ == '__main__':
     # for data_set in os.listdir(get_standardized_folder()):
     #     start_b(remove_extension(data_set))
 
-    # start_b("c_diabetes")
+    # start_b("r_ppb")
 
     """ this block of code formats the benchmark files into csv files """
     benchmark_paths = []

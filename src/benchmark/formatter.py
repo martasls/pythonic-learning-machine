@@ -3,6 +3,7 @@ from scipy.stats import sem
 import pandas as pd
 import numpy as np
 from data.io_plm import _get_path_to_data_dir
+from benchmark.evaluator import EvaluatorMLPC, EvaluatorMLPR
 from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
 import os
 
@@ -109,6 +110,26 @@ def _format_tie_edv_frequency(results):
             values_saved[key] = values
     return pd.DataFrame(values_saved, index=['EDV Frequency', 'TIE Frequency'])
 
+def _format_slm_best_overall_configuration_frequency(best_result):
+    slm_fls_group_frequency = 0
+    slm_ols_group_frequency = 0
+    slm_fls_tie_edv_group_frequency = 0
+    slm_ols_edv_frequency = 0
+    values = {} 
+    for run in best_result:
+        if run['key'] == 'slm_fls_group':
+            slm_fls_group_frequency += 1
+        elif run['key'] == 'slm_ols_group':
+            slm_ols_group_frequency += 1
+        elif run['key'] == 'slm_fls_tie_edv_group':
+            slm_fls_tie_edv_group_frequency += 1
+        elif run['key'] == 'slm_ols_edv':
+            slm_ols_edv_frequency += 1
+    values['slm_fls_group'] = slm_fls_group_frequency
+    values['slm_ols_group'] = slm_ols_group_frequency
+    values['slm_fls_tie_edv_group'] = slm_fls_tie_edv_group_frequency
+    values['slm_ols_edv'] = slm_ols_edv_frequency
+    return pd.DataFrame.from_dict(values, index='orient') #check this
 
 def _format_mlp_configuration_table(results, value_to_get, metric=None):
     dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
@@ -169,6 +190,30 @@ def _format_mlp_penalty_frequency(results):
         values_saved[key] = values
     return pd.DataFrame(values_saved, index=['No Penalty Frequency', 'Penalty Frequency'])
 
+def _format_mlp_best_overall_configuration_frequency(best_result, classification):
+    lbfgs_frequency = 0
+    adam_frequency = 0
+    sgd_frequency = 0
+    values = {} 
+    for run in best_result:
+        if run['best_overall_configuration']['solver'] == 'lbfgs':
+            lbfgs_frequency += 1
+        elif run['best_overall_configuration']['solver'] == 'adam':
+            adam_frequency += 1
+        elif run['best_overall_configuration']['solver'] == 'sgd':
+            sgd_frequency += 1
+    if classification: 
+        values['mlpc_lbfgs'] = lbfgs_frequency
+        values['mlpc_adam'] = adam_frequency
+        values['mlpc_sgd'] = sgd_frequency
+    else: 
+        values['mlpr_lbfgs'] = lbfgs_frequency
+        values['mlpr_adam'] = adam_frequency
+        values['mlpr_sgd'] = sgd_frequency
+    df = pd.DataFrame.from_dict(values, orient='index') #check this
+    df = df.T
+    return df
+
 def _format_processing_time_table(results):
     dictionaries = _get_dictionaries_by_metric(results, 'processing_time')
     values = {k: _get_values_from_dictionary(
@@ -207,6 +252,15 @@ def _format_evo_table(results, metric):
 
     return pd.DataFrame.from_dict(mean_dict), pd.DataFrame.from_dict(se_dict)
 
+def _format_static_list(best_results, metric, algo):
+    values = {algo: [None for k in range(len(best_results))]}
+    i = 0
+    for run in best_results:
+        values[algo][i] = run[metric]
+        i+=1
+    return pd.DataFrame.from_dict(values)
+
+
 def format_results(results, classification):
     formatted_results = {}
     if classification:
@@ -223,6 +277,8 @@ def format_results(results, classification):
     formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
     formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
     formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
+    formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
+    # formatted_results['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(results)
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(
@@ -248,6 +304,8 @@ def format_results_mlp(results, classification):
     formatted_results['mlp_alpha'] = _format_mlp_configuration_table(results, 'alpha')
     formatted_results['mlp_activation_function_frequency'] = _format_mlp_activation_function_frequency(results)
     formatted_results['mlp_penalty_frequency'] = _format_mlp_penalty_frequency(results)
+    formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
+    # formatted_results['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
     return formatted_results 
 
 
@@ -258,15 +316,21 @@ def format_ensemble_results(formatted_benchmark, ensemble_results, classificatio
     formatted_benchmark[algo + '_ensemble_training_value'] = _format_static_table(ensemble_results, 'training_value')
     formatted_benchmark[algo + '_ensemble_testing_value'] = _format_static_table(ensemble_results, 'testing_value')
     formatted_benchmark[algo + '_ensemble_base_algorithm'] = _format_static_table(ensemble_results, 'algorithm')
+    formatted_benchmark[algo + '_ensemble_training_time'] = _format_static_table(ensemble_results, 'training_time')
     return formatted_benchmark 
 
 def format_best_result(formatted_benchmark, best_result, classification, algo):
     if classification: 
-        formatted_benchmark[algo + '_best_result_training_accuracy'] = _format_static_table(best_result, 'training_accuracy')
-        formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_table(best_result, 'testing_accuracy')
-    formatted_benchmark[algo + '_best_result_training_value'] = _format_static_table(best_result, 'training_value')
-    formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_table(best_result, 'testing_value')
-    formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_table(best_result, 'processing_time')
+        formatted_benchmark[algo + '_best_result_training_accuracy'] = _format_static_list(best_result, 'training_accuracy', algo)
+        formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_list(best_result, 'testing_accuracy', algo)
+    formatted_benchmark[algo + '_best_result_training_value'] = _format_static_list(best_result, 'training_value', algo)
+    formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_list(best_result, 'testing_value', algo)
+    formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
+    formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
+    if algo == 'slm':
+        formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
+    elif algo == 'mlp':
+        formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
     return formatted_benchmark
 
 

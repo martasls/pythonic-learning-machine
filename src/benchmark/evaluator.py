@@ -54,18 +54,24 @@ class Evaluator(object):
     """ beginning of code for nested cv"""
 
     def _fit_learner(self, verbose=False):
+        def time_seconds(): return default_timer()
         # Create learner from configuration
         learner = self.model(**self.configurations)
         # Train learner 
         if self.__class__.__bases__[0] == EvaluatorSklearn:
+            start_time = time_seconds()
             learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values)
+            training_time = time_seconds()-start_time
         else: 
+            start_time = time_seconds()
             learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values, 
                         self.metric, verbose)
+            training_time = time_seconds()-start_time
         testing_value = self._calculate_value(learner, self.testing_set)
         return {
             'learner': learner,
-            'testing_value': testing_value
+            'testing_value': testing_value,
+            'training_time': training_time
         }
 
     def run_nested_cv(self, verbose=False):

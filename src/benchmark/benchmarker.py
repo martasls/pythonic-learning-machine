@@ -7,16 +7,6 @@ from benchmark.configuration import get_random_config_slm_fls_grouped, get_rando
     get_random_config_slm_fls_tie_edv, get_random_config_slm_ols_edv, get_config_simple_bagging_ensemble, \
     get_config_riw_ensemble, get_config_boosting_ensemble, get_config_mlp_lbfgs, \
     get_config_mlp_adam, get_config_mlp_sgd
-    # , ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_CONFIGURATIONS
-#   SLM_FLS_CONFIGURATIONS, SLM_OLS_CONFIGURATIONS, \
-#     SLM_OLS_RST_CONFIGURATIONS, SLM_OLS_RWT_CONFIGURATIONS, SLM_FLS_RST_CONFIGURATIONS, SLM_FLS_RWT_CONFIGURATIONS, \
-    # SLM_OLS_EDV_CONFIGURATIONS, SLM_FLS_TIE_CONFIGURATIONS, SLM_FLS_EDV_CONFIGURATIONS
-    # NEAT_CONFIGURATIONS, SGA_CONFIGURATIONS, SVC_CONFIGURATIONS, SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, # RF_CONFIGURATIONS, \
-    # ENSEMBLE_CONFIGURATIONS, ENSEMBLE_BAGGING_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS, \
-    # ENSEMBLE_BOOSTING_CONFIGURATIONS, ENSEMBLE_RST_CONFIGURATIONS, ENSEMBLE_RWT_CONFIGURATIONS, ENSEMBLE_BAGGING_RST_CONFIGURATIONS, \
-    # ENSEMBLE_BAGGING_RWT_CONFIGURATIONS, \
-    # ENSEMBLE_FLS_CONFIGURATIONS, ENSEMBLE_BAGGING_FLS_CONFIGURATIONS, ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS, \
-    # ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS
 from benchmark.formatter import _format_static_table
 from algorithms.common.metric import RootMeanSquaredError, is_better
 from data.extract import is_classification, get_input_variables, get_target_variable
@@ -34,9 +24,9 @@ tqdm.monitor_interval = 0
 # Returns the current date and time.
 _now = datetime.datetime.now()
 
-_MAX_COMBINATIONS = 1 # to be 50
+_MAX_COMBINATIONS = 50 # to be 50
 _MAX_COMBINATIONS_SLM_OLS_EDV = 5 # to be 5
-_OUTER_FOLDS = 3 # to be 30
+_OUTER_FOLDS = 30 # to be 30
 _INNER_FOLDS = 3 # to be 3
 
 # Default models to be compared.
@@ -140,7 +130,7 @@ MLP_MODELS = {
         'name_short': 'MLP (LBFGS)',
         'algorithms': [EvaluatorMLPR],
         # 'configurations': MLP_CONFIGURATIONS,
-        'configuration-method': get_config_mlp_lbfgs,
+        'configuration_method': get_config_mlp_lbfgs,
         'max_combinations': _MAX_COMBINATIONS},
     'mlpc_adam': {
         'name_long': 'Multilayer Perceptron (ADAM Solver)',
@@ -154,7 +144,7 @@ MLP_MODELS = {
         'name_short': 'MLP (ADAM)',
         'algorithms': [EvaluatorMLPR],
         # 'configurations': MLP_CONFIGURATIONS,
-        'configuration-method': get_config_mlp_adam,
+        'configuration_method': get_config_mlp_adam,
         'max_combinations': _MAX_COMBINATIONS},
     'mlpc_sgd': {
         'name_long': 'Multilayer Perceptron (SGD Solver)',
@@ -168,7 +158,7 @@ MLP_MODELS = {
         'name_short': 'MLP (SGD)',
         'algorithms': [EvaluatorMLPR],
         # 'configurations': MLP_CONFIGURATIONS,
-        'configuration-method': get_config_mlp_sgd,
+        'configuration_method': get_config_mlp_sgd,
         'max_combinations': _MAX_COMBINATIONS},
 }
 
@@ -343,6 +333,7 @@ class Benchmarker():
                         average_training_value = mean(tmp_valid_training_values_list, axis=0)[1]
                         if is_better(average_validation_value, best_validation_value, self.metric):
                             best_algorithm = algorithm
+                            best_key = key
                             best_configuration = config
                             best_validation_value = average_validation_value
                             best_training_value = average_training_value
@@ -356,10 +347,11 @@ class Benchmarker():
                     self.results[key][outer_cv]['avg_inner_validation_error'] = best_validation_value
                     self.results[key][outer_cv]['avg_inner_training_error'] = best_training_value
 
-                    # Serialize benchmark 
-                    benchmark_to_pickle(self)
+                    # # Serialize benchmark 
+                    # benchmark_to_pickle(self)
                     
                     if is_better(best_validation_value, best_overall_validation_value, self.metric):
+                        best_overall_key = best_key
                         best_overall_algorithm = best_algorithm
                         best_overall_configuration = best_configuration
                         best_overall_validation_value = best_validation_value
@@ -368,7 +360,11 @@ class Benchmarker():
                                                         training_set=training_outer, validation_set=None, testing_set=testing, metric=self.metric)
             self.best_result[outer_cv]['best_overall_algorithm'] = best_overall_algorithm
             self.best_result[outer_cv]['best_overall_configuration'] = best_overall_configuration
+            self.best_result[outer_cv]['best_overall_key'] = best_overall_key
             self._run_ensembles(outer_cv, best_overall_algorithm.get_corresponding_algo(), best_overall_configuration, training_outer, testing, self.metric)
+
+            # Serialize benchmark 
+            benchmark_to_pickle(self)
 
             outer_cv += 1            
 
