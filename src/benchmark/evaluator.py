@@ -77,7 +77,7 @@ class Evaluator(object):
     def run_nested_cv(self, verbose=False):
         log = self._fit_learner(verbose)
         learner_meta = self._get_learner_meta(log['learner'])
-        # learner_meta['validation_value'] = log['validation_value']
+        learner_meta['training_time'] = log['training_time']
         return learner_meta
     
 

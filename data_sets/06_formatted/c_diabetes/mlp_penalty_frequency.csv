@@ -1,0 +1,3 @@
+,MLP (LBFGS),MLP (ADAM),MLP (SGD)
+No Penalty Frequency,2,9,5
+Penalty Frequency,28,21,25

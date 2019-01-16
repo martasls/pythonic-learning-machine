@@ -117,19 +117,21 @@ def _format_slm_best_overall_configuration_frequency(best_result):
     slm_ols_edv_frequency = 0
     values = {} 
     for run in best_result:
-        if run['key'] == 'slm_fls_group':
+        if run['best_overall_key'] == 'slm_fls_group':
             slm_fls_group_frequency += 1
-        elif run['key'] == 'slm_ols_group':
+        elif run['best_overall_key'] == 'slm_ols_group':
             slm_ols_group_frequency += 1
-        elif run['key'] == 'slm_fls_tie_edv_group':
+        elif run['best_overall_key'] == 'slm_fls_tie_edv_group':
             slm_fls_tie_edv_group_frequency += 1
-        elif run['key'] == 'slm_ols_edv':
+        elif run['best_overall_key'] == 'slm_ols_edv':
             slm_ols_edv_frequency += 1
     values['slm_fls_group'] = slm_fls_group_frequency
     values['slm_ols_group'] = slm_ols_group_frequency
     values['slm_fls_tie_edv_group'] = slm_fls_tie_edv_group_frequency
     values['slm_ols_edv'] = slm_ols_edv_frequency
-    return pd.DataFrame.from_dict(values, index='orient') #check this
+    df = pd.DataFrame.from_dict(values, orient='index') #check this
+    df = df.T
+    return df
 
 def _format_mlp_configuration_table(results, value_to_get, metric=None):
     dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
@@ -277,7 +279,7 @@ def format_results(results, classification):
     formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
     formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
     formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
-    formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
+    # formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
     # formatted_results['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(results)
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
@@ -304,7 +306,7 @@ def format_results_mlp(results, classification):
     formatted_results['mlp_alpha'] = _format_mlp_configuration_table(results, 'alpha')
     formatted_results['mlp_activation_function_frequency'] = _format_mlp_activation_function_frequency(results)
     formatted_results['mlp_penalty_frequency'] = _format_mlp_penalty_frequency(results)
-    formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
+    # formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
     # formatted_results['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
     return formatted_results 
 
@@ -316,7 +318,7 @@ def format_ensemble_results(formatted_benchmark, ensemble_results, classificatio
     formatted_benchmark[algo + '_ensemble_training_value'] = _format_static_table(ensemble_results, 'training_value')
     formatted_benchmark[algo + '_ensemble_testing_value'] = _format_static_table(ensemble_results, 'testing_value')
     formatted_benchmark[algo + '_ensemble_base_algorithm'] = _format_static_table(ensemble_results, 'algorithm')
-    formatted_benchmark[algo + '_ensemble_training_time'] = _format_static_table(ensemble_results, 'training_time')
+    # formatted_benchmark[algo + '_ensemble_training_time'] = _format_static_table(ensemble_results, 'training_time')
     return formatted_benchmark 
 
 def format_best_result(formatted_benchmark, best_result, classification, algo):
@@ -325,18 +327,33 @@ def format_best_result(formatted_benchmark, best_result, classification, algo):
         formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_list(best_result, 'testing_accuracy', algo)
     formatted_benchmark[algo + '_best_result_training_value'] = _format_static_list(best_result, 'training_value', algo)
     formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_list(best_result, 'testing_value', algo)
-    formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
-    formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
+    # formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
+    # formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
     if algo == 'slm':
         formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
     elif algo == 'mlp':
         formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
     return formatted_benchmark
 
+def merge_best_results_testing_value(formatted_benchmark):
+    def merge(dict1, dict2): return(dict2.update(dict1)) 
+    slm_testing_value = formatted_benchmark['slm_best_result_testing_value']
+    mlp_testing_value = formatted_benchmark['mlp_best_result_testing_value']
+    slm_ensemble_testing_value = formatted_benchmark['slm_ensemble_testing_value']
+    mlp_ensemble_testing_value = formatted_benchmark['mlp_ensemble_testing_value']
+    values = {}
+    values['slm_testing_value'] = slm_testing_value
+    values['mlp_testing_value'] = mlp_testing_value
+    values = merge(values, slm_ensemble_testing_value)
+    values = merge(values, mlp_ensemble_testing_value)
 
 def relabel_model_names(model_names, model_names_dict, short=True):
     key = 'name_short' if short else 'name_long'
     return [model_names_dict[model_name][key] for model_name in model_names]
+
+def relabel_best_model_names(model_names, algo):
+    key = algo
+    return []
 
 def format_benchmark(benchmark):
 
@@ -359,8 +376,6 @@ def format_benchmark(benchmark):
         formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
         formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'mlp')
 
-# have to think about this because 'best_result' has not model keys 
-
     model_names_dict = get_model_names_dict(benchmark)
     ensemble_names_dict = get_ensemble_names_dict(benchmark)
     for key, value in formatted_benchmark.items():
@@ -377,6 +392,9 @@ def format_benchmark(benchmark):
                 i += 1
         elif 'ensemble' in key:
             formatted_benchmark[key].columns = relabel_model_names(value.columns, ensemble_names_dict)
+            path = os.path.join(output_path, key + '.csv')
+            formatted_benchmark[key].to_csv(path)
+        elif 'best_result' in key:
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
         else: 
