@@ -216,6 +216,16 @@ def _format_mlp_best_overall_configuration_frequency(best_result, classification
     df = df.T
     return df
 
+def _format_mlp_sgd_adam_table(results, value_to_get):
+    dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
+    values = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
+    values_to_get = {k: _get_values_from_dictionary(values[k], value_to_get) for k in dictionaries.keys()}
+    values_saved = {}
+    for key, value in values_to_get.items(): 
+        if value: 
+            values_saved[key] = value
+    return pd.DataFrame.from_dict(values_saved)
+
 def _format_processing_time_table(results):
     dictionaries = _get_dictionaries_by_metric(results, 'processing_time')
     values = {k: _get_values_from_dictionary(
@@ -306,6 +316,12 @@ def format_results_mlp(results, classification):
     formatted_results['mlp_alpha'] = _format_mlp_configuration_table(results, 'alpha')
     formatted_results['mlp_activation_function_frequency'] = _format_mlp_activation_function_frequency(results)
     formatted_results['mlp_penalty_frequency'] = _format_mlp_penalty_frequency(results)
+    formatted_results['mlp_batch_size'] = _format_mlp_sgd_adam_table(results, 'batch_size')
+    formatted_results['mlp_shuffle'] = _format_mlp_sgd_adam_table(results, 'shuffle')
+    formatted_results['mlp_momentum'] = _format_mlp_sgd_adam_table(results, 'momentum')
+    formatted_results['mlp_nesterovs_momentum'] = _format_mlp_sgd_adam_table(results, 'nesterovs_momentum')
+    formatted_results['mlp_beta_1'] = _format_mlp_sgd_adam_table(results, 'beta_1')
+    formatted_results['mlp_beta_2'] = _format_mlp_sgd_adam_table(results, 'beta_1')
     # formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
     # formatted_results['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
     return formatted_results 
@@ -351,9 +367,9 @@ def relabel_model_names(model_names, model_names_dict, short=True):
     key = 'name_short' if short else 'name_long'
     return [model_names_dict[model_name][key] for model_name in model_names]
 
-def relabel_best_model_names(model_names, algo):
-    key = algo
-    return []
+def relabel_ensemble_model_names(model_names, ensemble_names_dict, algo, short=True):
+    key = 'name_short' if short else 'name_long'
+    return [algo + ' ' + ensemble_names_dict[model_name][key] for model_name in model_names]
 
 def format_benchmark(benchmark):
 
@@ -391,7 +407,11 @@ def format_benchmark(benchmark):
                 tbl.to_csv(path)
                 i += 1
         elif 'ensemble' in key:
-            formatted_benchmark[key].columns = relabel_model_names(value.columns, ensemble_names_dict)
+            if 'slm' in key: 
+                algo = 'SLM'
+            elif 'mlp' in key: 
+                algo = 'MLP'
+            formatted_benchmark[key].columns = relabel_ensemble_model_names(value.columns, ensemble_names_dict, algo)
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
         elif 'best_result' in key:
@@ -402,6 +422,19 @@ def format_benchmark(benchmark):
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
 
+def merge_best_results(path): 
+    slm_best_result_testing_value = pd.read_csv(os.path.join(path,'slm_best_result_testing_value.csv'))
+    slm_best_result_testing_value = slm_best_result_testing_value.drop(slm_best_result_testing_value.columns[0], axis=1) 
+    mlp_best_result_testing_value = pd.read_csv(os.path.join(path, 'mlp_best_result_testing_value.csv'))
+    mlp_best_result_testing_value = mlp_best_result_testing_value.drop(mlp_best_result_testing_value.columns[0], axis=1) 
+    slm_ensemble_testing_value = pd.read_csv(os.path.join(path, 'slm_ensemble_testing_value.csv'))
+    slm_ensemble_testing_value = slm_ensemble_testing_value.drop(slm_ensemble_testing_value.columns[0], axis=1)
+    mlp_ensemble_testing_value = pd.read_csv(os.path.join(path, 'slm_ensemble_testing_value.csv'))
+    mlp_ensemble_testing_value = mlp_ensemble_testing_value.drop(mlp_ensemble_testing_value.columns[0], axis=1)
+    frames = [slm_best_result_testing_value, mlp_best_result_testing_value, slm_ensemble_testing_value, mlp_ensemble_testing_value]
+    # merge the data sets 
+    merged = pd.concat(frames, axis=1)
+    merged.to_csv(os.path.join(path, 'best_results_testing_value.csv'))
 
 def _is_classification(benchmark):
     return benchmark.data_set_name[0] == 'c'

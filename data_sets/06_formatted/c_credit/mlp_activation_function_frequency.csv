@@ -1,0 +1,4 @@
+,MLP (LBFGS),MLP (ADAM),MLP (SGD)
+Logistic Frequency,25,11,12
+Relu Frequency,3,11,7
+Tanh Frequency,2,8,11

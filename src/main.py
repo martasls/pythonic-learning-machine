@@ -7,7 +7,7 @@ from benchmark.benchmarker import Benchmarker, continue_benchmark, SLM_MODELS, M
 from data.io_plm import get_benchmark_folder, read_pickle, get_resampled_folder, get_formatted_folder, read_csv_, \
                         get_standardized_folder, remove_extension
 from data.extract import is_classification
-from benchmark.formatter import format_benchmark
+from benchmark.formatter import format_benchmark, merge_best_results
 from benchmark.results_extractor import extract_results 
 
 
@@ -52,6 +52,11 @@ if __name__ == '__main__':
     for benchmark_path in benchmark_paths:
         benchmark = read_pickle(benchmark_path)
         benchmark_formatted = format_benchmark(benchmark)
+
+    """ merge best results """
+    for folder in os.listdir(get_formatted_folder()):
+        path = os.path.join(get_formatted_folder(), folder)
+        merge_best_results(path)
 
     """ this block of code generates the results automatically""" 
     # for folder in os.listdir(get_formatted_folder()):
