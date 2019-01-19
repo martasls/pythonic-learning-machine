@@ -4,6 +4,97 @@ import seaborn as sns
 from os.path import join, dirname, exists
 from data.io_plm import read_csv_, get_results_folder
 
+ALGOS_MAPPING = { 
+    'slm_single': {
+        'name-file': 'slm', #best result
+        'name-inside-file': 'slm'
+    }, 
+    'slm_fls_group': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT'
+    },
+    'slm_ols_group': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM (OLS), SLM (OLS) + RST, SLM (OLS) + RWT'
+    },
+    'slm_fls_tie_edv_group': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM (FLS) + TIE, SLM (FLS) + EDV'
+    }, 
+    'slm_ols_edv': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM (OLS) + EDV'
+    },
+    'mlp_single': {
+        'name-file': 'mlp', #best result
+        'name-inside-file': 'mlp'
+    },
+    'mlp_lbfgs': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP (LBFGS)'
+    },
+    'mlp_adam': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP (ADAM)'
+    }, 
+    'mlp_sgd': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP (SGD)'
+    },
+    'slm_simple_ensemble': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Simple Ensemble'
+    },
+    'slm_bagging_ensemble': {
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Bagging Ensemble' 
+    },
+    'slm_riw_ensemble':{
+        'name-file': 'slm',
+        'name-inside-file': 'SLM RIW Ensemble'
+    },
+    'slm_boosting_1':{
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Boosting Ensemble (Median + FLR)' 
+    },
+    'slm_boosting_2':{
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Boosting Ensemble (Median + RLR)'
+    }, 
+    'slm_boosting_3':{
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Boosting Ensemble (Mean + FLR)'
+    },
+    'slm_boosting_4':{
+        'name-file': 'slm',
+        'name-inside-file': 'SLM Boosting Ensemble (Mean + RLR)' 
+    },
+    'mlp_simple_ensemble': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP Simple Ensemble'
+    },
+    'mlp_bagging_ensemble': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP Bagging Ensemble'
+    }, 
+    'mlp_boosting_1':{
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP Boosting Ensemble (Median + FLR)'
+    } ,
+    'mlp_boosting_2':{
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP Boosting Ensemble (Median + RLR)' 
+    } ,
+    'mlp_boosting_3':{
+        'name-file': 'mlp',
+        'name-inside-file':  'MLP Boosting Ensemble (Mean + FLR)'
+    },
+    'mlp_boosting_4': {
+        'name-file': 'mlp',
+        'name-inside-file': 'MLP Boosting Ensemble (Mean + RLR)'
+    } 
+}
+
 
 def extract_results(path): 
     """ given a path, the method extracts the results inside that path""" 
@@ -13,6 +104,9 @@ def extract_results(path):
     generate_boxplot_error(path, 'avg_inner_validation_error')
     generate_comparing_boxplot(path, 'avg_inner_validation_error', 'testing_value')
 
+def generate_test_boxplot(path, algos_list, metric):
+    """generates test boxplot for a given list of algorithms""" 
+    
 
 def generate_boxplot_error(path, metric_name):
     """generates a boxplot for a certain metric""" 
@@ -63,14 +157,7 @@ def generate_comparing_boxplot(path, metric_one, metric_two):
     catplot.fig.savefig(join(results_folder_path, metric_one + '__' + metric_two + '.svg'), bbox_inches='tight')
     catplot.fig.savefig(join(results_folder_path, metric_one + '__' + metric_two + '.pdf'), bbox_inches='tight')
 
-def extract_avg_inner_validation_value(path):
-    pass
 
-def exctrat_avg_inner_training_value(path):
-    pass
-
-def extract_outer_training_time(path):
-    pass
 
 """
 #change working directory

@@ -11,7 +11,7 @@ from benchmark.formatter import format_benchmark, merge_best_results
 from benchmark.results_extractor import extract_results 
 
 
-def start_b(data_set_name, file_name=None, models_to_run=SLM_MODELS, models_to_run_2=MLP_MODELS): #change to None to choose from console
+def start_b(data_set_name, file_name=None, models_to_run=None, models_to_run_2=MLP_MODELS): #change to None to choose from console
     """ starts benchmark """
     if models_to_run == 'SLM_MODELS':
         models_to_run = SLM_MODELS
