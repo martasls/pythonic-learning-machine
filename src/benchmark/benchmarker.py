@@ -24,7 +24,7 @@ tqdm.monitor_interval = 0
 # Returns the current date and time.
 _now = datetime.datetime.now()
 
-_MAX_COMBINATIONS = 50 # to be 50
+_MAX_COMBINATIONS = 20 # to be 50
 _MAX_COMBINATIONS_SLM_OLS_EDV = 5 # to be 5
 _OUTER_FOLDS = 30 # to be 30
 _INNER_FOLDS = 3 # to be 3

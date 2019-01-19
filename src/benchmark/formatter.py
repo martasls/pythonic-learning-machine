@@ -278,6 +278,7 @@ def format_results(results, classification):
     if classification:
         formatted_results['slm_training_accuracy'] = _format_static_table(results, 'training_accuracy')
         formatted_results['slm_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    formatted_results['slm_best_configuration'] = _format_static_table(results, 'best_configuration')
     formatted_results['slm_training_value'] = _format_static_table(results, 'training_value')
     formatted_results['slm_testing_value'] = _format_static_table(results, 'testing_value')
     formatted_results['slm_processing_time'] = _format_processing_time_table(results)
@@ -289,8 +290,7 @@ def format_results(results, classification):
     formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
     formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
     formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
-    # formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
-    # formatted_results['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(results)
+    formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
     #formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
     #formatted_results['number_connections'] = _format_topology_table(results, 'connections')
     #formatted_results['training_value_evolution'] = _format_evo_table(
@@ -305,6 +305,7 @@ def format_results_mlp(results, classification):
     if classification:
         formatted_results['mlp_training_accuracy'] = _format_static_table(results, 'training_accuracy')
         formatted_results['mlp_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    formatted_results['mlp_best_configuration'] = _format_static_table(results, 'best_configuration')
     formatted_results['mlp_training_value'] = _format_static_table(results, 'training_value')
     formatted_results['mlp_testing_value'] = _format_static_table(results, 'testing_value')
     formatted_results['mlp_avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
@@ -343,6 +344,7 @@ def format_best_result(formatted_benchmark, best_result, classification, algo):
         formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_list(best_result, 'testing_accuracy', algo)
     formatted_benchmark[algo + '_best_result_training_value'] = _format_static_list(best_result, 'training_value', algo)
     formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_list(best_result, 'testing_value', algo)
+    formatted_benchmark[algo + '_best_result_configuration'] = _format_static_list(best_result, 'best_overall_configuration', algo)
     # formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
     # formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
     if algo == 'slm':
