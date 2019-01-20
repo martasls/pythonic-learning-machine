@@ -2,12 +2,13 @@ import pandas as pd
 import matplotlib.pyplot as plt 
 import seaborn as sns
 from os.path import join, dirname, exists
+from os import mkdir
 from data.io_plm import read_csv_, get_results_folder
 
 ALGOS_MAPPING = { 
     'slm_single': {
         'name-file': 'slm', #best result
-        'name-inside-file': 'slm'
+        'name-inside-file': 'SLM' 
     }, 
     'slm_fls_group': {
         'name-file': 'slm',
@@ -27,7 +28,7 @@ ALGOS_MAPPING = {
     },
     'mlp_single': {
         'name-file': 'mlp', #best result
-        'name-inside-file': 'mlp'
+        'name-inside-file': 'MLP'
     },
     'mlp_lbfgs': {
         'name-file': 'mlp',
@@ -42,55 +43,55 @@ ALGOS_MAPPING = {
         'name-inside-file': 'MLP (SGD)'
     },
     'slm_simple_ensemble': {
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Simple Ensemble'
     },
     'slm_bagging_ensemble': {
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Bagging Ensemble' 
     },
     'slm_riw_ensemble':{
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM RIW Ensemble'
     },
     'slm_boosting_1':{
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Median + FLR)' 
     },
     'slm_boosting_2':{
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Median + RLR)'
     }, 
     'slm_boosting_3':{
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Mean + FLR)'
     },
     'slm_boosting_4':{
-        'name-file': 'slm',
+        'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Mean + RLR)' 
     },
     'mlp_simple_ensemble': {
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Simple Ensemble'
     },
     'mlp_bagging_ensemble': {
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Bagging Ensemble'
     }, 
     'mlp_boosting_1':{
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Boosting Ensemble (Median + FLR)'
     } ,
     'mlp_boosting_2':{
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Boosting Ensemble (Median + RLR)' 
     } ,
     'mlp_boosting_3':{
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file':  'MLP Boosting Ensemble (Mean + FLR)'
     },
     'mlp_boosting_4': {
-        'name-file': 'mlp',
+        'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Boosting Ensemble (Mean + RLR)'
     } 
 }
@@ -98,15 +99,47 @@ ALGOS_MAPPING = {
 
 def extract_results(path): 
     """ given a path, the method extracts the results inside that path""" 
-    generate_boxplot_error(path, 'testing_value')
-    generate_boxplot_error(path, 'training_value')
-    generate_boxplot_error(path, 'avg_inner_training_error')
-    generate_boxplot_error(path, 'avg_inner_validation_error')
-    generate_comparing_boxplot(path, 'avg_inner_validation_error', 'testing_value')
+    generate_test_boxplot(path, ['slm_single', 'mlp_single'], 'best_results_testing_value')
+    generate_test_boxplot(path, ['mlp_boosting_4', 'slm_boosting_4'], 'testing_value')
+    # generate_boxplot_error(path, 'testing_value')
+    # generate_boxplot_error(path, 'training_value')
+    # generate_boxplot_error(path, 'avg_inner_training_error')
+    # generate_boxplot_error(path, 'avg_inner_validation_error')
+    # generate_comparing_boxplot(path, 'avg_inner_validation_error', 'testing_value')
 
-def generate_test_boxplot(path, algos_list, metric):
+def generate_test_boxplot(path, algos_list, metric_name):
     """generates test boxplot for a given list of algorithms""" 
-    
+    df_list = [] 
+    if (metric_name != 'best_results_testing_value'):
+        for algo in algos_list: 
+            data_set_name = path.split('\\')[-1]
+            name_file = ALGOS_MAPPING[algo]['name-file']
+            to_read = join(path, name_file + '_' + metric_name + '.csv')
+            df = read_csv_(to_read)
+            df = df[[ALGOS_MAPPING[algo]['name-inside-file']]]
+            df_list.append(df)
+        value = pd.concat(df_list, axis=1)
+    elif (metric_name == 'best_results_testing_value'):
+        for algo in algos_list: 
+            data_set_name = path.split('\\')[-1]
+            to_read = join(path, metric_name + '.csv')
+            df = read_csv_(to_read)
+            df = df[[ALGOS_MAPPING[algo]['name-inside-file']]]
+            df_list.append(df)
+        value = pd.concat(df_list, axis=1)
+    labels_list = [ALGOS_MAPPING[algo]['name-inside-file'] for algo in algos_list]
+    fig, ax = plt.subplots()
+    boxplot = sns.boxplot(data=value, palette="PuBuGn_d")
+    boxplot.set(xlabel='Algorithms', ylabel='RMSE')
+    sns.set_context("paper", font_scale=1.5)
+    sns.set_style("white")
+    sns.despine(left=True)
+    boxplot.set_xticklabels(labels_list, rotation=90) #changed from boxplot.get_xticklabels()-BE CAREFUL, SPECIFIC VALUES
+    fig.set_size_inches(11.69, 8.27)
+    results_folder_path = join(get_results_folder(), data_set_name)
+    if not exists(results_folder_path): mkdir(results_folder_path)
+    fig.savefig(join(results_folder_path, metric_name + '.svg'), bbox_inches='tight')
+    fig.savefig(join(results_folder_path, metric_name + '.pdf'), bbox_inches='tight')
 
 def generate_boxplot_error(path, metric_name):
     """generates a boxplot for a certain metric""" 

@@ -1,4 +1,4 @@
-,mlp
+,MLP
 0,"{'solver': 'lbfgs', 'activation': 'logistic', 'hidden_layer_sizes': (74, 4), 'alpha': 2.480093001706021, 'max_iter': 293}"
 1,"{'solver': 'lbfgs', 'activation': 'tanh', 'hidden_layer_sizes': (6, 50, 10), 'alpha': 3.197897929827157, 'max_iter': 15}"
 2,"{'solver': 'sgd', 'learning_rate': 'constant', 'learning_rate_init': 0.43232018663354876, 'activation': 'relu', 'hidden_layer_sizes': (26,), 'alpha': 4.896579550355592, 'max_iter': 729, 'batch_size': 432, 'shuffle': False, 'momentum': 0.17975094359934107, 'nesterovs_momentum': False}"

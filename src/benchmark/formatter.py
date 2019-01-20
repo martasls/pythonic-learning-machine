@@ -373,6 +373,9 @@ def relabel_ensemble_model_names(model_names, ensemble_names_dict, algo, short=T
     key = 'name_short' if short else 'name_long'
     return [algo + ' ' + ensemble_names_dict[model_name][key] for model_name in model_names]
 
+def relabel_best_model_names(model_names, algo):
+    return [algo.upper() for model_name in model_names]
+
 def format_benchmark(benchmark):
 
     output_path = os.path.join(_get_path_to_data_dir(), '06_formatted', benchmark.data_set_name)
@@ -417,6 +420,7 @@ def format_benchmark(benchmark):
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
         elif 'best_result' in key:
+            formatted_benchmark[key].columns = relabel_best_model_names(value.columns, algo)
             path = os.path.join(output_path, key + '.csv')
             formatted_benchmark[key].to_csv(path)
         else: 

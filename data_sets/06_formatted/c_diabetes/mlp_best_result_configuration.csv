@@ -1,4 +1,4 @@
-,mlp
+,MLP
 0,"{'solver': 'sgd', 'learning_rate': 'constant', 'learning_rate_init': 1.4710444447611977, 'activation': 'relu', 'hidden_layer_sizes': (110,), 'alpha': 3.382658107799616, 'max_iter': 925, 'batch_size': 330, 'shuffle': True, 'momentum': 0.10073655302531892, 'nesterovs_momentum': True}"
 1,"{'solver': 'sgd', 'learning_rate': 'constant', 'learning_rate_init': 0.3882052308287258, 'activation': 'relu', 'hidden_layer_sizes': (155,), 'alpha': 3.911000851154421, 'max_iter': 362, 'batch_size': 451, 'shuffle': False, 'momentum': 0.13479489083300428, 'nesterovs_momentum': False}"
 2,"{'solver': 'sgd', 'learning_rate': 'constant', 'learning_rate_init': 1.0290793381443564, 'activation': 'relu', 'hidden_layer_sizes': (112,), 'alpha': 0.8576854471058111, 'max_iter': 947, 'batch_size': 208, 'shuffle': False, 'momentum': 0.33048945985090766, 'nesterovs_momentum': True}"

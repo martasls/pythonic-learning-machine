@@ -1,4 +1,4 @@
-,slm
+,SLM
 0,"{'stopping_criterion': TIE_threshold_0.25, 'population_size': 100, 'layers': 4, 'learning_step': 0.4399099695765047, 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"
 1,"{'stopping_criterion': TIE_threshold_0.25, 'population_size': 100, 'layers': 4, 'learning_step': 0.0511560813923632, 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"
 2,"{'stopping_criterion': EDV_threshold_0.25, 'population_size': 100, 'layers': 4, 'learning_step': 'optimized', 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"

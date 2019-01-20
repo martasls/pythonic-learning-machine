@@ -59,9 +59,9 @@ if __name__ == '__main__':
         merge_best_results(path)
 
     """ this block of code generates the results automatically""" 
-    # for folder in os.listdir(get_formatted_folder()):
-    #     path = os.path.join(get_formatted_folder(), folder)
-    #     extract_results(path)
+    for folder in os.listdir(get_formatted_folder()):
+        path = os.path.join(get_formatted_folder(), folder)
+        extract_results(path)
 
     # parser = argparse.ArgumentParser(description='Runs benchmark for data set.')
     # parser.add_argument('-d', metavar='data_set_name', type=str, dest='data_set_name',

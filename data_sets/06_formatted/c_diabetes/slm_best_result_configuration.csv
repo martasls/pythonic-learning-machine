@@ -1,4 +1,4 @@
-,slm
+,SLM
 0,"{'stopping_criterion': MaxGen_55, 'population_size': 10, 'layers': 2, 'learning_step': 'optimized', 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"
 1,"{'stopping_criterion': MaxGen_112, 'population_size': 10, 'layers': 3, 'learning_step': 'optimized', 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"
 2,"{'stopping_criterion': MaxGen_88, 'population_size': 10, 'layers': 1, 'learning_step': 'optimized', 'mutation_operator': Mutation2, 'random_sampling_technique': False, 'random_weighting_technique': False}"
