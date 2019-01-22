@@ -322,7 +322,7 @@ def format_results_mlp(results, classification):
     formatted_results['mlp_momentum'] = _format_mlp_sgd_adam_table(results, 'momentum')
     formatted_results['mlp_nesterovs_momentum'] = _format_mlp_sgd_adam_table(results, 'nesterovs_momentum')
     formatted_results['mlp_beta_1'] = _format_mlp_sgd_adam_table(results, 'beta_1')
-    formatted_results['mlp_beta_2'] = _format_mlp_sgd_adam_table(results, 'beta_1')
+    formatted_results['mlp_beta_2'] = _format_mlp_sgd_adam_table(results, 'beta_2')
     # formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
     # formatted_results['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
     return formatted_results 
@@ -435,7 +435,7 @@ def merge_best_results(path):
     mlp_best_result_testing_value = mlp_best_result_testing_value.drop(mlp_best_result_testing_value.columns[0], axis=1) 
     slm_ensemble_testing_value = pd.read_csv(os.path.join(path, 'slm_ensemble_testing_value.csv'))
     slm_ensemble_testing_value = slm_ensemble_testing_value.drop(slm_ensemble_testing_value.columns[0], axis=1)
-    mlp_ensemble_testing_value = pd.read_csv(os.path.join(path, 'slm_ensemble_testing_value.csv'))
+    mlp_ensemble_testing_value = pd.read_csv(os.path.join(path, 'mlp_ensemble_testing_value.csv'))
     mlp_ensemble_testing_value = mlp_ensemble_testing_value.drop(mlp_ensemble_testing_value.columns[0], axis=1)
     frames = [slm_best_result_testing_value, mlp_best_result_testing_value, slm_ensemble_testing_value, mlp_ensemble_testing_value]
     # merge the data sets 

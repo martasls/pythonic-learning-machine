@@ -3,7 +3,7 @@ import os
 from threading import Thread
 from sys import argv
 from time import sleep
-from benchmark.benchmarker import Benchmarker, continue_benchmark, SLM_MODELS, MLP_MODELS, ENSEMBLES
+from benchmark.benchmarker import Benchmarker, continue_benchmark, pickup_benchmark, SLM_MODELS, MLP_MODELS, ENSEMBLES
 from data.io_plm import get_benchmark_folder, read_pickle, get_resampled_folder, get_formatted_folder, read_csv_, \
                         get_standardized_folder, remove_extension
 from data.extract import is_classification
@@ -35,12 +35,16 @@ def continue_b(data_set_name, file_name):
     """ continues benchmark """
     continue_benchmark(data_set_name, file_name)
 
+def pickup_b(data_set_name, file_name):
+    """continues benchmark after parameter tuning""" 
+    pickup_benchmark(data_set_name, file_name)
+
 if __name__ == '__main__':
 
     # for data_set in os.listdir(get_standardized_folder()):
     #     start_b(remove_extension(data_set))
 
-    # start_b("r_bio")
+    # start_b("r_bio", 1)
 
     """ this block of code formats the benchmark files into csv files """
     benchmark_paths = []
@@ -59,9 +63,9 @@ if __name__ == '__main__':
         merge_best_results(path)
 
     """ this block of code generates the results automatically""" 
-    for folder in os.listdir(get_formatted_folder()):
-        path = os.path.join(get_formatted_folder(), folder)
-        extract_results(path)
+    # for folder in os.listdir(get_formatted_folder()):
+    #     path = os.path.join(get_formatted_folder(), folder)
+    #     extract_results(path)
 
     # parser = argparse.ArgumentParser(description='Runs benchmark for data set.')
     # parser.add_argument('-d', metavar='data_set_name', type=str, dest='data_set_name',

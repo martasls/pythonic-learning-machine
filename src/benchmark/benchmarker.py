@@ -118,34 +118,34 @@ SLM_MODELS = {
 }
 
 MLP_MODELS = {
-    'mlpc_lbfgs': {
-        'name_long': 'Multilayer Perceptron (LBFGS Solver)',
-        'name_short': 'MLP (LBFGS)',
-        'algorithms': [EvaluatorMLPC],
-        # 'configurations': MLP_CONFIGURATIONS,
-        'configuration_method': get_config_mlp_lbfgs,
-        'max_combinations': _MAX_COMBINATIONS},
-    'mlpr_lbfgs': {
-        'name_long': 'Multilayer Perceptron (LBFGS Solver)',
-        'name_short': 'MLP (LBFGS)',
-        'algorithms': [EvaluatorMLPR],
-        # 'configurations': MLP_CONFIGURATIONS,
-        'configuration_method': get_config_mlp_lbfgs,
-        'max_combinations': _MAX_COMBINATIONS},
-    'mlpc_adam': {
-        'name_long': 'Multilayer Perceptron (ADAM Solver)',
-        'name_short': 'MLP (ADAM)',
-        'algorithms': [EvaluatorMLPC],
-        # 'configurations': MLP_CONFIGURATIONS,
-        'configuration_method': get_config_mlp_adam,
-        'max_combinations': _MAX_COMBINATIONS},
-    'mlpr_adam': {
-        'name_long': 'Multilayer Perceptron (ADAM Solver)',
-        'name_short': 'MLP (ADAM)',
-        'algorithms': [EvaluatorMLPR],
-        # 'configurations': MLP_CONFIGURATIONS,
-        'configuration_method': get_config_mlp_adam,
-        'max_combinations': _MAX_COMBINATIONS},
+    # 'mlpc_lbfgs': {
+    #     'name_long': 'Multilayer Perceptron (LBFGS Solver)',
+    #     'name_short': 'MLP (LBFGS)',
+    #     'algorithms': [EvaluatorMLPC],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration_method': get_config_mlp_lbfgs,
+    #     'max_combinations': _MAX_COMBINATIONS},
+    # 'mlpr_lbfgs': {
+    #     'name_long': 'Multilayer Perceptron (LBFGS Solver)',
+    #     'name_short': 'MLP (LBFGS)',
+    #     'algorithms': [EvaluatorMLPR],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration_method': get_config_mlp_lbfgs,
+    #     'max_combinations': _MAX_COMBINATIONS},
+    # 'mlpc_adam': {
+    #     'name_long': 'Multilayer Perceptron (ADAM Solver)',
+    #     'name_short': 'MLP (ADAM)',
+    #     'algorithms': [EvaluatorMLPC],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration_method': get_config_mlp_adam,
+    #     'max_combinations': _MAX_COMBINATIONS},
+    # 'mlpr_adam': {
+    #     'name_long': 'Multilayer Perceptron (ADAM Solver)',
+    #     'name_short': 'MLP (ADAM)',
+    #     'algorithms': [EvaluatorMLPR],
+    #     # 'configurations': MLP_CONFIGURATIONS,
+    #     'configuration_method': get_config_mlp_adam,
+    #     'max_combinations': _MAX_COMBINATIONS},
     'mlpc_sgd': {
         'name_long': 'Multilayer Perceptron (SGD Solver)',
         'name_short': 'MLP (SGD)',
@@ -384,6 +384,9 @@ class Benchmarker():
     def _format_tables(self):
         pass
 
+def pickup_benchmark(data_set_name, file_name):
+    benchmark = benchmark_from_pickle(data_set_name, file_name)
+    benchmark.pickup() 
 
 def continue_benchmark(data_set_name, file_name):
     """Loads a benchmark from .pkl file and continues run."""
