@@ -314,7 +314,8 @@ class Benchmarker():
                         else: 
                             algorithm = self.models[key]['algorithms'][0]
                             if (key == 'mlpc_sgd' or key == 'mlpc_adam' or key == 'mlpr_sgd' or key == 'mlpr_adam'):
-                                config = self.models[key]['configuration_method'](self.get_data_set_size(training_outer))
+                                batch_size = int(training_outer.shape[0] / _INNER_FOLDS) * 2
+                                config = self.models[key]['configuration_method'](batch_size)
                             else:
                                 config = self.models[key]['configuration_method']()
                         
@@ -370,7 +371,7 @@ class Benchmarker():
 
     def _run_ensembles(self, iteration, best_algorithm, best_configuration, training_outer, testing, metric):
         for key, value in tqdm(self.ensembles.items()):
-            if not self.results_ensemble[key][iteration]:
+            if not self.results_ensemble[key][iteration]: #change back to end 
                 if '_' in key: # boosting
                     nr_ensemble = key.split('_')[1]
                     config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, nr_ensemble, training_outer, testing, metric)
@@ -383,9 +384,26 @@ class Benchmarker():
 
     def _format_tables(self):
         pass
+    
+    def pickup(self): 
+        outer_cv = 0
+        outer_folds = self._get_outer_folds(outer_cv)
+        for training_outer_index, testing_index in tqdm(outer_folds.split(get_input_variables(self.samples).values, get_target_variable(self.samples).values)):
+            training_outer, testing = pd.DataFrame(self.samples.values[training_outer_index]), pd.DataFrame(self.samples.values[testing_index])
+            
+            algorithm = self.best_result[outer_cv]['best_overall_algorithm']
+            configuration = self.best_result[outer_cv]['best_overall_configuration']
+            self._run_ensembles(outer_cv, algorithm.get_corresponding_algo(), configuration, training_outer, testing, self.metric)
+
+            benchmark_to_pickle(self)
+            outer_cv += 1
+            
+
 
 def pickup_benchmark(data_set_name, file_name):
     benchmark = benchmark_from_pickle(data_set_name, file_name)
+    benchmark.results_ensemble = {ensemble: [None for i in range(_OUTER_FOLDS)] for ensemble in benchmark.ensembles.keys()}
+    benchmark.file_name = benchmark.data_set_name + "_" + benchmark.benchmark_id + "__" + _now.strftime("%Y_%m_%d__%H_%M_%S")
     benchmark.pickup() 
 
 def continue_benchmark(data_set_name, file_name):

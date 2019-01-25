@@ -44,23 +44,24 @@ if __name__ == '__main__':
     # for data_set in os.listdir(get_standardized_folder()):
     #     start_b(remove_extension(data_set))
 
-    # start_b("r_bio", 1)
+    pickup_b("r_bio", "r_bio_mlp__2019_01_15__22_33_01.pkl")
+    # start_b("r_bio")
 
     """ this block of code formats the benchmark files into csv files """
-    benchmark_paths = []
-    for folder in os.listdir(get_benchmark_folder()):
-        path = os.path.join(get_benchmark_folder(), folder)
-        for file in os.listdir(path):
-            benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
+    # benchmark_paths = []
+    # for folder in os.listdir(get_benchmark_folder()):
+    #     path = os.path.join(get_benchmark_folder(), folder)
+    #     for file in os.listdir(path):
+    #         benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
 
-    for benchmark_path in benchmark_paths:
-        benchmark = read_pickle(benchmark_path)
-        benchmark_formatted = format_benchmark(benchmark)
+    # for benchmark_path in benchmark_paths:
+    #     benchmark = read_pickle(benchmark_path)
+    #     benchmark_formatted = format_benchmark(benchmark)
 
     """ merge best results """
-    for folder in os.listdir(get_formatted_folder()):
-        path = os.path.join(get_formatted_folder(), folder)
-        merge_best_results(path)
+    # for folder in os.listdir(get_formatted_folder()):
+    #     path = os.path.join(get_formatted_folder(), folder)
+    #     merge_best_results(path)
 
     """ this block of code generates the results automatically""" 
     # for folder in os.listdir(get_formatted_folder()):
