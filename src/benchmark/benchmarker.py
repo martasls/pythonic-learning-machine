@@ -27,7 +27,7 @@ _SLM_MAX_COMBINATIONS_PER_VARIANT = 30
 _MLP_MAX_COMBINATIONS_PER_VARIANT = 30
 _XCS_MAX_COMBINATIONS = 5 
 
-_OUTER_FOLDS = 10
+_OUTER_FOLDS = 30
 _INNER_FOLDS = 2
 
 """
@@ -446,7 +446,7 @@ class Benchmarker():
                         print('\t\t\tIndex of algorithm configuration:', len(validation_value_list))
                         
                         algorithm = self.models[key]['algorithms'][0]
-                        config = self.models[key]['configuration_method']() #"""ATTENTION::: I think this will be just for statistical purposes. let's see""" 
+                        config = self.models[key]['configuration_method']() 
 
                         inner_folds = self._get_inner_folds(outer_cv)
                         tmp_valid_training_values_list = list()
@@ -456,7 +456,6 @@ class Benchmarker():
                             
                             training_inner, validation = pd.DataFrame(training_outer.values[training_inner_index]), pd.DataFrame(training_outer.values[validation_index])
                             
-                            """ ATTENTION :::: PROBABLY WILL HAVE TO USE A DIFFERENT METHOD """
                             results = self._evaluate_algorithm_xcs(algorithm=algorithm, configurations=config,
                                                                training_set=training_inner, validation_set=None, testing_set=validation, metric=self.metric)
                             
