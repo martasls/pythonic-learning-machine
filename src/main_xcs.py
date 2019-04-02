@@ -26,8 +26,9 @@ if __name__ == '__main__':
     #start_mlp("r_concrete", ensembles=None, benchmark_id='mlp-sgd-adam')
     
     start_xcs("c_diabetes", benchmark_id='xcs')
-    #start_xcs("c_credit", ensembles=None, benchmark_id='mlp-sgd-adam')
-    
+    start_xcs("c_credit", benchmark_id='xcs')
+    start_xcs("c_cancer", benchmark_id='xcs')
+    start_xcs("c_sonar", benchmark_id='xcs')
     #start_mlp("c_sonar", ensembles=None, benchmark_id='mlp-sgd-adam')
     #start_mlp("c_cancer", ensembles=None, benchmark_id='mlp-sgd-adam')
     
