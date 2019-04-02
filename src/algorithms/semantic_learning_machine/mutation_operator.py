@@ -1,4 +1,6 @@
-from random import randint, sample
+from random import randint, choice
+
+from algorithms.common.neural_network.activation_function import _NON_LINEAR_ACTIVATION_FUNCTIONS
 from algorithms.common.neural_network.neural_network import create_neuron
 
 
@@ -10,10 +12,11 @@ class Mutation(object):
     def mutate_network(self, algorithm):
         pass
 
-    def _create_final_hidden_neuron(self, bias):
-        """Creates the final hidden neuron, which must have a hyperbolic tangent activation function."""
-        return create_neuron('tanh', bias)
-    
+    def _create_final_hidden_neuron(self, bias, maximum_bias_connection_weight=None):
+        """ Creates the final hidden neuron """
+        
+        activation_function = choice(list(_NON_LINEAR_ACTIVATION_FUNCTIONS.keys()))
+        return create_neuron(activation_function, bias, maximum_bias_connection_weight=maximum_bias_connection_weight)
 
 
 class Mutation1(Mutation):
@@ -42,6 +45,7 @@ class Mutation2(Mutation):
 
     def __repr__(self):
         return self.__class__.__name__ 
+
         
 class Mutation3(Mutation):
     """Adds an equal, random number of neurons to each hidden layer."""
@@ -62,16 +66,21 @@ class Mutation3(Mutation):
 class Mutation4(Mutation):
     """Adds a distinct, random number of neurons to each hidden layer."""
 
-    def __init__(self, max_neurons):
-        self.max_neurons = max_neurons
-
+    def __init__(self, maximum_new_neurons_per_layer=3, maximum_bias_connection_weight=1.0):
+        self.maximum_new_neurons_per_layer = maximum_new_neurons_per_layer
+        self.maximum_bias_connection_weight = maximum_bias_connection_weight
+    
     def mutate_network(self, algorithm):
         neural_network = algorithm.champion.neural_network
         bias = neural_network.bias
         number_layers = len(neural_network.hidden_layers)
-        neurons = self.max_neurons if self.max_neurons >= number_layers else number_layers
-        neurons = sample(range(1, neurons), number_layers - 1)
-        hidden_layers = [[create_neuron() for i in range(neuron)] for neuron in neurons]
-        hidden_layers.append([self._create_final_hidden_neuron(bias)])
+        
+        new_neurons = [randint(1, self.maximum_new_neurons_per_layer) for i in range(number_layers - 1)]
+        # neurons = self.maximum_new_neurons_per_layer if self.maximum_new_neurons_per_layer >= number_layers else number_layers
+        # neurons = sample(range(1, neurons), number_layers - 1)
+        
+        hidden_layers = [[create_neuron(activation_function=None, bias=bias, maximum_bias_connection_weight=self.maximum_bias_connection_weight) for i in range(neuron)] for neuron in new_neurons]
+        
+        hidden_layers.append([self._create_final_hidden_neuron(bias, maximum_bias_connection_weight=self.maximum_bias_connection_weight)])
         return hidden_layers
 

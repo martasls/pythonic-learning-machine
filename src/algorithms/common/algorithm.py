@@ -66,7 +66,8 @@ class EvolutionaryAlgorithm(object):
         self._run(verbose)
         self.input_matrix = None
         self.target_vector = None
-
+        self.metric = None
+    
     def predict(self, input_matrix):
         """Returns y predictions given X."""
         pass

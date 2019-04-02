@@ -1,9 +1,9 @@
 from algorithms.common.algorithm import EvolutionaryAlgorithm
 from numpy import array, append
 from algorithms.neat_python.create_configuration import create_configuration, write_configuration, get_configuration_path, remove_configuration
-from neat import Config, DefaultGenome, DefaultReproduction, DefaultSpeciesSet, DefaultStagnation, Population
-from neat.nn.feed_forward import FeedForwardNetwork
-from neat.six_util import iteritems, itervalues
+#from neat import Config, DefaultGenome, DefaultReproduction, DefaultSpeciesSet, DefaultStagnation, Population
+#from neat.nn.feed_forward import FeedForwardNetwork
+#from neat.six_util import iteritems, itervalues
 
 class CompleteExtinctionException(Exception):
     pass

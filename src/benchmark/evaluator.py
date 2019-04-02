@@ -2,24 +2,26 @@ from random import shuffle
 from data.extract import get_input_variables, get_target_variable, is_classification_target
 from algorithms.common.metric import is_better, Accuracy
 from timeit import default_timer
-from benchmark.algorithm import BenchmarkSLM, BenchmarkNEAT, BenchmarkSGA, BenchmarkSLM_RST, BenchmarkSLM_RWT
+from benchmark.algorithm import BenchmarkSLM, BenchmarkNEAT, BenchmarkSGA, BenchmarkSLM_RST, BenchmarkSLM_RWT, BenchmarkXCS
 from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
-from neat.nn import FeedForwardNetwork
+#from neat.nn import FeedForwardNetwork
 from numpy import append, array
 from sklearn.svm import SVC, SVR
 from sklearn.neural_network import MLPClassifier, MLPRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from algorithms.common.ensemble import Ensemble, EnsembleBagging, EnsembleRandomIndependentWeighting, EnsembleBoosting
+from algorithms.xcs.xcs.algorithms.xcs import XCSAlgorithm
+from algorithms.xcs.xcs.scenarios import ScenarioObserver, PreClassifiedData, UnclassifiedData
 from tqdm import tqdm
 import warnings
+from argparse import Namespace
 # from multiprocessing import Process 
 # from threading import Thread
-
 
 # Disable the monitor thread. (https://github.com/tqdm/tqdm/issues/481)
 tqdm.monitor_interval = 0
 
-TIME_LIMIT_SECONDS = 500 #changed from 300
+TIME_LIMIT_SECONDS = 500  # changed from 300
 TIME_BUFFER = 0.1
 
 MAX_COMBINATIONS = 30
@@ -36,50 +38,112 @@ class Evaluator(object):
         self.metric = metric
 
     def _get_learner_meta(self, learner):
-        learner_meta = {
-            'testing_value': self._calculate_value(learner, self.testing_set)
-        }
-        if(is_classification_target(get_target_variable(self.testing_set).values.astype(int))):
+        
+        learner_meta = {}
+        
+        if is_classification_target(get_target_variable(self.testing_set).values):
             learner_meta['training_accuracy'] = self._calculate_accuracy(learner, self.training_set)
-            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)    
+            learner_meta['testing_accuracy'] = self._calculate_accuracy(learner, self.testing_set)
+            #print('\t\t\t\t\ttesting AUROC vs. training AUROC:', learner_meta['testing_accuracy'], 'vs.', learner_meta['training_accuracy'] )
+        else:
+            learner_meta['testing_value'] = self._calculate_value(learner, self.testing_set)
+        
         return learner_meta
-
-    """calculates accuracy for testing set"""
+    
     def _calculate_accuracy(self, learner, data_set):
         prediction = learner.predict(get_input_variables(data_set).values)
         target = get_target_variable(data_set).values
         return Accuracy.evaluate(prediction, target.astype(int))
-
+    
     #################################################################################################################
-    """ beginning of code for nested cv"""
+    """ beginning of code for nested cv""" 
 
     def _fit_learner(self, verbose=False):
+
         def time_seconds(): return default_timer()
+
         # Create learner from configuration
         learner = self.model(**self.configurations)
         # Train learner 
         if self.__class__.__bases__[0] == EvaluatorSklearn:
             start_time = time_seconds()
             learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values)
-            training_time = time_seconds()-start_time
+            training_time = time_seconds() - start_time
         else: 
             start_time = time_seconds()
-            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values, 
+            learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
                         self.metric, verbose)
-            training_time = time_seconds()-start_time
-        testing_value = self._calculate_value(learner, self.testing_set)
+            training_time = time_seconds() - start_time
+        #testing_value = self._calculate_value(learner, self.testing_set)
         return {
             'learner': learner,
-            'testing_value': testing_value,
+            #'testing_value': testing_value,
             'training_time': training_time
         }
-
+    
     def run_nested_cv(self, verbose=False):
         log = self._fit_learner(verbose)
         learner_meta = self._get_learner_meta(log['learner'])
         learner_meta['training_time'] = log['training_time']
         return learner_meta
-    
+
+
+    # code for XCS 
+    def _fit_learner_xcs(self, verbose=False): 
+        def time_seconds(): return default_timer() 
+        
+        #Create learner from configuration ---- HOW!!?? 
+        learner = self._create_xcs_learner(self.configurations)
+
+
+        def grade_classification(actual, target):
+            '''Return a floating point value in the range [0, 1] that
+            indicates how desirable the actual classification was in
+            terms of how it compares to the correct classification.'''
+
+            # In this case we are dealing with a binary classification
+            # problem, where the classification targets (possible actions)
+            # are either True or False and false negatives are highly
+            # undesirable.
+            if actual == target:
+                # Correct classifications get maximum reward.
+                return 1.0
+            if actual:
+                # False positives get lower but not minimal reward; these
+                # types of errors are not good, but they are better than
+                # false negatives for this problem.
+                return .25
+            else:
+                # False negatives are really expensive to us so give them
+                # the lowest reward level.
+                return 0.0
+        
+        X = get_input_variables(self.training_set).values
+        y = get_target_variable(self.training_set).values
+        assert len(X) == len(y)
+        training_scenario = PreClassifiedData(X, y, reward_function=grade_classification)
+        model = learner.new_model(training_scenario) #classifier set # is this really needed? 
+        start_time = time_seconds()
+        model = learner.run(training_scenario)
+        training_time = time_seconds() - start_time  
+        return {
+            'model': model,
+            'learner': learner, 
+            'training_time': training_time
+        }
+
+
+    def run_nested_cv_xcs(self, verbose=False):
+        log = self._fit_learner_xcs(verbose)
+        learner_meta = self._get_learner_meta(log['model'], log['learner'])
+        learner_meta['training_time'] = log['training_time']
+        return learner_meta
+
+    def _create_xcs_learner(self, configurations):
+        learner = XCSAlgorithm()
+        learner.setVar(configurations)
+        return learner 
+
 
     """ end of code for nested cv"""
     #################################################################################################################     
@@ -91,8 +155,10 @@ class Evaluator(object):
         best_validation_value = float('-Inf') if self.metric.greater_is_better else float('Inf')
         # Validation error list.
         validation_value_list = list()
+
         # Current time in seconds.
         def time_seconds(): return default_timer()
+
         # Random order of configurations.
         shuffle(self.configurations)
         # Number of configurations run.
@@ -100,7 +166,6 @@ class Evaluator(object):
         # # Start of run.
         # run_start = time_seconds()
         # Time left.
-
 
         # def time_left(): return time_limit - (time_seconds() - run_start)
         # Iterate though all configurations.
@@ -117,7 +182,7 @@ class Evaluator(object):
                 start_time = time_seconds()
                 learner.fit(get_input_variables(self.training_set).values, get_target_variable(self.training_set).values,
                             self.metric, verbose)
-                print("\ntime to fit algorithm: ", configuration, time_seconds()-start_time)
+                print("\ntime to fit algorithm: ", configuration, time_seconds() - start_time)
             # Calculate validation value.
             validation_value = self._calculate_value(learner, self.validation_set)
             # If validation error lower than best validation error, set learner as best learner and validation error as best validation error.
@@ -149,7 +214,8 @@ class Evaluator(object):
     def _calculate_value(self, learner, data_set):
         prediction = learner.predict(get_input_variables(data_set).values)
         target = get_target_variable(data_set).values
-        return self.metric.evaluate(prediction, target.astype(int))
+        return self.metric.evaluate(prediction, target)
+        # return self.metric.evaluate(prediction, target.astype(int))
 
     def run(self, time_limit=TIME_LIMIT_SECONDS, time_buffer=TIME_BUFFER, verbose=False):
         log = self._select_best_learner(time_limit, time_buffer, verbose)
@@ -158,6 +224,24 @@ class Evaluator(object):
         return learner_meta
 
 
+class EvaluatorXCS(Evaluator): 
+    def __init__(self, configurations, training_set, validation_set, testing_set, metric): 
+        super().__init__(BenchmarkXCS, configurations, training_set, validation_set, testing_set, metric)
+
+    def _get_learner_meta(self, model, learner):
+        learner_meta = {} 
+        learner_meta['training_accuracy'] = 0 #TODO TEMP
+        learner_meta['testing_accuracy'] = self._calculate_accuracy(model, learner, self.testing_set)
+        return learner_meta
+
+    def _calculate_accuracy(self, model, learner, testing_set):
+        target = get_target_variable(testing_set).values
+        testing_scenario = UnclassifiedData(get_input_variables(testing_set).values)
+        testing_scenario.possible_actions = model.possible_actions
+        testing_model = learner.run(testing_scenario)
+        predictions = array(testing_scenario.get_classifications())
+        return Accuracy.evaluate(predictions, target)
+
 class EvaluatorSLM(Evaluator):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -165,7 +249,7 @@ class EvaluatorSLM(Evaluator):
 
     def _get_learner_meta(self, learner):
         learner_meta = super()._get_learner_meta(learner)
-        learner_meta['nr_generations'] = learner.current_generation-1
+        learner_meta['nr_generations'] = learner.current_generation - 1
         learner_meta['training_value'] = learner.champion.value
         learner_meta['neural_network'] = learner.champion.neural_network
         learner_meta['training_value_evolution'] = self._get_training_value_evolution(learner)
@@ -200,6 +284,7 @@ class EvaluatorSLM(Evaluator):
     def get_corresponding_algo():
         return SemanticLearningMachine 
 
+
 class EvaluatorSLM_RST(Evaluator):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -220,6 +305,7 @@ class EvaluatorSLM_RST(Evaluator):
         return learner.log['solution_log']
 
     """calculates accuracy for testing set"""
+
     def _calculate_accuracy(self, learner, data_set):
         prediction = learner.predict(get_input_variables(data_set).values)
         target = get_target_variable(data_set).values
@@ -248,6 +334,7 @@ class EvaluatorSLM_RST(Evaluator):
     def get_corresponding_algo():
         return BenchmarkSLM_RST
 
+
 class EvaluatorSLM_RWT(Evaluator):
 
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -268,6 +355,7 @@ class EvaluatorSLM_RWT(Evaluator):
         return learner.log['solution_log']
 
     """calculates accuracy for testing set"""
+
     def _calculate_accuracy(self, learner, data_set):
         prediction = learner.predict(get_input_variables(data_set).values)
         target = get_target_variable(data_set).values
@@ -296,7 +384,9 @@ class EvaluatorSLM_RWT(Evaluator):
     def get_corresponding_algo():
         return BenchmarkSLM_RWT
 
+
 class EvaluatorNEAT(Evaluator):
+
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
         super().__init__(BenchmarkNEAT, configurations, training_set, validation_set, testing_set, metric)
 
@@ -429,6 +519,7 @@ class EvaluatorEnsemble(Evaluator):
         learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
         return learner_meta
 
+
 class EvaluatorEnsembleBagging(Evaluator):
     
     def __init__(self, configurations, training_set, validation_set, testing_set, metric):
@@ -438,6 +529,7 @@ class EvaluatorEnsembleBagging(Evaluator):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
         return learner_meta
+
 
 class EvaluatorEnsembleRandomIndependentWeighting(Evaluator):
     
@@ -459,7 +551,5 @@ class EvaluatorEnsembleBoosting(Evaluator):
         learner_meta = super()._get_learner_meta(learner)
         learner_meta['training_value'] = self._calculate_value(learner, self.training_set)
         return learner_meta
-
-
 
      

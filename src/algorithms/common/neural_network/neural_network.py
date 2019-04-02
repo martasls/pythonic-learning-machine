@@ -1,9 +1,11 @@
 from copy import copy, deepcopy
-from numpy import array
 from random import choice, uniform
-from algorithms.common.neural_network.node import Neuron, Sensor
-from algorithms.common.neural_network.activation_function import _ACTIVATION_FUNCTIONS
+
+from numpy import array
+
+from algorithms.common.neural_network.activation_function import _NON_LINEAR_ACTIVATION_FUNCTIONS
 from algorithms.common.neural_network.connection import Connection
+from algorithms.common.neural_network.node import Neuron, Sensor
 
 
 class NeuralNetwork(object):
@@ -104,16 +106,19 @@ class NeuralNetwork(object):
         for neuron in self.get_hidden_neurons(): neuron.semantics = array([])
         self.output_neuron.semantics = array([])
 
-def create_neuron(activation_function=None, bias=None):
-    """Creates neuron with defined activation function and bias."""
-    # If activation function not defined, choose activation function at random.
-    if not activation_function:
-        activation_function = choice(list(_ACTIVATION_FUNCTIONS.keys()))
-    neuron = Neuron(array([]), list(), activation_function)
-    # If is biased, connect to bias with random weight.
-    if bias:
-        Connection(bias, neuron, uniform(-1, 1))
-    return neuron
+
+def create_neuron(activation_function=None, bias=None, maximum_bias_connection_weight=1.0):
+	"""Creates neuron with defined activation function and bias."""
+	# If activation function not defined, choose activation function at random.
+	if not activation_function:
+		activation_function = choice(list(_NON_LINEAR_ACTIVATION_FUNCTIONS.keys()))
+		# activation_function = choice(list(_ACTIVATION_FUNCTIONS.keys()))
+	neuron = Neuron(array([]), list(), activation_function)
+	# If is biased, connect to bias with random weight.
+	if bias:
+		Connection(bias, neuron, uniform(-maximum_bias_connection_weight, maximum_bias_connection_weight))
+	return neuron
+
 
 def _connect_nodes(from_nodes, to_nodes, weight=0):
     """Connects all from nodes with all to nodes with determined weight."""
@@ -121,12 +126,15 @@ def _connect_nodes(from_nodes, to_nodes, weight=0):
         for from_node in from_nodes:
             Connection(from_node, to_node, weight)
 
+
+# -IG- not called
 def create_network_from_topology(topology):
     """Creates neural network from topology."""
     # Create bias.
     bias = Sensor(array([1]))
     # Creates neurons from remaining items in string.
-    hidden_layers = [[create_neuron('tanh', bias) for i in range(j)] for j in topology]
+    activation_function = choice(list(_NON_LINEAR_ACTIVATION_FUNCTIONS.keys()))
+    hidden_layers = [[create_neuron(activation_function, bias) for i in range(j)] for j in topology]
     # Create output neuron.
     output_neuron = create_neuron('identity', bias)
     # Connect nodes in neural network.

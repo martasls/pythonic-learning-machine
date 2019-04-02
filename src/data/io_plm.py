@@ -1,9 +1,11 @@
-from os.path import join, dirname, exists
 from os import pardir, makedirs, listdir
-from pandas import read_csv, read_pickle
-from utils.environment_constants import SAMPLE_LABELS, SAMPLE_LABELS_NO_VAL
-import utils
+from os.path import join, dirname, exists
 from pickle import dump, load
+
+from pandas import read_csv, read_pickle
+
+import utils
+from utils.environment_constants import SAMPLE_LABELS, SAMPLE_LABELS_NO_VAL
 
 
 def _get_path_to_data_dir():
@@ -41,9 +43,12 @@ def remove_extension(file):
     return file.split('.')[0]
 
 
-def benchmark_to_pickle(benchmark):
+def benchmark_to_pickle(benchmark, file_path_ext=None):
     # Appends path to data folder to file path.
-    file_path_ext = join(_get_path_to_data_dir(), '05_benchmark', benchmark.data_set_name)
+    if file_path_ext == None:
+        file_path_ext = join(_get_path_to_data_dir(), '05_benchmark', benchmark.data_set_name)
+    else:
+        file_path_ext = join(file_path_ext, benchmark.data_set_name)
 
     # If 'file_path_ext' does not exist, create 'file_path_ext'.
     if not exists(file_path_ext):
@@ -80,10 +85,9 @@ def data_set_to_pickle(data_set, file_path, file_name):
 
 
 def read_pickle(file_path):
-
+    
     with open(file_path, 'rb') as p:
         return load(p)
-
 
 def data_set_from_pickle(file_path, file_name):
     """"""
@@ -102,31 +106,40 @@ def load_samples(data_set_name, index):
 
     return [data_set_from_pickle(file_path, file_name) for file_name in file_names]
 
+
 def load_samples_no_val(data_set_name, index):
     file_path = join('04_resampled', data_set_name)
     file_names = [sample_label + "_" + str(index) for sample_label in SAMPLE_LABELS_NO_VAL]
 
     return [data_set_from_pickle(file_path, file_name) for file_name in file_names]
 
-def load_standardized_samples(data_set_name):
-    file_path = '03_standardized'
+
+def load_standardized_samples(data_set_name, file_path=None):
+    if file_path == None:
+        file_path = '03_standardized'
     
     return data_set_from_pickle(file_path, data_set_name)
+
 
 def get_standardized_folder(): 
     return join(_get_path_to_data_dir(), '03_standardized')
 
+
 def get_resampled_folder(): 
     return join(_get_path_to_data_dir(), '04_resampled')
 
+
 def get_benchmark_folder():
     return join(_get_path_to_data_dir(), '05_benchmark')
+
     
 def get_formatted_folder(): 
     return join(_get_path_to_data_dir(), '06_formatted')
 
+
 def get_results_folder(): 
     return join(_get_path_to_data_dir(), '07_results')
+
 
 def read_csv_(path):
     data_frame = read_csv(path)

@@ -22,9 +22,17 @@ def calculate_output(input_sum_array, activation_function_id):
     activation_function = _ACTIVATION_FUNCTIONS.get(activation_function_id)
     return activation_function(input_sum_array)
 
-_ACTIVATION_FUNCTIONS = {'identity': calculate_identity,
-                        'sigmoid': calculate_sigmoid,
-                        'tanh': calculate_tanh,
-                        'relu': calculate_relu}
+_ACTIVATION_FUNCTIONS = {
+    'identity': calculate_identity,
+    'sigmoid': calculate_sigmoid,
+    'tanh': calculate_tanh,
+    'relu': calculate_relu
+}
+
+_NON_LINEAR_ACTIVATION_FUNCTIONS = {
+    'sigmoid': calculate_sigmoid,
+    'tanh': calculate_tanh,
+    'relu': calculate_relu
+}
 
 # Creating random activation functions on the fly.

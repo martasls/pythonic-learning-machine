@@ -1,16 +1,17 @@
-from algorithms.common.neural_network.node import Sensor
-from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron
-from algorithms.common.neural_network.connection import Connection
-from algorithms.semantic_learning_machine.solution import Solution
-from algorithms.common.algorithm import EvolutionaryAlgorithm
-from numpy import array, matrix, dot, resize, shape
-from numpy.linalg import pinv
-from random import uniform, sample, randint
 from copy import copy, deepcopy
-from algorithms.common.stopping_criterion import MaxGenerationsCriterion
-from algorithms.semantic_learning_machine.mutation_operator import Mutation2
-from algorithms.common.metric import RootMeanSquaredError, WeightedRootMeanSquaredError 
-from timeit import default_timer
+from random import uniform, sample, choice, randint
+
+from numpy import array, dot, resize, shape
+from numpy.linalg import pinv
+
+from algorithms.common.algorithm import EvolutionaryAlgorithm
+from algorithms.common.neural_network.activation_function import _NON_LINEAR_ACTIVATION_FUNCTIONS
+from algorithms.common.neural_network.connection import Connection
+from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron
+from algorithms.common.neural_network.node import Sensor
+from algorithms.semantic_learning_machine.mutation_operator import Mutation4
+from algorithms.semantic_learning_machine.solution import Solution
+
 
 class SemanticLearningMachine(EvolutionaryAlgorithm):
     """
@@ -27,14 +28,18 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         learning_step can be positive numerical value of 'optimized' for optimized learning step.
     """
 
-    def __init__(self, population_size, stopping_criterion, layers, learning_step, 
-                max_connections=None, mutation_operator=Mutation2, subset_ratio=1, weight_range=1,
+    def __init__(self, population_size, stopping_criterion, layers, learning_step,
+                max_connections=None, mutation_operator=Mutation4(), init_minimum_layers=1, init_maximum_neurons_per_layer=5, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, subset_ratio=1, weight_range=1.0,
                 random_sampling_technique=False, random_weighting_technique=False):
         super().__init__(population_size, stopping_criterion)
         self.layers = layers
         self.learning_step = learning_step
         self.max_connections = max_connections
         self.mutation_operator = mutation_operator
+        self.init_minimum_layers = init_minimum_layers
+        self.init_maximum_neurons_per_layer = init_maximum_neurons_per_layer
+        self.maximum_neuron_connection_weight = maximum_neuron_connection_weight
+        self.maximum_bias_connection_weight = maximum_bias_connection_weight
         self.next_champion = None
         self.random_sampling_technique = random_sampling_technique
         self.random_weighting_technique = random_weighting_technique
@@ -49,7 +54,8 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
             return self._get_optimized_learning_step(partial_semantics)
         # Else, return numerical learning step.
         else:
-            return self.learning_step
+            return uniform(-self.learning_step, self.learning_step)
+            # return self.learning_step
 
     def _get_optimized_learning_step(self, partial_semantics):
         """Calculates optimized learning step."""
@@ -66,9 +72,12 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def _get_connection_weight(self, weight):
         """Returns connection weight if defined, else random value between -1 and 1."""
-
-        return weight if weight else uniform(-1, 1)
-
+        
+        if weight:
+            return weight
+        else:
+            return uniform(-self.maximum_neuron_connection_weight, self.maximum_neuron_connection_weight)
+    
     def _connect_nodes(self, from_nodes, to_nodes, weight=None, random=False):
         """
         Connects list of from_nodes with list of to_nodes.
@@ -145,11 +154,17 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def _initialize_hidden_layers(self, neural_network):
         """Initializes hidden layers, based on defined number of layers."""
-
-        # Create hidden layers with one neuron with random activation function each.
-        hidden_layers = [[create_neuron(None, neural_network.bias)] for i in range(self.layers - 1)]
-        # Add final hidden layer with one neuron with tanh activation function.
-        hidden_layers.append([create_neuron('tanh', neural_network.bias)])
+        
+        number_of_layers = randint(self.init_minimum_layers, self.layers)
+        neurons_per_layer = [randint(1, self.init_maximum_neurons_per_layer) for i in range(number_of_layers - 1)]
+        hidden_layers = [[create_neuron(None, neural_network.bias, maximum_bias_connection_weight=self.maximum_bias_connection_weight) for neuron in range(neurons_per_layer[layer])] for layer in range(number_of_layers - 1)]
+        
+        # From Jan: Create hidden layers with one neuron with random activation function each.
+        # hidden_layers = [[create_neuron(None, neural_network.bias)] for i in range(self.layers - 1)]
+        
+        # Add final hidden layer with one neuron
+        activation_function = choice(list(_NON_LINEAR_ACTIVATION_FUNCTIONS.keys()))
+        hidden_layers.append([create_neuron(activation_function, neural_network.bias, maximum_bias_connection_weight=self.maximum_bias_connection_weight)])
         # Returns hidden layers.
         return hidden_layers
 
@@ -203,13 +218,17 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def _initialize_population(self):
         """Initializes population in first generation."""
-        #def time_seconds(): return default_timer()
-        #start_time = time_seconds() 
+        # def time_seconds(): return default_timer()
+        # start_time = time_seconds() 
         # Initializes neural network topology.
         topology = self._initialize_topology()
         # Create initial population from topology.
         for i in range(self.population_size):
             solution = self._initialize_solution(topology)
+            
+            # -IG-
+            # print('\t\tInit, individual:', i, ', topology:', solution.neural_network.get_topology())
+            
             if not self.next_champion:
                 self.next_champion = solution
             elif self._is_better_solution(solution, self.next_champion):
@@ -218,7 +237,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
             else:
                 solution.neural_network = None
             self.population.append(solution)
-        #print("time to initialize population: ", time_seconds()-start_time)
+        # print("time to initialize population: ", time_seconds()-start_time)
 
     def _mutate_network(self):
         """Creates mutated offspring from champion neural network."""
@@ -256,14 +275,25 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         return solution
 
     def _mutate_population(self):
-        """"""
-        if(self.random_sampling_technique or self.random_weighting_technique):
-            #calculate the new predictions and update the champion's error according to the new input matrix prev generated
+        """ ... """
+        if self.random_sampling_technique:
+            # calculate the new predictions and update the champion's error according to the new input matrix previously generated
             champ_predictions = self.champion.neural_network.predict(self.input_matrix)
             self.champion.predictions = champ_predictions 
             self.champion.value = self.metric.evaluate(self.champion.predictions, self.target_vector)
+        
+        if self.random_weighting_technique:
+            # calculate the new predictions and update the champion's error according to the new input matrix previously generated
+            self.champion.value = self.metric.evaluate(self.champion.predictions, self.target_vector)
+        
+        # print('\t\tMutation, champion topology:', self.champion.neural_network.get_topology())
+        
         for i in range(self.population_size):
             solution = self._mutate_solution()
+            
+            # -IG-
+            # print('\t\tMutation, individual:', i, ', topology:', solution.neural_network.get_topology())
+            
             if not self.next_champion:
                 if self._is_better_solution(solution, self.champion):
                     self.next_champion = solution
@@ -294,7 +324,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         self._wipe_population()
         return stopping_criterion
 
-    def fit(self, input_matrix, target_vector, metric, verbose=False, sample_weight=None):
+    def fit(self, input_matrix, target_vector, metric, verbose=False):
         super().fit(input_matrix, target_vector, metric, verbose)
         self.champion.neural_network = deepcopy(self.champion.neural_network)
 
@@ -306,4 +336,3 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def __repr__(self):
         return 'SemanticLearningMachine'
-

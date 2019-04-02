@@ -1,15 +1,16 @@
-import pandas as pd
-import matplotlib.pyplot as plt 
-import seaborn as sns
-from os.path import join, dirname, exists
 from os import mkdir
+from os.path import join, dirname, exists
+
 from data.io_plm import read_csv_, get_results_folder
+import matplotlib.pyplot as plt 
+import pandas as pd
+import seaborn as sns
 
 ALGOS_MAPPING = { 
     'slm_single': {
-        'name-file': 'slm', #best result
+        'name-file': 'slm',  # best result
         'name-inside-file': 'SLM' 
-    }, 
+    },
     'slm_fls_group': {
         'name-file': 'slm',
         'name-inside-file': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT'
@@ -21,13 +22,13 @@ ALGOS_MAPPING = {
     'slm_fls_tie_edv_group': {
         'name-file': 'slm',
         'name-inside-file': 'SLM (FLS) + TIE, SLM (FLS) + EDV'
-    }, 
+    },
     'slm_ols_edv': {
         'name-file': 'slm',
         'name-inside-file': 'SLM (OLS) + EDV'
     },
     'mlp_single': {
-        'name-file': 'mlp', #best result
+        'name-file': 'mlp',  # best result
         'name-inside-file': 'MLP'
     },
     'mlp_lbfgs': {
@@ -37,7 +38,7 @@ ALGOS_MAPPING = {
     'mlp_adam': {
         'name-file': 'mlp',
         'name-inside-file': 'MLP (ADAM)'
-    }, 
+    },
     'mlp_sgd': {
         'name-file': 'mlp',
         'name-inside-file': 'MLP (SGD)'
@@ -61,7 +62,7 @@ ALGOS_MAPPING = {
     'slm_boosting_2':{
         'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Median + RLR)'
-    }, 
+    },
     'slm_boosting_3':{
         'name-file': 'slm_ensemble',
         'name-inside-file': 'SLM Boosting Ensemble (Mean + FLR)'
@@ -77,7 +78,7 @@ ALGOS_MAPPING = {
     'mlp_bagging_ensemble': {
         'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Bagging Ensemble'
-    }, 
+    },
     'mlp_boosting_1':{
         'name-file': 'mlp_ensemble',
         'name-inside-file': 'MLP Boosting Ensemble (Median + FLR)'
@@ -107,14 +108,22 @@ def extract_results(path):
     # generate_boxplot_error(path, 'avg_inner_validation_error')
     # generate_comparing_boxplot(path, 'avg_inner_validation_error', 'testing_value')
 
-def generate_test_boxplot(path, algos_list, metric_name):
+
+def generate_test_boxplot(path, algos_list, metric_name, labels_list=None, output_filename=None, min_max_y=None, ylabel='RMSE'):
     """generates test boxplot for a given list of algorithms""" 
     df_list = [] 
     if (metric_name != 'best_results_testing_value'):
         for algo in algos_list: 
             data_set_name = path.split('\\')[-1]
-            name_file = ALGOS_MAPPING[algo]['name-file']
-            to_read = join(path, name_file + '_' + metric_name + '.csv')
+            
+            to_read = join(path, metric_name + '.csv')
+            
+            # TEMP
+            #===================================================================
+            # name_file = ALGOS_MAPPING[algo]['name-file']
+            # to_read = join(path, name_file + '_' + metric_name + '.csv')
+            #===================================================================
+            
             df = read_csv_(to_read)
             df = df[[ALGOS_MAPPING[algo]['name-inside-file']]]
             df_list.append(df)
@@ -124,22 +133,54 @@ def generate_test_boxplot(path, algos_list, metric_name):
             data_set_name = path.split('\\')[-1]
             to_read = join(path, metric_name + '.csv')
             df = read_csv_(to_read)
-            df = df[[ALGOS_MAPPING[algo]['name-inside-file']]]
+            
+            name = ALGOS_MAPPING[algo]['name-inside-file']
+            if name not in df.keys():
+                if name == 'SLM':
+                    name = 'slm'
+                elif name == 'MLP':
+                    name = 'mlp'
+                else:
+                    print('\tUnknown name:', name)
+            
+            df = df[name]
             df_list.append(df)
         value = pd.concat(df_list, axis=1)
-    labels_list = [ALGOS_MAPPING[algo]['name-inside-file'] for algo in algos_list]
+        
+    if labels_list == None:
+        labels_list = [ALGOS_MAPPING[algo]['name-inside-file'] for algo in algos_list]
+    
     fig, ax = plt.subplots()
     boxplot = sns.boxplot(data=value, palette="PuBuGn_d")
-    boxplot.set(xlabel='Algorithms', ylabel='RMSE')
+    
+    # print(boxplot.get_yaxis().get_view_interval())
+    if min_max_y != None:
+        boxplot.get_yaxis().set_view_interval(min_max_y[0], min_max_y[1])
+    
+    # boxplot.set(xlabel='Algorithms', ylabel='RMSE')
+    boxplot.set(ylabel=ylabel)
+    
     sns.set_context("paper", font_scale=1.5)
     sns.set_style("white")
     sns.despine(left=True)
-    boxplot.set_xticklabels(labels_list, rotation=90) #changed from boxplot.get_xticklabels()-BE CAREFUL, SPECIFIC VALUES
+    
+    # boxplot.set_xticklabels(labels_list, rotation=90) #changed from boxplot.get_xticklabels()-BE CAREFUL, SPECIFIC VALUES
+    boxplot.set_xticklabels(labels_list)
+    
     fig.set_size_inches(11.69, 8.27)
-    results_folder_path = join(get_results_folder(), data_set_name)
-    if not exists(results_folder_path): mkdir(results_folder_path)
-    fig.savefig(join(results_folder_path, metric_name + '.svg'), bbox_inches='tight')
-    fig.savefig(join(results_folder_path, metric_name + '.pdf'), bbox_inches='tight')
+    results_folder = get_results_folder()
+    if not exists(results_folder):
+        mkdir(results_folder)
+    results_folder_path = join(results_folder, data_set_name)
+    if not exists(results_folder_path):
+        mkdir(results_folder_path)
+    
+    if output_filename == None:
+        output_filename = metric_name
+    
+    fig.savefig(join(results_folder_path, output_filename + '.svg'), bbox_inches='tight')
+    fig.savefig(join(results_folder_path, output_filename + '.pdf'), bbox_inches='tight')
+
 
 def generate_boxplot_error(path, metric_name):
     """generates a boxplot for a certain metric""" 
@@ -152,11 +193,12 @@ def generate_boxplot_error(path, metric_name):
     sns.set_context("paper", font_scale=1.5)
     sns.set_style("white")
     sns.despine(left=True)
-    boxplot.set_xticklabels(['SLM (FLS) Group', 'SLM (OLS) Group', 'SLM (FLS) + TIE/EDV', 'SLM (OLS) + EDV'], rotation=90) #changed from boxplot.get_xticklabels()-BE CAREFUL, SPECIFIC VALUES
+    boxplot.set_xticklabels(['SLM (FLS) Group', 'SLM (OLS) Group', 'SLM (FLS) + TIE/EDV', 'SLM (OLS) + EDV'], rotation=90)  # changed from boxplot.get_xticklabels()-BE CAREFUL, SPECIFIC VALUES
     fig.set_size_inches(11.69, 8.27)
     results_folder_path = join(get_results_folder(), data_set_name)
     fig.savefig(join(results_folder_path, metric_name + '.svg'), bbox_inches='tight')
     fig.savefig(join(results_folder_path, metric_name + '.pdf'), bbox_inches='tight')
+
 
 def generate_comparing_boxplot(path, metric_one, metric_two):
     """generates a grouped boxplot taking into account two metrics"""
@@ -170,27 +212,25 @@ def generate_comparing_boxplot(path, metric_one, metric_two):
     metric_one_data_set_long = metric_one_data_set.melt(var_name='algorithm', value_name=metric_one)
     metric_two_data_set_long = metric_two_data_set.melt(var_name='algorithm', value_name=metric_two)
     metric_two_data_set_long = metric_two_data_set_long.drop(metric_two_data_set_long.columns[0], axis=1)
-    #concatenate data sets 
+    # concatenate data sets 
     concatenated_metrics = pd.concat([metric_one_data_set_long, metric_two_data_set_long], sort=False, axis=1)
 
     # melt concatenated data set
     melted = pd.melt(concatenated_metrics, id_vars=['algorithm'], value_vars=[metric_one, metric_two], var_name='Metric')
 
-    catplot = sns.catplot('algorithm', hue='Metric', y='value', data=melted, kind="box", legend=False, palette="PuBuGn_d", 
+    catplot = sns.catplot('algorithm', hue='Metric', y='value', data=melted, kind="box", legend=False, palette="PuBuGn_d",
                      height=5, aspect=1.75)
     catplot.set(xlabel='Algorithms', ylabel="RMSE")
     sns.set_context("paper", font_scale=1.5)
     sns.set_style("white")
     sns.despine(left=True)
-    catplot.set_xticklabels(['SLM (FLS) Group', 'SLM (OLS) Group', 'SLM (FLS) + TIE/EDV', 'SLM (OLS) + EDV'], rotation=90) # BE CAREFUL, SPECIFIC VALUES
-    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., title="Metric", frameon=False) #this changes the legend to outside the plot
-    #plt.figure()
+    catplot.set_xticklabels(['SLM (FLS) Group', 'SLM (OLS) Group', 'SLM (FLS) + TIE/EDV', 'SLM (OLS) + EDV'], rotation=90)  # BE CAREFUL, SPECIFIC VALUES
+    plt.legend(bbox_to_anchor=(1.05, 1), loc=2, borderaxespad=0., title="Metric", frameon=False)  # this changes the legend to outside the plot
+    # plt.figure()
     catplot.fig.set_size_inches(11.69, 8.27)
     results_folder_path = join(get_results_folder(), data_set_name)
     catplot.fig.savefig(join(results_folder_path, metric_one + '__' + metric_two + '.svg'), bbox_inches='tight')
     catplot.fig.savefig(join(results_folder_path, metric_one + '__' + metric_two + '.pdf'), bbox_inches='tight')
-
-
 
 """
 #change working directory

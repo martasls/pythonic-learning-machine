@@ -1,44 +1,67 @@
-import numpy as np 
-from numpy.random import uniform
-from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
-from algorithms.neat_python.algorithm import Neat
-from algorithms.simple_genetic_algorithm.algorithm import SimpleGeneticAlgorithm
-from algorithms.common.ensemble import Ensemble
-from data.extract import generate_sub_training_set, generate_training_target, is_classification_target
 from timeit import default_timer
-from utils.useful_methods import generate_random_weight_vector
+
+from numpy.random import uniform
+
+from algorithms.common.ensemble import Ensemble
 from algorithms.common.metric import RootMeanSquaredError, WeightedRootMeanSquaredError, Accuracy
+from algorithms.neat_python.algorithm import Neat
+from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
+from algorithms.simple_genetic_algorithm.algorithm import SimpleGeneticAlgorithm
+from data.extract import generate_sub_training_set, generate_training_target, is_classification_target
+import numpy as np 
+from utils.useful_methods import generate_random_weight_vector
+
+from xcs import XCSAlgorithm
 
 _time_seconds = lambda: default_timer()
 
+
 def _get_parent(algorithm):
     return algorithm.__class__.__bases__[0]
+
 
 def _benchmark_fit(algorithm, input_matrix, target_vector, metric, verbose):
     parent = _get_parent(algorithm) 
     parent.fit(algorithm, input_matrix, target_vector, metric, verbose)
     return algorithm.log
 
+def _benchmark_fit_xcs(algorithm, input_matrix, target_vector, metric, verbose):
+    pass 
+
+def _benchmark_run_xcs(algorithm, verbose=False):
+    pass
+
 def _benchmark_run(algorithm, verbose=False):
     parent = _get_parent(algorithm)
     time_log = list()
     solution_log = list()
     stopping_criterion = False
+    
     while (not stopping_criterion):
         start_time = _time_seconds()
         stopping_criterion = parent._epoch(algorithm)
         end_time = _time_seconds()
-        #print("generation time: ", end_time-start_time)
+        # print("generation time: ", end_time-start_time)
         time_log.append(end_time - start_time)
         solution_log.append(algorithm.champion)
+        
+        #auroc = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)
+        #print('\t\t\t\tChampion at iteration', algorithm.current_generation, ', AUROC', auroc, ', RMSE', algorithm.champion.value)
+        
         if verbose:
             parent._print_generation(algorithm)
         algorithm.current_generation += 1
-        algorithm.log = {
+    
+    algorithm.log = {
         'time_log': time_log,
-        'solution_log': solution_log}
-    if(is_classification_target(algorithm.target_vector)): 
-        algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)  
+        'solution_log': solution_log
+    }
+    
+    #===========================================================================
+    # if is_classification_target(algorithm.target_vector): 
+    #     algorithm.champion.accuracy = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)  
+    #===========================================================================
+
 
 def _benchmark_run_rst(algorithm, verbose):
     """if random_sampling_technique is set to true then the training instances change at each iteration"""
@@ -51,10 +74,12 @@ def _benchmark_run_rst(algorithm, verbose):
     original_metric = algorithm.metric
     algo = algorithm.metric.__class__.__name__
     size = int(original_input_matrix.shape[0] * algorithm.subset_ratio)
+    
     if algorithm.metric.__class__.__name__ == 'WeightedRootMeanSquaredError': 
         original_weight_vector = algorithm.metric.weight_vector
         idx = np.random.choice(np.arange(original_input_matrix.shape[0]), size, replace=False)
         algorithm.metric.weight_vector = original_weight_vector[idx]
+    
     while (not stopping_criterion):
         start_time = _time_seconds() 
         idx = np.random.choice(np.arange(original_input_matrix.shape[0]), size, replace=False)
@@ -68,11 +93,15 @@ def _benchmark_run_rst(algorithm, verbose):
         if verbose:
             parent._print_generation(algorithm)
         algorithm.current_generation += 1
-        algorithm.log = {
+    
+    algorithm.log = {
         'time_log': time_log,
-        'solution_log': solution_log}
+        'solution_log': solution_log
+    }
+    
     if algorithm.metric.__class__.__name__ == 'WeightedRootMeanSquaredError':
         algorithm.metric.weight_vector = original_weight_vector
+    
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(original_input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, original_target_vector)
 
@@ -95,27 +124,33 @@ def _benchmark_run_rwt(algorithm, verbose):
         if verbose:
             parent._print_generation(algorithm)
         algorithm.current_generation += 1
-        algorithm.log = {
+    
+    algorithm.log = {
         'time_log': time_log,
-        'solution_log': solution_log}
+        'solution_log': solution_log
+    }
+    
     algorithm.champion.predictions = algorithm.champion.neural_network.predict(algorithm.input_matrix)
     algorithm.champion.value = original_metric.evaluate(algorithm.champion.predictions, algorithm.target_vector)
- 
+
 
 class BenchmarkSLM(SemanticLearningMachine):
 
     fit = _benchmark_fit
     _run = _benchmark_run
 
+
 class BenchmarkNEAT(Neat):
 
     fit = _benchmark_fit
     _run = _benchmark_run
 
+
 class BenchmarkSGA(SimpleGeneticAlgorithm):
 
     fit = _benchmark_fit
     _run = _benchmark_run
+
 
 class BenchmarkSLM_RST(SemanticLearningMachine):
     
@@ -125,6 +160,7 @@ class BenchmarkSLM_RST(SemanticLearningMachine):
     def __repr__(self):
         return 'BenchmarkSLM_RST'
 
+
 class BenchmarkSLM_RWT(SemanticLearningMachine):
     
     fit = _benchmark_fit
@@ -132,3 +168,11 @@ class BenchmarkSLM_RWT(SemanticLearningMachine):
 
     def __repr__(self):
         return 'BenchmarkSLM_RWT'
+
+class BenchmarkXCS(XCSAlgorithm):
+    
+    fit = _benchmark_fit_xcs
+    _run = _benchmark_run_xcs
+
+    def __repr__(self):
+        return 'BenchmarkXCS'

@@ -1,88 +1,166 @@
-from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
-from algorithms.common.neural_network.neural_network import create_network_from_topology
-from algorithms.semantic_learning_machine.mutation_operator import Mutation2, Mutation3, Mutation4
-from algorithms.simple_genetic_algorithm.selection_operator import SelectionOperatorTournament
-from algorithms.simple_genetic_algorithm.mutation_operator import MutationOperatorGaussian
-from algorithms.simple_genetic_algorithm.crossover_operator import CrossoverOperatorArithmetic
-from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
-from benchmark.algorithm import BenchmarkSLM, BenchmarkSLM_RST, BenchmarkSLM_RWT
-from itertools import product
-from numpy import mean, median, linspace
 import random
 
-slm_ols_edv_config_layers_index = 0
-slm_ols_edv_config_layers = [1, 2, 3, 4, 5]
+from numpy import mean, median, linspace
 
-def get_random_config_slm_fls_grouped(option=None): 
+from algorithms.common.neural_network.neural_network import create_network_from_topology
+from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
+from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
+from algorithms.semantic_learning_machine.mutation_operator import Mutation2, Mutation3, Mutation4
+from algorithms.simple_genetic_algorithm.crossover_operator import CrossoverOperatorArithmetic
+from algorithms.simple_genetic_algorithm.mutation_operator import MutationOperatorGaussian
+from algorithms.simple_genetic_algorithm.selection_operator import SelectionOperatorTournament
+from benchmark.algorithm import BenchmarkSLM, BenchmarkSLM_RST, BenchmarkSLM_RWT
+
+
+def get_random_config_xcs(maximum_reward=1):
     config = {}
-    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200
+    #config['accuracy_coefficient'] = random.uniform(0, 1) #range: (0, 1] default: .1
+    #config['accuracy_power'] = random.randint(0, 5) #range: (0, +inf) default: 5. Only change this if you know what you're doing
+    config['crossover_probability'] = random.uniform(0, 1) #range: [0, 1] default: .75
+    config['deletion_threshold'] = random.randint(0, 25) #default: 20, range: [0, +inf)
+    config['discount_factor'] = 0 #default: .71, range: [0, 1)
+    config['do_action_set_subsumption'] = False if random.randint(0, 1) == 0 else True
+    config['do_ga_subsumption'] = False if random.randint(0, 1) == 0 else True
+    config['error_threshold'] = random.uniform(0, maximum_reward) #default: .01, range: [0, maximum reward]
+    config['exploration_probability'] = random.uniform(0, 1) #default: .5, range: [0, 1]
+    #config['exploration_strategy'] = None #default: None, range: ActionSelectionStrategy instances
+    config['fitness_threshold'] = random.uniform(0, 1) #default: .1, range: [0, 1]
+    config['ga_threshold'] = random.randint(0, 50) #default: 35, range: [0, +inf)
+    #config['idealization_factor'] = 0 # I think we're not supposed to use this one 
+    config['initial_error'] = random.uniform(0, 0.5) #default: .00001, range: (0, +inf)
+    config['initial_fitness'] = random.uniform(0, 0.5) #default: .00001, range: (0, +inf)
+    config['initial_prediction'] = random.uniform(0, 0.5) #default: .00001, range: [0, +inf)
+    config['learning_rate'] = random.uniform(0.0001, 1) #default: .15, range: (0, 1)
+    config['max_population_size'] = random.randint(1, 200) #default: 200, range: [1, +inf)
+    #config['minimum_actions'] = random.randint(1, 10) #default: None, range: [1, +inf)
+    config['mutation_probability'] = random.uniform(0, 1) #default: .03, range: [0, 1]
+    config['subsumption_threshold'] = random.randint(0, 30) #default: 20, range: [0, +inf)
+    config['wildcard_probability'] = random.uniform(0, 1) #default: .33, range: [0, 1]
+    return config
+
+def get_random_config_slm_fls_grouped(option=None, init_maximum_layers=5, maximum_iterations=200, maximum_learning_step=1, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, mutation_maximum_new_neurons_per_layer=3):
+    config = {}
+    
+    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, maximum_iterations))
+    
     config['population_size'] = 10
-    config['layers'] = random.randint(1, 5) # random value between 1 and 5 
-    config['learning_step'] = random.uniform(0.00001, 2)
-    config['mutation_operator'] = Mutation2()
-    if option == 0: #no RST and no RWT
+    
+    config['layers'] = init_maximum_layers
+    
+    # config['learning_step'] = random.uniform(0.1, maximum_learning_step)
+    config['learning_step'] = random.uniform(0.001, maximum_learning_step)
+   
+    config['maximum_neuron_connection_weight'] = random.uniform(0.1, maximum_neuron_connection_weight)
+    config['maximum_bias_connection_weight'] = random.uniform(0.1, maximum_bias_connection_weight)
+    
+    config['mutation_operator'] = Mutation4(maximum_new_neurons_per_layer=mutation_maximum_new_neurons_per_layer, maximum_bias_connection_weight=config['maximum_bias_connection_weight'])
+    
+    config['random_sampling_technique'] = False
+    config['random_weighting_technique'] = False
+    """
+    if option == 0:  # no RST and no RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = False
-    elif option == 1: #RST
+    elif option == 1:  # RST
         config['random_sampling_technique'] = True
         config['random_weighting_technique'] = False
         config['subset_ratio'] = random.uniform(0.01, 0.99)
-    elif option == 2: #RWT
+    elif option == 2:  # RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
         config['weight_range'] = 1
+    """
+    
     return config
 
-def get_random_config_slm_ols_grouped(option=None): 
+
+def get_random_config_slm_ols_grouped(option=None, init_maximum_layers=5, maximum_iterations=200, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, mutation_maximum_new_neurons_per_layer=3): 
     config = {}
-    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, 200)) # random value between 1 and 200 
+    
+    config['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, maximum_iterations))
+    
     config['population_size'] = 10
-    config['layers'] = random.randint(1, 5) # random value between 1 and 5
+    
+    config['layers'] = init_maximum_layers
+    
     config['learning_step'] = 'optimized'
-    config['mutation_operator'] = Mutation2()
-    if option == 0: #no RST and no RWT
+
+    config['maximum_neuron_connection_weight'] = random.uniform(0.1, maximum_neuron_connection_weight)
+    config['maximum_bias_connection_weight'] = random.uniform(0.1, maximum_bias_connection_weight)
+    
+    config['mutation_operator'] = Mutation4(maximum_new_neurons_per_layer=mutation_maximum_new_neurons_per_layer, maximum_bias_connection_weight=config['maximum_bias_connection_weight'])
+    
+    config['random_sampling_technique'] = False
+    config['random_weighting_technique'] = False
+    """
+    if option == 0:  # no RST and no RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = False
-    elif option == 1: #RST
+    elif option == 1:  # RST
         config['random_sampling_technique'] = True
         config['random_weighting_technique'] = False
         config['subset_ratio'] = random.uniform(0.01, 0.99)
-    elif option == 2: #RWT
+    elif option == 2:  # RWT
         config['random_sampling_technique'] = False
         config['random_weighting_technique'] = True
         config['weight_range'] = 1
+    """
+    
     return config
 
-def get_random_config_slm_fls_tie_edv():
+
+def get_random_config_slm_fls_tie_edv(init_maximum_layers=5, maximum_iterations=200, maximum_learning_step=1, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, mutation_maximum_new_neurons_per_layer=3):
     config = {}
+    
     stopping_crit = random.randint(1, 2)
-    if stopping_crit == 1: #EDV
-        config['stopping_criterion'] = ErrorDeviationVariationCriterion(0.25)
-    else: 
-        config['stopping_criterion'] = TrainingImprovementEffectivenessCriterion(0.25)
+    # EDV
+    if stopping_crit == 1:
+        config['stopping_criterion'] = ErrorDeviationVariationCriterion(maximum_iterations=maximum_iterations)
+    # TIE
+    else:
+        config['stopping_criterion'] = TrainingImprovementEffectivenessCriterion(maximum_iterations=maximum_iterations)
+    
     config['population_size'] = 100
-    config['layers'] = random.randint(1, 5) # random value between 1 and 5
-    config['learning_step'] = random.uniform(0.00001, 2)
-    config['mutation_operator'] = Mutation2()
+    
+    config['layers'] = init_maximum_layers
+    
+    # config['learning_step'] = random.uniform(0.1, maximum_learning_step)
+    config['learning_step'] = random.uniform(0.001, maximum_learning_step)
+    
+    config['maximum_neuron_connection_weight'] = random.uniform(0.1, maximum_neuron_connection_weight)
+    config['maximum_bias_connection_weight'] = random.uniform(0.1, maximum_bias_connection_weight)
+    
+    config['mutation_operator'] = Mutation4(maximum_new_neurons_per_layer=mutation_maximum_new_neurons_per_layer, maximum_bias_connection_weight=config['maximum_bias_connection_weight'])
+    
     config['random_sampling_technique'] = False
     config['random_weighting_technique'] = False
+    
     return config
 
-def get_random_config_slm_ols_edv():
+
+def get_random_config_slm_ols_edv(init_maximum_layers=5, maximum_iterations=200, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, mutation_maximum_new_neurons_per_layer=3):
     config = {}
-    config['stopping_criterion'] = ErrorDeviationVariationCriterion(0.25)
+    
+    config['stopping_criterion'] = ErrorDeviationVariationCriterion(maximum_iterations=maximum_iterations)
     config['population_size'] = 100
-    global slm_ols_edv_config_layers
-    global slm_ols_edv_config_layers_index
-    config['layers'] = slm_ols_edv_config_layers[slm_ols_edv_config_layers_index]
-    slm_ols_edv_config_layers_index = (slm_ols_edv_config_layers_index + 1) % len(slm_ols_edv_config_layers)
+    
+    config['layers'] = init_maximum_layers
+    
     config['learning_step'] = 'optimized'
-    config['mutation_operator'] = Mutation2()
+    
+    config['maximum_neuron_connection_weight'] = random.uniform(0.1, maximum_neuron_connection_weight)
+    config['maximum_bias_connection_weight'] = random.uniform(0.1, maximum_bias_connection_weight)
+    
+    config['mutation_operator'] = Mutation4(maximum_new_neurons_per_layer=mutation_maximum_new_neurons_per_layer, maximum_bias_connection_weight=config['maximum_bias_connection_weight'])
+    
     config['random_sampling_technique'] = False
     config['random_weighting_technique'] = False
+    
     return config
+
 
 """ Ensemble configurations """
+
 
 def get_config_simple_bagging_ensemble(base_learner, best_configuration, training_outer, testing, metric): 
     config = {}
@@ -90,6 +168,7 @@ def get_config_simple_bagging_ensemble(base_learner, best_configuration, trainin
     config['number_learners'] = 30
     config['meta_learner'] = mean
     return config
+
 
 def get_config_riw_ensemble(base_learner, best_configuration, training_outer, testing, metric):
     config = {} 
@@ -99,6 +178,7 @@ def get_config_riw_ensemble(base_learner, best_configuration, training_outer, te
     config['weight_range'] = 1
     return config
 
+
 def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, training_outer, testing, metric): 
     nr_ensemble = int(nr_ensemble)
     config = {} 
@@ -106,7 +186,7 @@ def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, 
     config['number_learners'] = 30
     if (nr_ensemble == 1 or nr_ensemble == 2):
         config['meta_learner'] = median
-    else: # 3 or 4
+    else:  # 3 or 4
         config['meta_learner'] = mean
     if (nr_ensemble == 1 or nr_ensemble == 3):
         config['learning_rate'] = 1
@@ -114,15 +194,18 @@ def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, 
         config['learning_rate'] = 'random'
     return config 
 
+
 def _create_base_learner(algorithm, configurations, training_outer, testing, metric):
     return algorithm(**configurations)
 
 
 """ MLP configurations """ 
 
+
 def get_config_mlp_lbfgs():
     config = {}
     config['solver'] = 'lbfgs'
+    
     activation = random.randint(0, 2)
     if activation == 0:
         config['activation'] = 'logistic'
@@ -130,22 +213,32 @@ def get_config_mlp_lbfgs():
         config['activation'] = 'tanh'
     else: 
         config['activation'] = 'relu'
+    
     nr_hidden_layers = random.randint(1, 5)
     neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
     config['hidden_layer_sizes'] = tuple(neurons)
-    alpha = random.randint(0, 1)
-    if alpha == 0:
-        config['alpha'] = 0
-    else: 
-        config['alpha'] = random.uniform(0.00001, 5)    
-    config['max_iter'] = random.randint(1, 1000)
+    
+    #===========================================================================
+    # alpha = random.randint(0, 1)
+    # if alpha == 0:
+    #     config['alpha'] = 0
+    # else: 
+    #     config['alpha'] = random.uniform(0.00001, 10)
+    #===========================================================================
+    
+    config['alpha'] = random.uniform(0.1, 10)
+    
+    config['max_iter'] = random.randint(1, 200)
+    
     return config
+
 
 def get_config_mlp_sgd(nr_instances):
     config = {}
     config['solver'] = 'sgd'
     config['learning_rate'] = 'constant'
-    config['learning_rate_init'] = random.uniform(0.00001, 2)
+    config['learning_rate_init'] = random.uniform(0.001, 1)
+    
     activation = random.randint(0, 2)
     if activation == 0:
         config['activation'] = 'logistic'
@@ -153,17 +246,24 @@ def get_config_mlp_sgd(nr_instances):
         config['activation'] = 'tanh'
     else: 
         config['activation'] = 'relu'
+    
     nr_hidden_layers = random.randint(1, 5)
     neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
     config['hidden_layer_sizes'] = tuple(neurons)
-    alpha = random.randint(0, 1)
-    if alpha == 0:
-        config['alpha'] = 0
-    else: 
-        config['alpha'] = random.uniform(0.00001, 5)
-    config['max_iter'] = random.randint(1, 1000)
     
-    config['batch_size'] = random.randint(50, nr_instances) #changed from 250
+    #===========================================================================
+    # alpha = random.randint(0, 1)
+    # if alpha == 0:
+    #     config['alpha'] = 0
+    # else: 
+    #     config['alpha'] = random.uniform(0.00001, 10)
+    #===========================================================================
+    
+    config['alpha'] = random.uniform(0.1, 10)
+    
+    config['max_iter'] = random.randint(1, 200)
+    
+    config['batch_size'] = random.randint(50, nr_instances)
     
     shuffle_option = random.randint(0, 1)
     if shuffle_option == 0:
@@ -181,10 +281,12 @@ def get_config_mlp_sgd(nr_instances):
 
     return config
 
+
 def get_config_mlp_adam(nr_instances):
     config = {}
     config['solver'] = 'adam'
-    config['learning_rate_init'] = random.uniform(0.00001, 2)
+    config['learning_rate_init'] = random.uniform(0.001, 1)
+    
     activation = random.randint(0, 2)
     if activation == 0:
         config['activation'] = 'logistic'
@@ -192,18 +294,25 @@ def get_config_mlp_adam(nr_instances):
         config['activation'] = 'tanh'
     else: 
         config['activation'] = 'relu'
+    
     nr_hidden_layers = random.randint(1, 5)
     neurons = [random.randint(1, 200) for x in range(nr_hidden_layers)]
     config['hidden_layer_sizes'] = tuple(neurons)
-    alpha = random.randint(0, 1)
-    if alpha == 0:
-        config['alpha'] = 0
-    else: 
-        config['alpha'] = random.uniform(0.00001, 5)    
-    config['max_iter'] = random.randint(1, 1000)
+    
+    #===========================================================================
+    # alpha = random.randint(0, 1)
+    # if alpha == 0:
+    #     config['alpha'] = 0
+    # else: 
+    #     config['alpha'] = random.uniform(0.00001, 10)
+    #===========================================================================
+    
+    config['alpha'] = random.uniform(0.1, 10)
+        
+    config['max_iter'] = random.randint(1, 200)
     
     config['batch_size'] = random.randint(50, nr_instances)
-
+    
     shuffle_option = random.randint(0, 1)
     if shuffle_option == 0:
         config['shuffle'] = False
@@ -214,7 +323,6 @@ def get_config_mlp_adam(nr_instances):
     config['beta_2'] = random.uniform(0, 1 - 10 ** -7)
     
     return config
-
 
 """
 
