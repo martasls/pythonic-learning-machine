@@ -1089,6 +1089,8 @@ class ClassifierSet:
 
         previous_match_set = None
 
+        self.classification_list = list()
+
         # Repeat until the scenario has run its course.
         while scenario.more():
             # Gather information about the current state of the
@@ -1105,6 +1107,11 @@ class ClassifierSet:
             # Perform the selected action
             # and find out what the received reward was.
             reward = scenario.execute(match_set.selected_action)
+            
+            print("reward at step: " +  str(scenario.steps) + " " + str(reward))
+
+            #ADDED 
+            self.classification_list.append(match_set.selected_action)
 
             # If the scenario is dynamic, don't immediately apply the
             # reward; instead, wait until the next iteration and factor in

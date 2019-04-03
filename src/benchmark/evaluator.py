@@ -230,11 +230,16 @@ class EvaluatorXCS(Evaluator):
 
     def _get_learner_meta(self, model, learner):
         learner_meta = {} 
-        learner_meta['training_accuracy'] = 0 #TODO TEMP
-        learner_meta['testing_accuracy'] = self._calculate_accuracy(model, learner, self.testing_set)
+        learner_meta['training_accuracy'] = self._calculate_training_accuracy(model, learner, self.training_set)
+        learner_meta['testing_accuracy'] = self._calculate_testing_accuracy(model, learner, self.testing_set)
         return learner_meta
 
-    def _calculate_accuracy(self, model, learner, testing_set):
+    def _calculate_training_accuracy(self, model, learner, training_set):
+        target = get_target_variable(training_set).values
+        predictions = array(model.classification_list)
+        return Accuracy.evaluate(predictions, target)
+
+    def _calculate_testing_accuracy(self, model, learner, testing_set):
         target = get_target_variable(testing_set).values
         testing_scenario = UnclassifiedData(get_input_variables(testing_set).values)
         testing_scenario.possible_actions = model.possible_actions
