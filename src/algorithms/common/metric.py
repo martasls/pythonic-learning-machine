@@ -1,5 +1,5 @@
-from numpy import sqrt, mean, square, count_nonzero, empty
-from sklearn.metrics import roc_auc_score, log_loss
+from numpy import sqrt, mean, square, count_nonzero, empty, where
+from sklearn.metrics import roc_auc_score, log_loss, accuracy_score
 
 
 class Metric():
@@ -17,7 +17,20 @@ class RootMeanSquaredError(Metric):
     
     @staticmethod
     def evaluate(prediction, target):
-        return sqrt(mean(square(prediction - target)))
+        #=======================================================================
+        # import os
+        # import psutil
+        # process = psutil.Process(os.getpid())
+        # print(process.memory_info().rss / 1024 / 1024)
+        #=======================================================================
+        value = 0
+        for i in range(prediction.shape[0]):
+            dif = prediction[i] - target[i]
+            value += dif * dif
+        value /= prediction.shape[0]
+        value = sqrt(value)#[0]
+        return value
+        #return sqrt(mean(square(prediction - target)))
 
 
 class WeightedRootMeanSquaredError(Metric):
@@ -38,15 +51,23 @@ class Accuracy(Metric):
     
     @staticmethod
     def evaluate(prediction, target):
-        auroc_y_score = empty(prediction.shape)
-        for i in range(prediction.shape[0]):
-            if prediction[i] < 0:
-                auroc_y_score[i] = 0
-            elif prediction[i] > 1:
-                auroc_y_score[i] = 1
-            else:
-                auroc_y_score[i] = prediction[i]
-        return roc_auc_score(target, auroc_y_score)
+        
+        #=======================================================================
+        # return accuracy_score(target, where(prediction >= 0.5, True, False))
+        #=======================================================================
+        return accuracy_score(where(target >= 0.5, True, False), where(prediction >= 0.5, True, False))
+        
+        #=======================================================================
+        # auroc_y_score = empty(prediction.shape)
+        # for i in range(prediction.shape[0]):
+        #     if prediction[i] < 0:
+        #         auroc_y_score[i] = 0
+        #     elif prediction[i] > 1:
+        #         auroc_y_score[i] = 1
+        #     else:
+        #         auroc_y_score[i] = prediction[i]
+        # return roc_auc_score(target, auroc_y_score)
+        #=======================================================================
         
         # TEMP restore after
         #=======================================================================
@@ -103,6 +124,9 @@ class BinaryCrossEntropy(Metric):
 
 
 def is_better(value_1, value_2, metric):
+    #===========================================================================
+    # print('[DEBUG] value 1 = %.5f, value 2 = %.5f\n' % (value_1, value_2))
+    #===========================================================================
     if metric.greater_is_better:
         return value_1 > value_2
     else:

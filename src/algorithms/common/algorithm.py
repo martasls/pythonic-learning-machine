@@ -27,7 +27,7 @@ class EvolutionaryAlgorithm(object):
         self.target_vector = None
 
     def _print_generation(self):
-        print('{}\t{:.2f}'.format(self.current_generation, self._get_champion_value()))
+        print('{}\t{:.8f}'.format(self.current_generation, self._get_champion_value()))
 
     def _get_champion_value(self):
         return self.champion.value

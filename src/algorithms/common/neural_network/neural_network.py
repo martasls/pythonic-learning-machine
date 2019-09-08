@@ -120,6 +120,11 @@ def create_neuron(activation_function=None, bias=None, maximum_bias_connection_w
 	return neuron
 
 
+def create_output_neuron(activation_function, bias, initial_bias_connection_weight=0.0):
+    neuron = Neuron(array([]), list(), activation_function)
+    Connection(bias, neuron, initial_bias_connection_weight)
+    return neuron
+
 def _connect_nodes(from_nodes, to_nodes, weight=0):
     """Connects all from nodes with all to nodes with determined weight."""
     for to_node in to_nodes:
@@ -127,7 +132,7 @@ def _connect_nodes(from_nodes, to_nodes, weight=0):
             Connection(from_node, to_node, weight)
 
 
-# -IG- not called
+# -IG- not called in SLM, only called in FTNE
 def create_network_from_topology(topology):
     """Creates neural network from topology."""
     # Create bias.

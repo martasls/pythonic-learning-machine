@@ -4,9 +4,7 @@ from os.path import join, dirname
 from benchmark.results_extractor import generate_test_boxplot
 
 
-# Lock, stock, and barrel
-# def process_everything():
-def process_lock_stock_and_barrel():
+def process_all():
     
     dataset_names = []
     dataset_folders = []
@@ -128,4 +126,4 @@ def process_lock_stock_and_barrel():
 
 if __name__ == '__main__':
     
-    process_lock_stock_and_barrel()
+    process_all()

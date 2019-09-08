@@ -1,13 +1,20 @@
 from copy import copy, deepcopy
+from numpy.random import choice as np_choice
 from random import uniform, sample, choice, randint
+from statistics import median, mean
 
 from numpy import array, dot, resize, shape
+from numpy import std
+from numpy.core.multiarray import arange
 from numpy.linalg import pinv
+from sklearn.linear_model import LinearRegression
 
+import algorithms.common
 from algorithms.common.algorithm import EvolutionaryAlgorithm
 from algorithms.common.neural_network.activation_function import _NON_LINEAR_ACTIVATION_FUNCTIONS
 from algorithms.common.neural_network.connection import Connection
-from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron
+from algorithms.common.neural_network.neural_network import NeuralNetwork, create_neuron, \
+    create_output_neuron
 from algorithms.common.neural_network.node import Sensor
 from algorithms.semantic_learning_machine.mutation_operator import Mutation4
 from algorithms.semantic_learning_machine.solution import Solution
@@ -30,7 +37,7 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
 
     def __init__(self, population_size, stopping_criterion, layers, learning_step,
                 max_connections=None, mutation_operator=Mutation4(), init_minimum_layers=1, init_maximum_neurons_per_layer=5, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, subset_ratio=1, weight_range=1.0,
-                random_sampling_technique=False, random_weighting_technique=False):
+                random_sampling_technique=False, random_weighting_technique=False, protected_ols=False, bootstrap_ols=False, bootstrap_ols_samples=10, bootstrap_ols_criterion='median', high_absolute_ls_difference=1, store_ls_history=False):
         super().__init__(population_size, stopping_criterion)
         self.layers = layers
         self.learning_step = learning_step
@@ -44,32 +51,158 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         self.random_sampling_technique = random_sampling_technique
         self.random_weighting_technique = random_weighting_technique
         self.subset_ratio = subset_ratio
-        self.weight_range = weight_range 
+        self.weight_range = weight_range
+        self.protected_ols = protected_ols
+        self.bootstrap_ols = bootstrap_ols
+        self.bootstrap_ols_samples = bootstrap_ols_samples
+        self.bootstrap_ols_criterion = bootstrap_ols_criterion
+        if self.bootstrap_ols: 
+            self.high_absolute_ls_difference = high_absolute_ls_difference
+            self.high_absolute_differences_history = []
+        self.store_ls_history = store_ls_history
+        if self.store_ls_history:
+            self.ls_history = []
+        self.zero_ls_by_activation_function = {}
+        self.zero_ls_history = []
+        self.lr_intercept = None
 
     def _get_learning_step(self, partial_semantics):
         """Returns learning step."""
-
+        
+        if self.learning_step == 'lr-ls':
+            ls = self._get_linear_regression_learning_step(partial_semantics)
         # If learning step is 'optimized', calculate optimized learning step.
-        if self.learning_step == 'optimized':
-            return self._get_optimized_learning_step(partial_semantics)
+        elif self.learning_step == 'optimized':
+            ls = self._get_optimized_learning_step(partial_semantics)
         # Else, return numerical learning step.
         else:
-            return uniform(-self.learning_step, self.learning_step)
-            # return self.learning_step
+            ls = uniform(-self.learning_step, self.learning_step)
+            # ls = self.learning_step
+        
+        if self.store_ls_history:
+            self.ls_history += [ls]
+        
+        return ls
 
-    def _get_optimized_learning_step(self, partial_semantics):
-        """Calculates optimized learning step."""
-
-        # Calculates distance to target vector.
+    def _get_linear_regression_learning_step(self, partial_semantics):
+        
         delta_target = copy(self.target_vector).astype(float)
         if self.champion:
             delta_target -= self.champion.neural_network.get_predictions()
-        # Calculates pseudo-inverse of partial_semantics.
-        inverse = array(pinv(resize(partial_semantics, (1, partial_semantics.size))))
-        # inverse = array(pinv(matrix(partial_semantics)))
-        # Returns dot product between inverse and delta.
-        return dot(inverse.transpose(), delta_target)[0]
+        X = partial_semantics.reshape(-1, 1)
+        y = delta_target.reshape(-1, 1)
+        lr = LinearRegression().fit(X, y)
+        ls = lr.coef_[0][0]
+        self.lr_intercept = lr.intercept_[0]
+        #=======================================================================
+        # print('Score:', lr.score(X, y))
+        # print('lr.coef_:', lr.coef_)
+        # print('lr.intercept_:', lr.intercept_)
+        #=======================================================================
+        return ls
+    
+    def _get_optimized_learning_step(self, partial_semantics):
+        """Calculates optimized learning step."""
+        
+        """ bootstrap samples; compute OLS for each; use desired criterion to select the final LS """
+        if self.bootstrap_ols:
+            
+            weights = []
+            size = self.target_vector.shape[0]
+            
+            for sample in range(self.bootstrap_ols_samples):
+                
+                idx = np_choice(arange(size), size, replace=True)
+                
+                bootstrap_delta_target = copy(self.target_vector[idx]).astype(float)
+                if self.champion:
+                    full_predictions = self.champion.neural_network.get_predictions()
+                    bootstrap_delta_target -= full_predictions[idx]
+                
+                bootstrap_partial_semantics = partial_semantics[idx]
+                inverse = array(pinv(resize(bootstrap_partial_semantics, (1, bootstrap_partial_semantics.size))))
+                ols = dot(inverse.transpose(), bootstrap_delta_target)[0]
+                
+                weights += [ols]
+            
+            ols_median = median(weights)
+            ols_mean = mean(weights)
+            ols = self._compute_ols(partial_semantics)
+            abs_dif = abs(ols_median - ols_mean)
+            
+            if abs_dif >= self.high_absolute_ls_difference:
+                self.high_absolute_differences_history.append([abs_dif, ols_median, ols_mean, ols])
+                #===============================================================
+                # print('Absolute difference: %.3f, median vs. mean: %.3f vs. %.3f' % (abs_dif, ols_median, ols_mean))
+                #===============================================================
+                #===============================================================
+                # print('Absolute difference: %.3f, median vs. mean vs. OLS: %.3f vs. %.3f vs. %.3f' % (abs_dif, ols_median, ols_mean, ols))
+                # print()
+                #===============================================================
+            
+            if self.bootstrap_ols_criterion == 'median':
+                return median(weights)
+            else:
+                return mean(weights)
+        
+        else:
+            return self._compute_ols(partial_semantics)
 
+    def _compute_ols(self, partial_semantics):
+            # Calculates distance to target vector.
+            delta_target = copy(self.target_vector).astype(float)
+            if self.champion:
+                """ version to use when no memory issues exist """
+                delta_target -= self.champion.neural_network.get_predictions()
+                """ version attempting to circumvent the memory issues """
+                #===============================================================
+                # predictions = self.champion.neural_network.get_predictions()
+                # for i in range(delta_target.shape[0]):
+                #     delta_target[i] -= predictions[i]
+                #===============================================================
+            # Calculates pseudo-inverse of partial_semantics.
+            inverse = array(pinv(resize(partial_semantics, (1, partial_semantics.size))))
+            # inverse = array(pinv(matrix(partial_semantics)))
+            # Returns dot product between inverse and delta.
+            ols = dot(inverse.transpose(), delta_target)[0]
+            
+            if ols == 0:
+                self.zero_ls_history.append([partial_semantics, delta_target, None])
+            
+            if self.protected_ols:
+                if self._valid_ols(delta_target, partial_semantics, ols) == False:
+                    ols = 0
+            
+            return ols
+    
+    def _valid_ols(self, delta_target, partial_semantics, ols):
+        size = delta_target.shape[0]
+        absolute_ideal_weights = []
+        for i in range(size):
+            if partial_semantics[i] != 0:
+                absolute_ideal_weight = delta_target[i] / partial_semantics[i]
+            else:
+                absolute_ideal_weight = 0
+            
+            absolute_ideal_weights += [abs(absolute_ideal_weight)]
+        
+        #=======================================================================
+        # print(median(absolute_ideal_weights))
+        # print(mean(absolute_ideal_weights))
+        # print(std(absolute_ideal_weights))
+        # print(abs(ols))
+        #=======================================================================
+        
+        upper_bound = mean(absolute_ideal_weights) + 2 * std(absolute_ideal_weights)
+        lower_bound = mean(absolute_ideal_weights) - 2 * std(absolute_ideal_weights)
+        if abs(ols) > upper_bound or abs(ols) < lower_bound:
+            #===================================================================
+            # print('\tInvalid OLS')
+            #===================================================================
+            return False
+        else:
+            return True
+    
     def _get_connection_weight(self, weight):
         """Returns connection weight if defined, else random value between -1 and 1."""
         
@@ -126,7 +259,51 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         # Get semantics of last neuron.
         last_semantics = last_neuron.semantics
         # Connect last neuron to output neuron.
-        self._connect_nodes([last_neuron], [neural_network.output_neuron], self._get_learning_step(last_semantics))
+        
+        ls = self._get_learning_step(last_semantics)
+        if self.learning_step == 'optimized' and self.bootstrap_ols == False and ls == 0:
+            # print('\tActivation function:', last_neuron.activation_function)
+            if len(self.zero_ls_history) > 0 and self.zero_ls_history[-1][2] == None:
+                self.zero_ls_history[-1][2] = last_neuron.activation_function
+                if last_neuron.activation_function in self.zero_ls_by_activation_function:
+                    count = self.zero_ls_by_activation_function[last_neuron.activation_function]
+                    self.zero_ls_by_activation_function[last_neuron.activation_function] = count + 1
+                else:
+                    self.zero_ls_by_activation_function[last_neuron.activation_function] = 1
+            
+            #===================================================================
+            # if last_neuron.activation_function != 'relu':
+            #     print('\tActivation function:', last_neuron.activation_function)
+            #     print(self.zero_ls_history[-1])
+            #     print()
+            #===================================================================
+        
+        if self.stopping_criterion.__class__ == algorithms.common.stopping_criterion.MaxGenerationsCriterion: 
+            if self.current_generation == self.stopping_criterion.max_generation:
+                
+                #===============================================================
+                # if self.bootstrap_ols:
+                #     if len(self.high_absolute_differences_history) > 0:
+                #         print(self.high_absolute_differences_history)
+                #         print('Number of high absolute differences:', len(self.high_absolute_differences_history))
+                #===============================================================
+                
+                #===============================================================
+                # if len(self.zero_ls_by_activation_function) > 0:
+                #     print(self.zero_ls_by_activation_function)
+                #     print()
+                #===============================================================
+                
+                #===================================================================
+                # if self.store_ls_history:
+                #     print(self.ls_history)
+                #===================================================================
+                pass
+        
+        if self.lr_intercept:
+            neural_network.output_neuron.input_connections[0].weight += self.lr_intercept
+        
+        self._connect_nodes([last_neuron], [neural_network.output_neuron], ls)
 
     def _create_solution(self, neural_network):
         """Creates solution for population."""
@@ -186,7 +363,11 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         # Create shallow copy of topology.
         neural_network = copy(topology)
         # Create output neuron.
-        neural_network.output_neuron = create_neuron('identity', None)
+        neural_network.output_neuron = create_output_neuron('identity', neural_network.bias)
+        #=======================================================================
+        # neural_network.output_neuron = create_neuron('identity', None)
+        #=======================================================================
+        
         # Create hidden layer.
         neural_network.hidden_layers = self._initialize_hidden_layers(neural_network)
         # Establish connections
@@ -259,8 +440,22 @@ class SemanticLearningMachine(EvolutionaryAlgorithm):
         self._connect_learning_step(neural_network)
         # Get most recent connection.
         connection = neural_network.output_neuron.input_connections[-1]
+        
         # Update semantics of output neuron.
-        neural_network.output_neuron.semantics += connection.from_node.semantics * connection.weight
+        if self.lr_intercept:
+            #===================================================================
+            # neural_network.output_neuron.semantics2 = copy(neural_network.output_neuron.semantics)
+            # neural_network.output_neuron.semantics2 += connection.from_node.semantics * connection.weight
+            #===================================================================
+            neural_network.output_neuron.semantics += connection.from_node.semantics * connection.weight + self.lr_intercept
+            #===================================================================
+            # print(neural_network.output_neuron.semantics2 - neural_network.output_neuron.semantics)
+            # print(self.lr_intercept)
+            # print()
+            #===================================================================
+        else:
+            neural_network.output_neuron.semantics += connection.from_node.semantics * connection.weight
+        
         # Return neural network.
         return neural_network
 

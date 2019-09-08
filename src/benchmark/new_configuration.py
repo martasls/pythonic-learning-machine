@@ -1,21 +1,20 @@
 import random
 
-from numpy import mean, median, linspace
-
 from algorithms.common.neural_network.neural_network import create_network_from_topology
-from algorithms.common.stopping_criterion import MaxGenerationsCriterion, ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
-from algorithms.semantic_learning_machine.algorithm import SemanticLearningMachine
-from algorithms.semantic_learning_machine.mutation_operator import Mutation2, Mutation3, Mutation4
+from algorithms.common.stopping_criterion import MaxGenerationsCriterion, \
+    ErrorDeviationVariationCriterion, TrainingImprovementEffectivenessCriterion
+from algorithms.semantic_learning_machine.mutation_operator import Mutation4
 from algorithms.simple_genetic_algorithm.crossover_operator import CrossoverOperatorArithmetic
 from algorithms.simple_genetic_algorithm.mutation_operator import MutationOperatorGaussian
 from algorithms.simple_genetic_algorithm.selection_operator import SelectionOperatorTournament
-from benchmark.algorithm import BenchmarkSLM, BenchmarkSLM_RST, BenchmarkSLM_RWT
-
+from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorFTNE, \
+    EvaluatorMLPC, EvaluatorMLPR
 
 DEFAULT_NUMBER_OF_COMBINATIONS = 30
 
 DEFAULT_POPULATION_SIZE = 50
 DEFAULT_NUMBER_OF_ITERATIONS = 100
+
 
 def generate_random_slm_bls_configuration(option=None, init_maximum_layers=5, maximum_iterations=100, maximum_learning_step=10, maximum_neuron_connection_weight=0.5, maximum_bias_connection_weight=1.0, mutation_maximum_new_neurons_per_layer=3):
     configuration = {}
@@ -220,51 +219,91 @@ def generate_random_slm_ols_edv_configuration(init_maximum_layers=5, maximum_ite
     return configuration
 
 
+def generate_random_neat_configuration(maximum_iterations=100):
+    configuration = {}
+    
+    """ https://neat-python.readthedocs.io/en/latest/config_file.html """
+    
+    configuration['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, maximum_iterations))
+    #===========================================================================
+    # configuration['stopping_criterion'] = MaxGenerationsCriterion(DEFAULT_NUMBER_OF_ITERATIONS)
+    #===========================================================================
+    
+    configuration['population_size'] = DEFAULT_POPULATION_SIZE
+    
+    # Jan: [3, 4]
+    """" Individuals whose genomic distance is less than this threshold are considered to be in the same species """ 
+    configuration['compatibility_threshold'] = random.randint(1, 10)
+    
+    # Jan: [1]
+    """ The coefficient for the disjoint and excess gene counts’ contribution to the genomic distance. """
+    configuration['compatibility_disjoint_coefficient'] = random.uniform(0.001, 1)
+    
+    # Jan: [1]
+    """ The coefficient for each weight, bias, or response multiplier difference’s contribution to the genomic distance (for homologous nodes or connections). This is also used as the value to add for differences in activation functions, aggregation functions, or enabled/disabled status. """
+    configuration['compatibility_weight_coefficient'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.1, 0.25]
+    """ The probability that mutation will add a connection between existing nodes. Valid values are in [0.0, 1.0]. """
+    configuration['conn_add_prob'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.1]
+    """ The probability that mutation will delete an existing connection. Valid values are in [0.0, 1.0]. """
+    configuration['conn_delete_prob'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.1, 0.25]
+    """ The probability that mutation will add a new node (essentially replacing an existing connection, the enabled status of which will be set to False). Valid values are in [0.0, 1.0]. """
+    configuration['node_add_prob'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.1]
+    """ The probability that mutation will delete an existing node (and all connections to it). Valid values are in [0.0, 1.0]. """
+    configuration['node_delete_prob'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.25]
+    """ The probability that mutation will change the weight of a connection by adding a random value. """
+    configuration['weight_mutate_rate'] = random.uniform(0.001, 1)
+    
+    # Jan: [0.25]
+    """ The standard deviation of the zero-centered normal/gaussian distribution from which a weight value mutation is drawn. """
+    configuration['weight_mutate_power'] = random.uniform(0.001, 5)
+    
+    return configuration
 
-####################################################################################
-#                       """ Ensemble Configurations """                            #
-####################################################################################
 
+def generate_random_ftne_configuration(maximum_iterations=100, maximum_number_of_layers=5, maximum_neurons_per_layer=5):
+    configuration = {}
+    
+    configuration['stopping_criterion'] = MaxGenerationsCriterion(random.randint(1, maximum_iterations))
+    #===========================================================================
+    # configuration['stopping_criterion'] = MaxGenerationsCriterion(DEFAULT_NUMBER_OF_ITERATIONS)
+    #===========================================================================
+    
+    configuration['population_size'] = DEFAULT_POPULATION_SIZE
+    
+    # Jan: [create_network_from_topology(topology) for topology in [[1], [2], [2, 2], [3, 3, 3], [5, 5, 5]]]
+    number_of_layers = random.randint(1, maximum_number_of_layers)
+    neurons_per_layer = [random.randint(1, maximum_neurons_per_layer) for i in range(number_of_layers)]
+    configuration['topology'] = create_network_from_topology(neurons_per_layer)
+    
+    # Jan: [SelectionOperatorTournament(5)]
+    tournament_size = random.randint(1, configuration['population_size'])
+    configuration['selection_operator'] = SelectionOperatorTournament(tournament_size)
+     
+    # Jan: [MutationOperatorGaussian(0.01), MutationOperatorGaussian(0.1)]
+    standard_deviation = random.uniform(0.001, 5)
+    configuration['mutation_operator'] = MutationOperatorGaussian(standard_deviation)
+     
+    # Jan: [CrossoverOperatorArithmetic()]
+    configuration['crossover_operator'] = CrossoverOperatorArithmetic()
+     
+    # Jan: [0.25, 0.5]
+    configuration['mutation_rate'] = random.uniform(0.001, 1)
+     
+    # Jan: [0.01, 0.1]
+    configuration['crossover_rate'] = random.uniform(0.001, 1)
+    
+    return configuration
 
-def get_config_simple_bagging_ensemble(base_learner, best_configuration, training_outer, testing, metric): 
-    config = {}
-    config['base_learner'] = _create_base_learner(base_learner, best_configuration, training_outer, testing, metric)
-    config['number_learners'] = 30
-    config['meta_learner'] = mean
-    return config
-
-
-def get_config_riw_ensemble(base_learner, best_configuration, training_outer, testing, metric):
-    config = {} 
-    config['base_learner'] = _create_base_learner(base_learner, best_configuration, training_outer, testing, metric)
-    config['number_learners'] = 30
-    config['meta_learner'] = mean
-    config['weight_range'] = 1
-    return config
-
-
-def get_config_boosting_ensemble(base_learner, best_configuration, nr_ensemble, training_outer, testing, metric): 
-    nr_ensemble = int(nr_ensemble)
-    config = {} 
-    config['base_learner'] = _create_base_learner(base_learner, best_configuration, training_outer, testing, metric)
-    config['number_learners'] = 30
-    if (nr_ensemble == 1 or nr_ensemble == 2):
-        config['meta_learner'] = median
-    else:  # 3 or 4
-        config['meta_learner'] = mean
-    if (nr_ensemble == 1 or nr_ensemble == 3):
-        config['learning_rate'] = 1
-    else: 
-        config['learning_rate'] = 'random'
-    return config 
-
-
-def _create_base_learner(algorithm, configurations, training_outer, testing, metric):
-    return algorithm(**configurations)
-
-####################################################################################
-#                           """ MLP configurations """                             #
-####################################################################################
 
 def generate_random_sgd_configuration(nr_instances):
     configuration = {}
@@ -357,340 +396,229 @@ def generate_random_adam_configuration(nr_instances):
     
     return configuration
 
-"""
+
+def generate_random_mlp_configuration(nr_instances):
+    solver_option = random.randint(0, 1)
+    if solver_option == 0:
+        configuration = generate_random_sgd_configuration(nr_instances)
+    else:
+        configuration = generate_random_adam_configuration(nr_instances)
+    return configuration
 
 
+def generate_random_mlp_configuration_training(nr_instances):
+    configuration = generate_random_mlp_configuration(nr_instances)
+    configuration['learning_rate_init'] = random.uniform(0.1, 100)
+    configuration['alpha'] = 0
+    return configuration
 
-_BASE_PARAMETERS = {
-    'number_generations_ols': 20, #changed from 200
-    'number_generations_fls': 100, 
-    'population_size': 100
+
+SLM_BLS = {
+    'slm_bls': {
+        'name_long': 'Semantic Learning Machine - Bounded Learning Step',
+        'name_short': 'SLM-BLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_bls_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-iterations_ols = list(range(1, 200 + 1, 1))
-stopping_criterion_ols = [MaxGenerationsCriterion(i) for i in iterations_ols]
-
-iterations_fls = list(range(1, 200 + 1, 1))
-stopping_criterion_fls = [MaxGenerationsCriterion(i) for i in iterations_fls]
-
-fixed_learning_steps = list(linspace(0.00001, 2, 1000))
-subset_ratios = list(linspace(0.01, 0.99, 99))
-
-
-
-_SLM_FLS_PARAMETERS = {
-    'stopping_criterion': stopping_criterion_fls,
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': fixed_learning_steps,
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [False]
+SLM_BLS_TRAINING = {
+    'slm_bls_training': {
+        'name_long': 'Semantic Learning Machine - Bounded Learning Step',
+        'name_short': 'SLM-BLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_bls_configuration_training,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_SLM_OLS_EDV_PARAMETERS = { 
-    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
-    'population_size': [100],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': ['optimized'], 
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [False]
+SLM_OLS = {
+    'slm_ols': {
+        'name_long': 'Semantic Learning Machine - Optimized Learning Step',
+        'name_short': 'SLM-OLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_ols_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_SLM_FLS_TIE_PARAMETERS = {
-    'stopping_criterion': [TrainingImprovementEffectivenessCriterion(0.25)], 
-    'population_size': [100],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': fixed_learning_steps,
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [False]
+SLM_LR_LS = {
+    'slm_lr_ls': {
+        'name_long': 'Semantic Learning Machine - Linear Regression Learning Step',
+        'name_short': 'SLM-LR-LS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_lr_ls_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_SLM_FLS_EDV_PARAMETERS = { 
-    'stopping_criterion': [ErrorDeviationVariationCriterion(0.25)], 
-    'population_size': [100],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': fixed_learning_steps, 
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [False]
+SLM_OLS_1_1 = {
+    'slm_ols_1_1': {
+        'name_long': '(1 + 1)-Semantic Learning Machine - Optimized Learning Step',
+        'name_short': '(1 + 1)-SLM-OLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_1_slm_ols_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-
-
-#SLM OLS with Random Weighting Technique
-_SLM_OLS_RWT_PARAMETERS = {
-    'stopping_criterion': stopping_criterion_ols, 
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': ['optimized'],
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [True],
-    'weight_range' : [1, 2] 
+SLM_OLS_1_5 = {
+    'slm_ols_1_5': {
+        'name_long': '(1 + 5)-Semantic Learning Machine - Optimized Learning Step',
+        'name_short': '(1 + 5)-SLM-OLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_5_slm_ols_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-#SLM FLS with Random Sampling Technique 
-_SLM_FLS_RST_PARAMETERS = { 
-    'stopping_criterion': stopping_criterion_fls, 
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': fixed_learning_steps,
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [True],
-    'random_weighting_technique': [False],
-    'subset_ratio': subset_ratios 
+SLM_OLS_1_10 = {
+    'slm_ols_1_10': {
+        'name_long': '(1 + 10)-Semantic Learning Machine - Optimized Learning Step',
+        'name_short': '(1 + 10)-SLM-OLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_10_slm_ols_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-#SLM FLS with Random Weighting Technique 
-_SLM_FLS_RWT_PARAMETERS = { 
-    'stopping_criterion': stopping_criterion_fls, 
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': fixed_learning_steps,
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [True],
-    'weight_range': [1, 2]
+SLM_LR_LS_1_1 = {
+    'slm_lr_ls_1_1': {
+        'name_long': '(1 + 1)-Semantic Learning Machine - Linear Regression Learning Step',
+        'name_short': '(1 + 1)-SLM-LR-LS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_1_slm_lr_ls_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_NEAT_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get(('number_generations')))],
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'compatibility_threshold': [3, 4],
-    'compatibility_disjoint_coefficient': [1],
-    'compatibility_weight_coefficient': [1],
-    'conn_add_prob': [0.1, 0.25],
-    'conn_delete_prob': [0.1],
-    'node_add_prob': [0.1, 0.25],
-    'node_delete_prob': [0.1],
-    'weight_mutate_rate': [0.25],
-    'weight_mutate_power': [0.25]
+SLM_LR_LS_1_5 = {
+    'slm_lr_ls_1_5': {
+        'name_long': '(1 + 5)-Semantic Learning Machine - Linear Regression Learning Step',
+        'name_short': '(1 + 5)-SLM-LR-LS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_5_slm_lr_ls_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_FTNE_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(_BASE_PARAMETERS.get('number_generations'))],
-    'population_size': [_BASE_PARAMETERS.get('population_size')],
-    'topology': [create_network_from_topology(topology) for topology in [[1], [2], [2, 2], [3, 3, 3], [5, 5, 5]]],
-    'selection_operator': [SelectionOperatorTournament(5)],
-    'mutation_operator': [MutationOperatorGaussian(0.01), MutationOperatorGaussian(0.1)],
-    'crossover_operator': [CrossoverOperatorArithmetic()],
-    'mutation_rate': [0.25, 0.5],
-    'crossover_rate': [0.01, 0.1]
+SLM_LR_LS_1_10 = {
+    'slm_lr_ls_1_10': {
+        'name_long': '(1 + 10)-Semantic Learning Machine - Linear Regression Learning Step',
+        'name_short': '(1 + 10)-SLM-LR-LS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_1_10_slm_lr_ls_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_SVM_PARAMETERS = {
-    'C': [c / 10 for c in range(1, 11)],
-    'kernel': ['linear', 'poly', 'rbf', 'sigmoid'],
-    'epsilon': [e / 10 for e in range(1, 6)],
-    'degree': [d for d in range(1, 5)],
-    'gamma': [g / 10 for g in range(1, 6)],
-    'coef0': [co / 10 for co in range(1, 6)],
-    'probability': [True]
+SLM_PROTECTED_OLS = {
+    'slm_protected_ols': {
+        'name_long': 'Semantic Learning Machine - Protected Optimized Learning Step',
+        'name_short': 'SLM-P-OLS',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_protected_ols_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_MLP_PARAMETERS = {
-    'hidden_layer_sizes': [(1), (2), (2, 2), (3, 3, 3), (5, 5, 5), (2, 2, 2, 2)],
-    'activation': ['identity', 'logistic', 'tanh', 'relu'],
-    'alpha': [10 ** -x for x in range(1, 7)],
-    'learning_rate_init': [10 ** -x for x in range(1, 7)]
+SLM_BOOTSTRAP_OLS_MEDIAN = {
+    'slm_bootstrap_ols_median': {
+        'name_long': 'Semantic Learning Machine - Bootstrap Optimized Learning Step (median)',
+        'name_short': 'SLM-B-OLS-median',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_bootstrap_ols_median_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_RF_PARAMETERS = {
-    'n_estimators': [25],
-    'max_depth': [1, 2, 5, None],
-    'min_samples_split': [0.01, 0.02, 0.05]
+SLM_BOOTSTRAP_OLS_MEAN = {
+    'slm_bootstrap_ols_mean': {
+        'name_long': 'Semantic Learning Machine - Bootstrap Optimized Learning Step (mean)',
+        'name_short': 'SLM-B-OLS-mean',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_bootstrap_ols_mean_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-
-
-def _create_svc_configuration_list(list_dict):
-    configuration_list = list()
-    for kernel in list_dict.get('kernel'):
-        if kernel == 'linear':
-            keys = []
-        if kernel == 'poly':
-            keys = ['degree', 'gamma', 'coef0']
-        if kernel == 'rbf':
-            keys = ['gamma']
-        if kernel == 'sigmoid':
-            keys = ['gamma', 'coef0']
-        keys.append('C')
-        keys.append('probability')
-        sub_dict = {k: list_dict[k] for k in keys if k in list_dict}
-        sub_dict['kernel'] = [kernel]
-        configuration_list.extend(_create_configuration_list(sub_dict))
-    return configuration_list
-
-def _create_svr_configuration_list(list_dict):
-    configuration_list = list()
-    for kernel in list_dict.get('kernel'):
-        if kernel == 'linear':
-            keys = []
-        if kernel == 'poly':
-            keys = ['degree', 'gamma', 'coef0']
-        if kernel == 'rbf':
-            keys = ['gamma']
-        if kernel == 'sigmoid':
-            keys = ['gamma', 'coef0']
-        keys.append('C')
-        keys.append('epsilon')
-        sub_dict = {k: list_dict[k] for k in keys if k in list_dict}
-        sub_dict['kernel'] = [kernel]
-        configuration_list.extend(_create_configuration_list(sub_dict))
-    return configuration_list
-
-SLM_FLS_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_PARAMETERS)
-SLM_OLS_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_PARAMETERS)
-
-SLM_OLS_EDV_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_EDV_PARAMETERS)
-SLM_FLS_TIE_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_TIE_PARAMETERS)
-SLM_FLS_EDV_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_EDV_PARAMETERS)
-
-
-SLM_OLS_RWT_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RWT_PARAMETERS)
-
-SLM_FLS_RST_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_RST_PARAMETERS)
-SLM_FLS_RWT_CONFIGURATIONS = _create_configuration_list(_SLM_FLS_RWT_PARAMETERS)
-
-NEAT_CONFIGURATIONS = _create_configuration_list(_NEAT_PARAMETERS)
-FTNE_CONFIGURATIONS = _create_configuration_list(_FTNE_PARAMETERS)
-SVC_CONFIGURATIONS = _create_svc_configuration_list(_SVM_PARAMETERS)
-SVR_CONFIGURATIONS = _create_svr_configuration_list(_SVM_PARAMETERS)
-MLP_CONFIGURATIONS = _create_configuration_list(_MLP_PARAMETERS)
-RF_CONFIGURATIONS = _create_configuration_list(_RF_PARAMETERS)
-
-"""
-
-"""
-def _create_configuration_list(list_dict):
-    return [{k:v for k, v in zip(list_dict.keys(), configuration)}
-            for configuration in list(product(*[list_dict[key] for key in list_dict.keys()]))]
-
-
-def _create_base_learner(algorithm, configurations):
-    return [algorithm(**configuration) for configuration in configurations]
-
-#SLM OLS with Random Sampling Technique
-_SLM_OLS_RST_PARAMETERS = { 
-    'stopping_criterion': [MaxGenerationsCriterion(20)], 
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': ['optimized'],
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [True],
-    'random_weighting_technique': [False],
-    'subset_ratio': [0.25, 0.75]
+NEAT = {
+    'neat': {
+        'name_long': 'NeuroEvolution of Augmented Topologies',
+        'name_short': 'NEAT',
+        'algorithms': [EvaluatorNEAT],
+        'configuration_method': generate_random_neat_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-_SLM_OLS_PARAMETERS = {
-    'stopping_criterion': [MaxGenerationsCriterion(20)], 
-    'population_size': [10],
-    'layers': [1, 2, 3, 4, 5],
-    'learning_step': ['optimized'],
-    'mutation_operator': [Mutation2()],
-    'random_sampling_technique': [False],
-    'random_weighting_technique': [False]
+FTNE = {
+    'ftne': {
+        'name_long': 'Fixed-Topology NeuroEvolution',
+        'name_short': 'FTNE',
+        'algorithms': [EvaluatorFTNE],
+        'configuration_method': generate_random_ftne_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-SLM_OLS_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_PARAMETERS)
-SLM_OLS_RST_CONFIGURATIONS = _create_configuration_list(_SLM_OLS_RST_PARAMETERS)
-
-_ENSEMBLE_PARAMETERS = {
-    'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
-    'number_learners': [25, 50, 75, 100],
-    'meta_learner': [mean]
+SLM_BLS_SSC = {
+    'slm_bls_ssc': {
+        'name_long': 'Semantic Learning Machine - Bounded Learning Step with Semantic Stopping Criterion',
+        'name_short': 'SLM-BLS-SSC',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_bls_tie_edv_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-# _ENSEMBLE_FLS_PARAMETERS = { 
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean]
-# }
-
-_ENSEMBLE_RST_PARAMETERS = {
-    'base_learner': _create_base_learner(BenchmarkSLM_RST, SLM_OLS_RST_CONFIGURATIONS),
-    'number_learners': [25, 50, 75, 100],
-    'meta_learner': [mean]
+SLM_OLS_SSC = {
+    'slm_ols_ssc': {
+        'name_long': 'Semantic Learning Machine - Optimized Learning Step with Semantic Stopping Criterion',
+        'name_short': 'SLM-OLS-SSC',
+        'algorithms': [EvaluatorSLM],
+        'configuration_method': generate_random_slm_ols_edv_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
 }
 
-# _ENSEMBLE_RWT_PARAMETERS = {
-#     'base_learner': _create_base_learner(BenchmarkSLM_RWT, SLM_OLS_RWT_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean]
-# }
+MLP_C = {
+    'mlp_c': {
+        'name_long': 'Multilayer Perceptron (SGD or ADAM solver)',
+        'name_short': 'MLP (SGD or ADAM)',
+        'algorithms': [EvaluatorMLPC],
+        'configuration_method': generate_random_mlp_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
+}
 
+MLP_C_TRAINING = {
+    'mlp_c_training': {
+        'name_long': 'Multilayer Perceptron (SGD or ADAM solver)',
+        'name_short': 'MLP (SGD or ADAM)',
+        'algorithms': [EvaluatorMLPC],
+        'configuration_method': generate_random_mlp_configuration_training,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
+}
 
-ENSEMBLE_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_PARAMETERS)
-# ENSEMBLE_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_FLS_PARAMETERS)
+MLP_R = {
+    'mlp_r': {
+        'name_long': 'Multilayer Perceptron (SGD or ADAM solver)',
+        'name_short': 'MLP (SGD or ADAM)',
+        'algorithms': [EvaluatorMLPR],
+        'configuration_method': generate_random_mlp_configuration,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
+}
 
-ENSEMBLE_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RST_PARAMETERS)
-# ENSEMBLE_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RWT_PARAMETERS)
-
-# _ENSEMBLE_BAGGING_PARAMETERS = { 
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS), 
-#     'number_learners': [25, 50, 75, 100], 
-#     'meta_learner': [mean]
-# }
-
-# _ENSEMBLE_BAGGING_FLS_PARAMETERS = { 
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS), 
-#     'number_learners': [25, 50, 75, 100], 
-#     'meta_learner': [mean]
-# }
-
-# _ENSEMBLE_BAGGING_RST_PARAMETERS = { 
-#     'base_learner': _create_base_learner(BenchmarkSLM_RST, SLM_OLS_RST_CONFIGURATIONS), 
-#     'number_learners': [25, 50, 75, 100], 
-#     'meta_learner': [mean]
-# }
-
-# _ENSEMBLE_BAGGING_RWT_PARAMETERS = { 
-#     'base_learner': _create_base_learner(BenchmarkSLM_RWT, SLM_OLS_RWT_CONFIGURATIONS), 
-#     'number_learners': [25, 50, 75, 100], 
-#     'meta_learner': [mean]
-# }
-
-# _ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS = {
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean],
-#     'weight_range': [1, 2]
-# }
-
-# _ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_PARAMETERS = {
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean],
-#     'weight_range': [1, 2]
-# }
-
-# _ENSEMBLE_BOOSTING_PARAMETERS = {
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_OLS_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean, median], 
-#     'learning_rate': [1, 'random']
-# }
-
-# _ENSEMBLE_BOOSTING_FLS_PARAMETERS = {
-#     'base_learner': _create_base_learner(SemanticLearningMachine, SLM_FLS_CONFIGURATIONS),
-#     'number_learners': [25, 50, 75, 100],
-#     'meta_learner': [mean, median], 
-#     'learning_rate': [1, 'random']
-# }
-
-# ENSEMBLE_BAGGING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_PARAMETERS)
-# ENSEMBLE_BAGGING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_FLS_PARAMETERS)
-
-# ENSEMBLE_BAGGING_RST_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RST_PARAMETERS)
-# ENSEMBLE_BAGGING_RWT_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BAGGING_RWT_PARAMETERS)
-
-# ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_PARAMETERS)
-# ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_PARAMETERS)
-
-# ENSEMBLE_BOOSTING_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BOOSTING_PARAMETERS)
-# ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS = _create_configuration_list(_ENSEMBLE_BOOSTING_FLS_PARAMETERS)
-
-# """
+MLP_R_TRAINING = {
+    'mlp_r_training': {
+        'name_long': 'Multilayer Perceptron (SGD or ADAM solver)',
+        'name_short': 'MLP (SGD or ADAM)',
+        'algorithms': [EvaluatorMLPR],
+        'configuration_method': generate_random_mlp_configuration_training,
+        'max_combinations': DEFAULT_NUMBER_OF_COMBINATIONS
+    }
+}

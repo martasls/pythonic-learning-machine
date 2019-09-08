@@ -1346,9 +1346,7 @@ def process_selected_datasets(datasets_names):
 	process_inner(datasets_names, datasets_folders)
 
 
-# Lock, stock, and barrel
-# def process_everything():
-def process_lock_stock_and_barrel():
+def process_all():
 	
 	datasets_names = []
 	datasets_folders = []
@@ -1365,6 +1363,6 @@ def process_lock_stock_and_barrel():
 
 if __name__ == '__main__':
 	
-	process_lock_stock_and_barrel()
+	process_all()
 	
 	# process_selected_datasets(datasets_names)

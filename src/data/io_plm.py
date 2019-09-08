@@ -1,6 +1,7 @@
 from os import pardir, makedirs, listdir
 from os.path import join, dirname, exists
 from pickle import dump, load
+from pmlb import fetch_data
 
 from pandas import read_csv, read_pickle
 
@@ -119,6 +120,9 @@ def load_standardized_samples(data_set_name, file_path=None):
         file_path = '03_standardized'
     
     return data_set_from_pickle(file_path, data_set_name)
+
+def load_pmlb_samples(data_set_name):
+    return fetch_data(data_set_name)
 
 
 def get_standardized_folder(): 

@@ -1,10 +1,11 @@
-from algorithms.common.metric import RootMeanSquaredError
-from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorSGA, EvaluatorSVC, \
-    EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR
-from benchmark.configuration import SLM_OLS_CONFIGURATIONS, NEAT_CONFIGURATIONS, SGA_CONFIGURATIONS, SVC_CONFIGURATIONS, \
-    SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, RF_CONFIGURATIONS
-from data.io_plm import load_samples
 import unittest
+
+from algorithms.common.metric import RootMeanSquaredError
+from benchmark.configuration import SLM_OLS_CONFIGURATIONS, NEAT_CONFIGURATIONS, FTNE_CONFIGURATIONS, SVC_CONFIGURATIONS, \
+    SVR_CONFIGURATIONS, MLP_CONFIGURATIONS, RF_CONFIGURATIONS
+from benchmark.evaluator import EvaluatorSLM, EvaluatorNEAT, EvaluatorFTNE, EvaluatorSVC, \
+    EvaluatorSVR, EvaluatorMLPC, EvaluatorMLPR, EvaluatorRFC, EvaluatorRFR
+from data.io_plm import load_samples
 
 
 class TestAlgorithm(unittest.TestCase):
@@ -25,10 +26,10 @@ class TestAlgorithm(unittest.TestCase):
         print(type(learner_meta))
         self.assertTrue(expr=learner_meta)
 
-    def test_evaluator_sga(self):
-        evaluator_sga = EvaluatorSGA(SGA_CONFIGURATIONS, self.training,
+    def test_evaluator_ftne(self):
+        evaluator_ftne = EvaluatorFTNE(FTNE_CONFIGURATIONS, self.training,
                                      self.validation, self.testing, RootMeanSquaredError)
-        learner_meta = evaluator_sga.run(time_limit=10, time_buffer=0.1, verbose=False)
+        learner_meta = evaluator_ftne.run(time_limit=10, time_buffer=0.1, verbose=False)
         self.assertTrue(expr=learner_meta)
 
     def test_evaluator_svc(self):

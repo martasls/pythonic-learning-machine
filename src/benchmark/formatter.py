@@ -30,24 +30,6 @@ def _format_static_table(results, metric):
     return pd.DataFrame.from_dict(values)
 
 
-# -IG- not called
-def _get_avg_value(results, dict_to_get, value_to_get):
-    dictionaries = _get_dictionaries_by_metric(results, dict_to_get)
-    values = {k: _get_values_from_dictionary(dictionaries[k], dict_to_get) for k in dictionaries.keys()}
-    values_to_get = {k: _get_values_from_dictionary(values[k], value_to_get) for k in dictionaries.keys()}
-    values_saved = {}
-    if value_to_get == 'stopping_criterion':
-        for key, value in values_to_get.items(): 
-            if type(value[0]) == MaxGenerationsCriterion:
-                nr_generations = [item.max_generation for item in value]
-                values_saved[key] = mean(nr_generations)
-    else: 
-        for key, value in values_to_get.items(): 
-            if type(value[0]) != str: 
-                values_saved[key] = mean(value)
-    return pd.DataFrame.from_dict(values_saved, orient='index')
-
-
 def _format_configuration_table(results, value_to_get):
     """formats number generations, number of layers, learning step value, subset ratio"""
     dictionaries = _get_dictionaries_by_metric(results, 'best_configuration')
@@ -367,8 +349,11 @@ def format_results(results, classification):
     
     formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
     
-    # formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
-    # formatted_results['number_connections'] = _format_topology_table(results, 'connections')
+    formatted_results['slm_number_neurons'] = _format_topology_table(results, 'neurons')
+    formatted_results['slm_number_connections'] = _format_topology_table(results, 'connections')
+    
+    # number of layers? TODO
+
     # formatted_results['training_value_evolution'] = _format_evo_table(
     #    results, 'training_value_evolution')
     # formatted_results['testing_value_evolution'] = _format_evo_table(
@@ -454,32 +439,16 @@ def format_best_result(formatted_benchmark, best_result, classification, algo):
     # formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
     # formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
     
-    if algo == 'slm':
-        formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
-    elif algo == 'mlp':
-        formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
-    else:
-        print('\n\t\t\t[format_best_result] Should not happen!')
+    #===========================================================================
+    # if algo == 'slm':
+    #     formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
+    # elif algo == 'mlp':
+    #     formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
+    # else:
+    #     print('\n\t\t\t[format_best_result] Should not happen!')
+    #===========================================================================
     
     return formatted_benchmark
-
-def format_results_xcs(results): 
-    formatted_benchmark = {}
-    formatted_benchmark['xcs_training_accuracy'] = _format_static_table(results, 'training_accuracy')
-    formatted_benchmark['xcs_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
-    formatted_benchmark['xcs_best_configuration'] = _format_static_table(results, 'best_configuration')
-
-    formatted_benchmark['xcs_avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
-    formatted_benchmark['xcs_avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
-
-    formatted_benchmark['xcs_avg_inner_training_accuracy'] = _format_static_table(results, 'avg_inner_training_accuracy')
-    formatted_benchmark['xcs_avg_inner_validation_accuracy'] = _format_static_table(results, 'avg_inner_validation_accuracy')
-    return formatted_benchmark
-
-def format_best_result_xcs(formatted_benchmark, best_result, algo): 
-    formatted_benchmark[algo + '_best_result_training_accuracy'] = _format_static_list(best_result, 'training_accuracy', algo)
-    formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_list(best_result, 'testing_accuracy', algo)
-    return formatted_benchmark 
 
 #===============================================================================
 # def merge_best_results_testing_value(formatted_benchmark):
@@ -530,9 +499,108 @@ def relabel_best_model_names(model_names, algo):
     #return [algo.upper() for model_name in model_names]
     return [model_name.upper() for model_name in model_names]
 
+def general_format_results(formatted_results, results, classification, algo):
+    
+    #print(results[algo][0])
+    entries = results[algo][0]
+    
+    if classification:
+        formatted_results[algo + '_training_accuracy'] = _format_static_table(results, 'training_accuracy')
+        formatted_results[algo + '_testing_accuracy'] = _format_static_table(results, 'testing_accuracy')
+    else:
+        formatted_results[algo + '_training_value'] = _format_static_table(results, 'training_value')
+        formatted_results[algo + '_testing_value'] = _format_static_table(results, 'testing_value')
+    
+    formatted_results[algo + '_best_configuration'] = _format_static_table(results, 'best_configuration')
+    # TEMP
+    #===========================================================================
+    # formatted_results[algo + '_training_value'] = _format_static_table(results, 'training_value')
+    # formatted_results[algo + '_testing_value'] = _format_static_table(results, 'testing_value')
+    #===========================================================================
+    # formatted_results[algo + '_processing_time'] = _format_processing_time_table(results)
+    formatted_results[algo + '_avg_inner_training_error'] = _format_static_table(results, 'avg_inner_training_error')
+    formatted_results[algo + '_avg_inner_validation_error'] = _format_static_table(results, 'avg_inner_validation_error')
+    
+    if classification:
+        formatted_results[algo + '_avg_inner_training_accuracy'] = _format_static_table(results, 'avg_inner_training_accuracy')
+        formatted_results[algo + '_avg_inner_validation_accuracy'] = _format_static_table(results, 'avg_inner_validation_accuracy')
+    
+    formatted_results[algo + '_number_generations'] = _format_configuration_table(results, 'stopping_criterion')
+    if 'learning_step' in entries:
+        formatted_results[algo + '_learning_step_value'] = _format_configuration_table(results, 'learning_step')
+    if 'layers' in entries:
+        formatted_results[algo + '_number_layers'] = _format_configuration_table(results, 'layers')
+    
+    #===========================================================================
+    # formatted_results[algo + '_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
+    # formatted_results[algo + '_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
+    # formatted_results[algo + '_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
+    #===========================================================================
+    
+    formatted_results[algo + '_training_time'] = _format_static_table(results, 'training_time')
+    
+    # formatted_results['number_neurons'] = _format_topology_table(results, 'neurons')
+    # formatted_results['number_connections'] = _format_topology_table(results, 'connections')
+    # formatted_results['training_value_evolution'] = _format_evo_table(
+    #    results, 'training_value_evolution')
+    # formatted_results['testing_value_evolution'] = _format_evo_table(
+    #    results, 'testing_value_evolution')
+    # formatted_results['processing_time_evolution'] = _format_evo_table(results, 'processing_time')
 
+    if 'mlp' in algo:     
+        """ MLP part """
+        formatted_results[algo + '_number_iterations'] = _format_mlp_configuration_table(results, 'max_iter')
+        formatted_results[algo + '_learning_rate'] = _format_mlp_configuration_table(results, 'learning_rate_init')
+        formatted_results[algo + '_number_layers'] = _format_mlp_configuration_table(results, 'hidden_layer_sizes', 'number_layers')
+        formatted_results[algo + '_number_neurons'] = _format_mlp_configuration_table(results, 'hidden_layer_sizes', 'number_neurons')  # totals, considering all the hidden layers 
+        formatted_results[algo + '_alpha'] = _format_mlp_configuration_table(results, 'alpha')
+        #formatted_results[algo + '_activation_function_frequency'] = _format_mlp_activation_function_frequency(results)
+        #formatted_results[algo + '_penalty_frequency'] = _format_mlp_penalty_frequency(results)
+        formatted_results[algo + '_batch_size'] = _format_mlp_sgd_adam_table(results, 'batch_size')
+        formatted_results[algo + '_shuffle'] = _format_mlp_sgd_adam_table(results, 'shuffle')
+        formatted_results[algo + '_momentum'] = _format_mlp_sgd_adam_table(results, 'momentum')
+        formatted_results[algo + '_nesterovs_momentum'] = _format_mlp_sgd_adam_table(results, 'nesterovs_momentum')
+        formatted_results[algo + '_beta_1'] = _format_mlp_sgd_adam_table(results, 'beta_1')
+        formatted_results[algo + '_beta_2'] = _format_mlp_sgd_adam_table(results, 'beta_2')
+        # formatted_results[algo + '_training_time'] = _format_static_table(results, 'training_time')
+        # formatted_results[algo + '_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
+    
+    return formatted_results
 
-def format_benchmark(benchmark):
+def general_format_best_result(formatted_benchmark, best_result, classification, algo):
+    
+    if classification:
+        formatted_benchmark[algo + '_best_result_training_accuracy'] = _format_static_list(best_result, 'training_accuracy', algo)
+        formatted_benchmark[algo + '_best_result_testing_accuracy'] = _format_static_list(best_result, 'testing_accuracy', algo)
+        
+        formatted_benchmark[algo + '_best_result_training_value'] = formatted_benchmark[algo + '_best_result_training_accuracy']
+        formatted_benchmark[algo + '_best_result_testing_value'] = formatted_benchmark[algo + '_best_result_testing_accuracy']
+    
+    else:
+        formatted_benchmark[algo + '_best_result_training_value'] = _format_static_list(best_result, 'training_value', algo)
+        formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_list(best_result, 'testing_value', algo)
+    
+    # TEMP
+    #===========================================================================
+    # formatted_benchmark[algo + '_best_result_training_value'] = _format_static_list(best_result, 'training_value', algo)
+    # formatted_benchmark[algo + '_best_result_testing_value'] = _format_static_list(best_result, 'testing_value', algo)
+    #===========================================================================
+    formatted_benchmark[algo + '_best_result_configuration'] = _format_static_list(best_result, 'best_overall_configuration', algo)
+    # formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
+    # formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
+    
+    #===========================================================================
+    # if algo == 'slm':
+    #     formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
+    # elif algo == 'mlp':
+    #     formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
+    # else:
+    #     print('\n\t\t\t[format_best_result] Should not happen!')
+    #===========================================================================
+    
+    return formatted_benchmark
+
+def general_format_benchmark(benchmark):
     
     output_path = os.path.join(_get_path_to_data_dir(), '06_formatted', benchmark.data_set_name)
     
@@ -546,26 +614,87 @@ def format_benchmark(benchmark):
         if 'rfr' in benchmark.results.keys():
             del benchmark.results['rfr']
     
-    if 'slm_fls_group' in benchmark.models.keys():
-        formatted_benchmark = format_results(benchmark.results, benchmark.classification)
-        # TEMP
-        #=======================================================================
-        # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
-        #=======================================================================
-        formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'slm')
-    elif 'xcs' in benchmark.models.keys(): 
-        formatted_benchmark = format_results_xcs(benchmark.results)
+    formatted_benchmark = {}
+    for algo in benchmark.models.keys():
+        formatted_benchmark = general_format_results(formatted_benchmark, benchmark.results, benchmark.classification, algo)
+        formatted_benchmark = general_format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, algo)
+    
+    model_names_dict = get_model_names_dict(benchmark)
+    
+    #ensemble_names_dict = get_ensemble_names_dict(benchmark)
+    # TEMP
+    algo = None
+    
+    for key, value in formatted_benchmark.items():
+        if 'evolution' in key:
+            i = 0
+            for tbl in value:
+                if i == 0:
+                    ext = 'mean'
+                else:
+                    ext = 'se'
+                tbl.columns = relabel_model_names(tbl.columns, model_names_dict)
+                path = os.path.join(output_path, key + '_' + ext + '.csv')
+                tbl.to_csv(path)
+                i += 1
+        elif 'ensemble' in key:
+            if 'slm' in key: 
+                algo = 'SLM'
+            elif 'mlp' in key: 
+                algo = 'MLP'
+            else:
+                print('\n\t\t\t[format_benchmark, 2 of 2] Should not happen!')
+            
+            formatted_benchmark[key].columns = relabel_ensemble_model_names(value.columns, ensemble_names_dict, algo)
+            path = os.path.join(output_path, key + '.csv')
+            formatted_benchmark[key].to_csv(path)
+        elif 'best_result' in key:
+            # TEMP
+            formatted_benchmark[key].columns = relabel_best_model_names(value.columns, algo)
+            path = os.path.join(output_path, key + '.csv')
+            formatted_benchmark[key].to_csv(path)
+        else: 
+            formatted_benchmark[key].columns = relabel_model_names(value.columns, model_names_dict)
+            path = os.path.join(output_path, key + '.csv')
+            formatted_benchmark[key].to_csv(path)
+    
 
-        formatted_benchmark = format_best_result_xcs(formatted_benchmark, benchmark.best_result, 'xcs')
-    elif ('mlpc_sgd' in benchmark.models.keys() or 'mlpr_sgd' in benchmark.models.keys()):
+
+def format_benchmark(benchmark):
+    
+    output_path = os.path.join(_get_path_to_data_dir(), '06_formatted', benchmark.data_set_name)
+    
+    # If 'file_path_ext' does not exist, create 'file_path_ext'.
+    if not os.path.exists(output_path):
+        os.makedirs(output_path)
+    
+    if benchmark.benchmark_id == 'slm':
+        formatted_benchmark = format_results(benchmark.results, benchmark.classification)
+        #formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
+        formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'slm')
+    elif benchmark.benchmark_id == 'mlp':
         formatted_benchmark = format_results_mlp(benchmark.results, benchmark.classification)
-        # TEMP
-        #=======================================================================
-        # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
-        #=======================================================================
+        formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
         formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'mlp')
-    else:
-        print('\n\t\t\t[format_benchmark, 1 of 2] Should not happen!')
+    else: 
+        print('None of the above - should not happen')
+    
+    # if 'slm_fls_group' in benchmark.models.keys():
+    #     formatted_benchmark = format_results(benchmark.results, benchmark.classification)
+    #     # TEMP
+    #     #=======================================================================
+    #     # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
+    #     #=======================================================================
+    #     formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'slm')
+    # elif ('mlpc_sgd' in benchmark.models.keys() or 'mlpr_sgd' in benchmark.models.keys()):
+    #     formatted_benchmark = format_results_mlp(benchmark.results, benchmark.classification)
+    #     # TEMP
+    #     #=======================================================================
+    #     # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
+    #     #=======================================================================
+    #     formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'mlp')
+    # else:
+    #     print('\n\t\t\t[format_benchmark, 1 of 2] Should not happen!')
 
     model_names_dict = get_model_names_dict(benchmark)
     
@@ -608,11 +737,15 @@ def format_benchmark(benchmark):
 
 
 def merge_best_results(path): 
-    slm_best_result_testing_value = pd.read_csv(os.path.join(path, 'slm_best_result_testing_value.csv'))
-    slm_best_result_testing_value = slm_best_result_testing_value.drop(slm_best_result_testing_value.columns[0], axis=1) 
-    mlp_best_result_testing_value = pd.read_csv(os.path.join(path, 'mlp_best_result_testing_value.csv'))
-    mlp_best_result_testing_value = mlp_best_result_testing_value.drop(mlp_best_result_testing_value.columns[0], axis=1)
-    frames = [slm_best_result_testing_value, mlp_best_result_testing_value]
+    try: 
+        slm_best_result_testing_value = pd.read_csv(os.path.join(path, 'slm_best_result_testing_value.csv'))
+        slm_best_result_testing_value = slm_best_result_testing_value.drop(slm_best_result_testing_value.columns[0], axis=1)     
+        mlp_best_result_testing_value = pd.read_csv(os.path.join(path, 'mlp_best_result_testing_value.csv'))
+        mlp_best_result_testing_value = mlp_best_result_testing_value.drop(mlp_best_result_testing_value.columns[0], axis=1)
+        frames = [slm_best_result_testing_value, mlp_best_result_testing_value]
+    
+    except:
+        print('problem with one of the data sets')
     
     # TEMP
     #===========================================================================

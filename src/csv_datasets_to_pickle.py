@@ -26,7 +26,16 @@ def all_datasets_to_pickle():
 
 if __name__ == '__main__':
 
-    #all_datasets_to_pickle()
+    # all_datasets_to_pickle()
     
     base_folder = join(dirname(__file__), pardir, 'data_sets', '02_cleaned')
-    dataset_to_pickle(base_folder, 'c_android.csv')
+    #===========================================================================
+    # dataset_to_pickle(base_folder, 'c_android.csv')
+    #===========================================================================
+    
+    """
+    196 features
+    1290 instances
+    1 output (regression)
+    """
+    dataset_to_pickle(base_folder, 'r_kazuhiro.csv')

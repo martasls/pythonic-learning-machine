@@ -11,8 +11,6 @@ from data.extract import generate_sub_training_set, generate_training_target, is
 import numpy as np 
 from utils.useful_methods import generate_random_weight_vector
 
-from xcs import XCSAlgorithm
-
 _time_seconds = lambda: default_timer()
 
 
@@ -25,11 +23,6 @@ def _benchmark_fit(algorithm, input_matrix, target_vector, metric, verbose):
     parent.fit(algorithm, input_matrix, target_vector, metric, verbose)
     return algorithm.log
 
-def _benchmark_fit_xcs(algorithm, input_matrix, target_vector, metric, verbose):
-    pass 
-
-def _benchmark_run_xcs(algorithm, verbose=False):
-    pass
 
 def _benchmark_run(algorithm, verbose=False):
     parent = _get_parent(algorithm)
@@ -47,6 +40,9 @@ def _benchmark_run(algorithm, verbose=False):
         
         #auroc = Accuracy.evaluate(algorithm.champion.predictions, algorithm.target_vector)
         #print('\t\t\t\tChampion at iteration', algorithm.current_generation, ', AUROC', auroc, ', RMSE', algorithm.champion.value)
+        
+        if algorithm.current_generation % 10 == 0:
+            print('\t\t\t\tChampion at iteration', algorithm.current_generation, ', RMSE', algorithm.champion.value)
         
         if verbose:
             parent._print_generation(algorithm)
@@ -168,11 +164,3 @@ class BenchmarkSLM_RWT(SemanticLearningMachine):
 
     def __repr__(self):
         return 'BenchmarkSLM_RWT'
-
-class BenchmarkXCS(XCSAlgorithm):
-    
-    fit = _benchmark_fit_xcs
-    _run = _benchmark_run_xcs
-
-    def __repr__(self):
-        return 'BenchmarkXCS'

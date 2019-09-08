@@ -2,9 +2,9 @@
 import os
 
 from data.io_plm import get_benchmark_folder
-from extract_to_csv import process_selected_benchmarks as process_to_csv
-from extract_to_generalization_boxplots import process_lock_stock_and_barrel as process_to_boxplot
-from extract_to_latex_tables import process_lock_stock_and_barrel as process_to_latex
+from extract_to_csv import process_selected_benchmarks_csv as process_to_csv
+from extract_to_generalization_boxplots import process_all as process_to_boxplot
+from extract_to_latex_tables import process_all as process_to_latex
 
 
 def process_inner(benchmarks_paths):
@@ -12,7 +12,7 @@ def process_inner(benchmarks_paths):
     # process_to_csv()
     process_to_csv(benchmarks_paths)
     
-    process_to_latex()
+    #process_to_latex()
     
     process_to_boxplot()
 
@@ -22,9 +22,8 @@ def process_selected_benchmarks(benchmarks_paths):
     process_inner(benchmarks_paths)
 
 
-# Lock, stock, and barrel
-# def process_everything():
-def process_lock_stock_and_barrel():
+
+def process_all():
     
     benchmarks_paths = []
     for folder in os.listdir(get_benchmark_folder()):
@@ -37,17 +36,21 @@ def process_lock_stock_and_barrel():
 
 if __name__ == '__main__':
     
-    # process_lock_stock_and_barrel()
+    # process_all()
     
     benchmarks_paths = []
     
-    # ensembles
-    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_cancer', 'c_cancer_slm__2019_02_06__06_33_12.pkl')]
-    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_credit', 'c_credit_slm__2019_02_06__17_58_00.pkl')]
-    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_diabetes', 'c_diabetes_slm__2019_02_06__17_58_00.pkl')]
-    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_sonar', 'c_sonar_slm__2019_02_06__17_58_00.pkl')]
+    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_credit', 'c_credit_slm__2019_07_06__12_32_56.pkl')]
+    benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_credit', 'c_credit_mlp-sgd-adam__2019_07_06__12_46_54.pkl')]
     
+
     #===========================================================================
+    # ensembles
+    # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_credit', 'c_credit_slm__2019_02_06__17_58_00.pkl')]
+    # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_diabetes', 'c_diabetes_slm__2019_02_06__17_58_00.pkl')]
+    # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'c_sonar', 'c_sonar_slm__2019_02_06__17_58_00.pkl')]
+    
+
     # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'r_concrete', 'r_concrete_slm__2019_02_05__06_13_44.pkl')]
     # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'r_concrete', 'r_concrete_mlp-sgd-adam__2019_02_05__21_14_31.pkl')]
     # # benchmarks_paths += [os.path.join(get_benchmark_folder(), 'r_concrete', 'r_concrete_mlp__2019_02_05__19_26_39.pkl')]
