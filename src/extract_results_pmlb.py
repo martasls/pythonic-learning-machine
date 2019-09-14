@@ -10,8 +10,6 @@ from extract_to_latex_tables import process_all as process_to_latex
 
 if __name__ == '__main__':
 
-
-    
     # benchmark_paths = []
 
     # for folder in os.listdir(get_benchmark_folder()):
