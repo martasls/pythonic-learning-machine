@@ -122,7 +122,10 @@ def load_standardized_samples(data_set_name, file_path=None):
     return data_set_from_pickle(file_path, data_set_name)
 
 def load_pmlb_samples(data_set_name):
-    return fetch_data(data_set_name)
+    if data_set_name == 'clean1' or data_set_name == 'clean2':
+        df = fetch_data(data_set_name)
+        df = df.drop(['molecule_name', 'conformation_name'], axis=1)
+    return df
 
 
 def get_standardized_folder(): 
