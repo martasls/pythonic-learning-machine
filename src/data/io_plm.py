@@ -125,6 +125,12 @@ def load_pmlb_samples(data_set_name):
     if data_set_name == 'clean1' or data_set_name == 'clean2':
         df = fetch_data(data_set_name)
         df = df.drop(['molecule_name', 'conformation_name'], axis=1)
+    elif data_set_name == 'breast-cancer-wisconsin':
+        df = load_standardized_samples('c_cancer')
+    elif data_set_name == 'diabetes':
+        df = load_standardized_samples('c_diabetes')
+    else:
+        df = fetch_data(data_set_name)
     return df
 
 
