@@ -1,0 +1,27 @@
+\begin{table}
+\centering
+\caption{Momentum in MLP SGD}
+\label{tab:momentum}
+\begin{tabular}{lc}
+\bf{Dataset} & \bf{Momentum} \\ \hline
+\bf{agaricus-lepiota} & 0.518 +- 0.281 \\ \hline
+\bf{backache} & 0.572 +- 0.247 \\ \hline
+\bf{breast-cancer-wisconsin} & 0.396 +- 0.271 \\ \hline
+\bf{clean1} & 0.449 +- 0.278 \\ \hline
+\bf{clean2} & 0.405 +- 0.242 \\ \hline
+\bf{coil2000} & 0.489 +- 0.283 \\ \hline
+\bf{credit-g} & 0.449 +- 0.268 \\ \hline
+\bf{diabetes} & 0.430 +- 0.292 \\ \hline
+\bf{dis} & 0.466 +- 0.288 \\ \hline
+\bf{hill-valley-without-noise} & 0.401 +- 0.263 \\ \hline
+\bf{hill-valley-with-noise} & 0.516 +- 0.259 \\ \hline
+\bf{hypothyroid} & 0.530 +- 0.299 \\ \hline
+\bf{ionosphere} & 0.476 +- 0.288 \\ \hline
+\bf{kr-vs-kp} & 0.459 +- 0.310 \\ \hline
+\bf{molecular-biology-promoters} & 0.494 +- 0.284 \\ \hline
+\bf{sonar} & 0.499 +- 0.332 \\ \hline
+\bf{spambase} & 0.412 +- 0.305 \\ \hline
+\bf{spectf} & 0.397 +- 0.318 \\ \hline
+\bf{tokyo1} & 0.332 +- 0.249
+\end{tabular}
+\end{table}

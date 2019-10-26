@@ -1,0 +1,28 @@
+\begin{table*}
+\centering
+\caption{L2 penalty use by MLP variant}
+\label{tab:L2-penalty-use}
+\begin{tabular}{lcccc}
+\multirow{2}{*}{\bf{Dataset}} & \multicolumn{2}{c}{\bf{Adam}} & \multicolumn{2}{c}{\bf{SGD}} \\ \cline{2-7}
+& \bf{With L2 penalty} & \bf{Without L2 penalty} & \bf{With L2 penalty} & \bf{Without L2 penalty} & \bf{With L2 penalty} & \bf{Without L2 penalty} \\ \hline
+\bf{agaricus-lepiota} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{backache} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{breast-cancer-wisconsin} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{clean1} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{clean2} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{coil2000} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{credit-g} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{diabetes} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{dis} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{hill-valley-without-noise} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{hill-valley-with-noise} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{hypothyroid} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{ionosphere} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{kr-vs-kp} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{molecular-biology-promoters} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{sonar} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{spambase} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{spectf} & 0 & 30 & 0 & 30 \\ \cline{2-7}
+\bf{tokyo1} & 0 & 30 & 0 & 30
+\end{tabular}
+\end{table*}

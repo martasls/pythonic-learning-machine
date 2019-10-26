@@ -1,0 +1,27 @@
+\begin{table}
+\centering
+\caption{Nesterovs momentum use in MLP SGD}
+\label{tab:nesterovs-momentum}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{With} & \bf{Without} \\ \hline
+\bf{agaricus-lepiota} & 11 & 19 \\ \hline
+\bf{backache} & 11 & 19 \\ \hline
+\bf{breast-cancer-wisconsin} & 14 & 16 \\ \hline
+\bf{clean1} & 12 & 18 \\ \hline
+\bf{clean2} & 14 & 16 \\ \hline
+\bf{coil2000} & 17 & 13 \\ \hline
+\bf{credit-g} & 14 & 16 \\ \hline
+\bf{diabetes} & 13 & 17 \\ \hline
+\bf{dis} & 14 & 16 \\ \hline
+\bf{hill-valley-without-noise} & 9 & 21 \\ \hline
+\bf{hill-valley-with-noise} & 14 & 16 \\ \hline
+\bf{hypothyroid} & 14 & 16 \\ \hline
+\bf{ionosphere} & 19 & 11 \\ \hline
+\bf{kr-vs-kp} & 15 & 15 \\ \hline
+\bf{molecular-biology-promoters} & 9 & 21 \\ \hline
+\bf{sonar} & 18 & 12 \\ \hline
+\bf{spambase} & 14 & 16 \\ \hline
+\bf{spectf} & 19 & 11 \\ \hline
+\bf{tokyo1} & 18 & 12
+\end{tabular}
+\end{table}

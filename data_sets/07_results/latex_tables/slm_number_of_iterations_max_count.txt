@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{[Internal results] Number of times that the maximum number of iterations was reached}
+\label{tab:slm-number-of-iterations-max-count}
+\begin{tabular}{lcccc}
+\bf{Dataset} & \bf{BLS + TIE/EDV} & \bf{OLS variants} & \bf{BLS variants} & \bf{OLS + EDV} \\ \hline
+\bf{agaricus-lepiota} & 1 & 30 & 30 & 0 \\ \hline
+\bf{backache} & 0 & 13 & 28 & 0 \\ \hline
+\bf{breast-cancer-wisconsin} & 0 & 30 & 29 & 0 \\ \hline
+\bf{clean1} & 1 & 30 & 29 & 0 \\ \hline
+\bf{clean2} & 0 & 30 & 30 & 0 \\ \hline
+\bf{coil2000} & 0 & 23 & 23 & 0 \\ \hline
+\bf{credit-g} & 0 & 28 & 29 & 0 \\ \hline
+\bf{diabetes} & 1 & 29 & 29 & 0 \\ \hline
+\bf{dis} & 0 & 27 & 25 & 0 \\ \hline
+\bf{hill-valley-without-noise} & 1 & 30 & 29 & 0 \\ \hline
+\bf{hill-valley-with-noise} & 2 & 30 & 29 & 0 \\ \hline
+\bf{hypothyroid} & 0 & 30 & 28 & 0 \\ \hline
+\bf{ionosphere} & 0 & 29 & 29 & 0 \\ \hline
+\bf{kr-vs-kp} & 0 & 30 & 30 & 0 \\ \hline
+\bf{molecular-biology-promoters} & 1 & 26 & 30 & 0 \\ \hline
+\bf{sonar} & 0 & 29 & 30 & 0 \\ \hline
+\bf{spambase} & 0 & 30 & 29 & 0 \\ \hline
+\bf{spectf} & 0 & 30 & 30 & 0 \\ \hline
+\bf{tokyo1} & 0 & 30 & 29 & 0
+\end{tabular}
+\end{table*}

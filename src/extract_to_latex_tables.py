@@ -122,12 +122,12 @@ def get_labels_from_names(names):
 	labels = []
 
 	for i in names:
-		if i == 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT':
-			labels.append('FLS variants')
+		if i == 'SLM (BLS), SLM (BLS) + RST, SLM (BLS) + RWT':
+			labels.append('BLS variants')
 		elif i == 'SLM (OLS), SLM (OLS) + RST, SLM (OLS) + RWT':
 			labels.append('OLS variants')
-		elif i == 'SLM (FLS) + TIE, SLM (FLS) + EDV':
-			labels.append('FLS + TIE/EDV')
+		elif i == 'SLM (BLS) + TIE, SLM (BLS) + EDV':
+			labels.append('BLS + TIE/EDV')
 		elif i == 'SLM (OLS) + EDV':
 			labels.append('OLS + EDV')
 		elif i == 'MLP (LBFGS)':
@@ -188,10 +188,14 @@ def get_dataset_label_from_name(name):
 	
 	label = None
 	
-	if name == 'r_ppb':
-		label = 'PPB'
+	if name == 'Hill_Valley_without_noise':
+		label = 'hill-valley-without-noise'
+	elif name == 'Hill_Valley_with_noise':
+		label = 'hill-valley-with-noise'
+	elif name == 'molecular-biology_promoters':
+		label = 'molecular-biology-promoters'
 	else:
-		label = name[2:].capitalize()
+		label = name #name.capitalize()
 		# print('\t\tUnknown dataset with name:', name)
 
 	return label
@@ -217,6 +221,31 @@ def end_table(output_file, two_columns=False):
 		output_file.write('\\end{table*}\n')
 	else:
 		output_file.write('\\end{table}\n')
+
+
+def process_validation_auroc(datasets_names, all_data, labels, output_file, caption='Validation AUROC', 
+								label='tab:validation-auroc', two_columns=False):
+
+	begin_table(output_file, caption, label, two_columns)
+
+	labels = labels[0]
+	write_labels(output_file, labels)
+
+	for dataset_index in range(len(datasets_names)):
+		output_file.write('\\bf{%s}' % get_dataset_label_from_name(datasets_names[dataset_index]))
+		data = all_data[dataset_index]
+		for method_index in range(len(labels)):
+			s = data[method_index + 1].astype(float)
+			mean = s.mean()
+			std = s.std()
+			output_file.write(' & %.3f +- %.3f' % (mean, std))
+		
+		if dataset_index != len(datasets_names) - 1:
+			output_file.write(' \\\\ \\hline')
+		output_file.write('\n')
+		
+	end_table(output_file, two_columns=two_columns)
+
 
 
 def process_validation_error(datasets_names, all_data, labels, output_file, caption='Validation error', label='tab:validation-error', two_columns=False):
@@ -395,7 +424,7 @@ def process_subset_ratio(datasets_names, all_data, labels, output_file, caption=
 	end_table(output_file, two_columns=two_columns)
 
 
-def process_slm_fls_ssc(datasets_names, all_data, labels, output_file, caption='Some caption ...', label='tab:some-label', two_columns=False):
+def process_slm_bls_ssc(datasets_names, all_data, labels, output_file, caption='Some caption ...', label='tab:some-label', two_columns=False):
 	
 	begin_table(output_file, caption, label, two_columns)
 
@@ -945,13 +974,14 @@ def slm_groups(datasets_names, datasets_folders):
 	
 	# e.g., data = read_csv('..\\data_sets\\06_formatted\\c_diabetes\\slm_avg_inner_validation_error.csv', header=None)
 	files = ['slm_avg_inner_validation_error.csv']
-	files += ['slm_best_overall_configuration_frequency.csv']
+	#files += ['slm_best_overall_configuration_frequency.csv']
 	files += ['slm_number_generations.csv']
 	files += ['slm_number_layers.csv']	
-	# files += ['slm_TIE_EDV_frequency.csv']
+	files += ['slm_TIE_EDV_frequency.csv']
 	# files += ['slm_subset_ratio.csv']
-	# files += ['slm_RST_RWT_frequency.csv']
+	files += ['slm_RST_RWT_frequency.csv']
 	files += ['slm_learning_step_value.csv']
+	files += ['slm_avg_inner_validation_accuracy.csv']
 	
 	all_data, all_labels = get_data_and_labels(datasets_folders, files)
 	
@@ -974,7 +1004,7 @@ def slm_groups(datasets_names, datasets_folders):
 	label = 'tab:testing-auroc-per-slm-variant'
 	data = classification_data['slm_testing_accuracy.csv']
 	labels = classification_labels['slm_testing_accuracy.csv']
-	process_auroc(classification_datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	process_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 	
 	output_filename = 'slm_best_result_testing_auroc.txt'
@@ -983,7 +1013,16 @@ def slm_groups(datasets_names, datasets_folders):
 	label = 'tab:testing-auroc-slm'
 	data = classification_data['slm_best_result_testing_accuracy.csv']
 	labels = classification_labels['slm_best_result_testing_accuracy.csv']
-	process_auroc(classification_datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	process_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	output_file.close()
+
+	output_filename = 'slm_validation_auroc.txt'
+	output_file = get_output_file(output_filename)
+	caption = 'Validation AUROC for each SLM variant considered'
+	label = 'tab:validation-auroc-per-slm-variant'
+	data = all_data['slm_avg_inner_validation_accuracy.csv']
+	labels = all_labels['slm_avg_inner_validation_accuracy.csv']
+	process_validation_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 
 	output_filename = 'slm_validation_error.txt'
@@ -995,14 +1034,14 @@ def slm_groups(datasets_names, datasets_folders):
 	process_validation_error(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 	
-	output_filename = 'slm_best_configuration.txt'
-	output_file = get_output_file(output_filename)
-	caption = 'Best SLM configuration by variant'
-	label = 'tab:' + caption.replace(' ', '-').lower()
-	data = all_data['slm_best_overall_configuration_frequency.csv']
-	labels = all_labels['slm_best_overall_configuration_frequency.csv']
-	process_best_overall_configuration_frequency(datasets_names, data, labels, output_file, caption, label, two_columns=True)
-	output_file.close()
+	# output_filename = 'slm_best_configuration.txt'
+	# output_file = get_output_file(output_filename)
+	# caption = 'Best SLM configuration by variant'
+	# label = 'tab:' + caption.replace(' ', '-').lower()
+	# data = all_data['slm_best_overall_configuration_frequency.csv']
+	# labels = all_labels['slm_best_overall_configuration_frequency.csv']
+	# process_best_overall_configuration_frequency(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	# output_file.close()
 	
 	output_filename = 'slm_number_of_iterations.txt'
 	output_file = get_output_file(output_filename)
@@ -1033,8 +1072,8 @@ def slm_groups(datasets_names, datasets_folders):
 	
 	output_filename = 'slm_learning_step_value.txt'
 	output_file = get_output_file(output_filename)
-	caption = 'Learning step for each SLM-FLS variant considered'
-	label = 'tab:learning-step-per-slm-fls-variant'
+	caption = 'Learning step for each SLM-BLS variant considered'
+	label = 'tab:learning-step-per-slm-bls-variant'
 	data = all_data['slm_learning_step_value.csv']
 	labels = all_labels['slm_learning_step_value.csv']
 	process_learning_step(datasets_names, data, labels, output_file, caption, label, two_columns=True)
@@ -1052,32 +1091,32 @@ def slm_groups(datasets_names, datasets_folders):
 	#===========================================================================
 	
 	#===========================================================================
-	# output_filename = 'slm_TIE_EDV_frequency.txt'
-	# output_file = get_output_file(output_filename)
-	# caption = 'EDV and TIE use in SLM-FLS'
-	# label = 'tab:slm-fls-ssc'
-	# data = all_data['slm_TIE_EDV_frequency.csv']
-	# labels = all_labels['slm_TIE_EDV_frequency.csv']
-	# process_slm_fls_ssc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
-	# output_file.close()
+	output_filename = 'slm_TIE_EDV_frequency.txt'
+	output_file = get_output_file(output_filename)
+	caption = 'EDV and TIE use in SLM-BLS'
+	label = 'tab:slm-bls-ssc'
+	data = all_data['slm_TIE_EDV_frequency.csv']
+	labels = all_labels['slm_TIE_EDV_frequency.csv']
+	process_slm_bls_ssc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	output_file.close()
 	#===========================================================================
 	
 	#===========================================================================
-	# output_filename = 'slm_RST_RWT_frequency.txt'
-	# output_file = get_output_file(output_filename)
-	# caption = 'RST and RWT use in the FLS and the OLS variants'
-	# label = 'tab:rst-rwt-use'
-	# data = all_data['slm_RST_RWT_frequency.csv']
-	# labels = all_labels['slm_RST_RWT_frequency.csv']
-	# process_rst_rwt_use(datasets_names, data, labels, output_file, caption, label, two_columns=True)
-	# output_file.close()
+	output_filename = 'slm_RST_RWT_frequency.txt'
+	output_file = get_output_file(output_filename)
+	caption = 'RST and RWT use in the BLS and the OLS variants'
+	label = 'tab:rst-rwt-use'
+	data = all_data['slm_RST_RWT_frequency.csv']
+	labels = all_labels['slm_RST_RWT_frequency.csv']
+	process_rst_rwt_use(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	output_file.close()
 	#===========================================================================
 
 
 def mlp_groups(datasets_names, datasets_folders):
 	
 	files = ['mlp_avg_inner_validation_error.csv']
-	files += ['mlp_best_overall_configuration_frequency.csv']
+	#files += ['mlp_best_overall_configuration_frequency.csv']
 	files += ['mlp_number_iterations.csv']
 	files += ['mlp_number_layers.csv']
 	files += ['mlp_number_neurons.csv']
@@ -1091,6 +1130,7 @@ def mlp_groups(datasets_names, datasets_folders):
 	files += ['mlp_nesterovs_momentum.csv']
 	files += ['mlp_beta_1.csv']
 	files += ['mlp_beta_2.csv']
+	files += ['mlp_avg_inner_validation_accuracy.csv']
 	
 	all_data, all_labels = get_data_and_labels(datasets_folders, files)
 	
@@ -1113,7 +1153,7 @@ def mlp_groups(datasets_names, datasets_folders):
 	label = 'tab:testing-auroc-per-mlp-variant'
 	data = classification_data['mlp_testing_accuracy.csv']
 	labels = classification_labels['mlp_testing_accuracy.csv']
-	process_auroc(classification_datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	process_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 	
 	output_filename = 'mlp_best_result_testing_auroc.txt'
@@ -1122,7 +1162,16 @@ def mlp_groups(datasets_names, datasets_folders):
 	label = 'tab:testing-auroc-mlp'
 	data = classification_data['mlp_best_result_testing_accuracy.csv']
 	labels = classification_labels['mlp_best_result_testing_accuracy.csv']
-	process_auroc(classification_datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	process_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	output_file.close()
+
+	output_filename = 'mlp_validation_auroc.txt'
+	output_file = get_output_file(output_filename)
+	caption = 'Validation AUROC for each MLP variant considered'
+	label = 'tab:validation-auroc-per-mlp-variant'
+	data = all_data['mlp_avg_inner_validation_accuracy.csv']
+	labels = all_labels['mlp_avg_inner_validation_accuracy.csv']
+	process_validation_auroc(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 	
 	output_filename = 'mlp_validation_error.txt'
@@ -1134,14 +1183,14 @@ def mlp_groups(datasets_names, datasets_folders):
 	process_validation_error(datasets_names, data, labels, output_file, caption, label, two_columns=True)
 	output_file.close()
 	
-	output_filename = 'mlp_best_configuration.txt'
-	output_file = get_output_file(output_filename)
-	caption = 'Best MLP configuration by variant'
-	label = 'tab:' + caption.replace(' ', '-').lower()
-	data = all_data['mlp_best_overall_configuration_frequency.csv']
-	labels = all_labels['mlp_best_overall_configuration_frequency.csv']
-	process_best_overall_configuration_frequency(datasets_names, data, labels, output_file, caption, label, two_columns=True)
-	output_file.close()
+	# output_filename = 'mlp_best_configuration.txt'
+	# output_file = get_output_file(output_filename)
+	# caption = 'Best MLP configuration by variant'
+	# label = 'tab:' + caption.replace(' ', '-').lower()
+	# data = all_data['mlp_best_overall_configuration_frequency.csv']
+	# labels = all_labels['mlp_best_overall_configuration_frequency.csv']
+	# process_best_overall_configuration_frequency(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	# output_file.close()
 	
 	output_filename = 'mlp_number_of_iterations.txt'
 	output_file = get_output_file(output_filename)
@@ -1276,7 +1325,7 @@ def process_inner(datasets_names, datasets_folders):
 	mlp_groups(datasets_names, datasets_folders)
 	
 	files = ['best_results_testing_value.csv']
-	files += ['best_results_testing_auroc.csv']
+	#files += ['best_results_testing_auroc.csv']
 	
 	all_data, all_labels = get_data_and_labels(datasets_folders, files)
 	
@@ -1293,15 +1342,15 @@ def process_inner(datasets_names, datasets_folders):
 	# output_file.close()
 	#===========================================================================
 	
-	# output_filename = 'generalization_slm_vs_mlp_no_ensemble.txt'
-	output_filename = 'generalization_slm_vs_mlp.txt'
-	output_file = get_output_file(output_filename)
-	caption = 'Generalization of SLM and MLP'
-	label = 'tab:generalization-slm-vs-mlp'
-	data = all_data['best_results_testing_auroc.csv']
-	labels = all_labels['best_results_testing_auroc.csv']
-	process_generalization_slm_vs_mlp_no_ensemble(datasets_names, data, labels, output_file, caption, label, two_columns=True)
-	output_file.close()
+	# output_filename = 'generalization_slm_vs_mlp_no_ensemble.txt' -> this was commented already
+	# output_filename = 'generalization_slm_vs_mlp.txt'
+	# output_file = get_output_file(output_filename)
+	# caption = 'Generalization of SLM and MLP'
+	# label = 'tab:generalization-slm-vs-mlp'
+	# data = all_data['best_results_testing_auroc.csv']
+	# labels = all_labels['best_results_testing_auroc.csv']
+	# process_generalization_slm_vs_mlp_no_ensemble(datasets_names, data, labels, output_file, caption, label, two_columns=True)
+	# output_file.close()
 	
 	#===========================================================================
 	# output_filename = 'generalization_slm_ensembles.txt'

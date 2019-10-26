@@ -10,16 +10,16 @@ from extract_to_latex_tables import process_all as process_to_latex
 
 if __name__ == '__main__':
 
-    # benchmark_paths = []
+    benchmark_paths = []
 
-    # for folder in os.listdir(get_benchmark_folder()):
-    #     path = os.path.join(get_benchmark_folder(), folder)
-    #     for file in os.listdir(path):
-    #         benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
+    for folder in os.listdir(get_benchmark_folder()):
+        path = os.path.join(get_benchmark_folder(), folder)
+        for file in os.listdir(path):
+            benchmark_paths.append(os.path.join(get_benchmark_folder(), folder, file))
 
-    # for benchmark_path in benchmark_paths:
-    #     benchmark = read_pickle(benchmark_path)
-    #     benchmark_formatted = format_benchmark(benchmark)
+    for benchmark_path in benchmark_paths:
+        benchmark = read_pickle(benchmark_path)
+        benchmark_formatted = format_benchmark(benchmark)
 
     for folder in os.listdir(get_formatted_folder()):
         path = os.path.join(get_formatted_folder(), folder)

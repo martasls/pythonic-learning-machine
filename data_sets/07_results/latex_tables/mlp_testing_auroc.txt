@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Testing AUROC for each MLP variant considered}
+\label{tab:testing-auroc-per-mlp-variant}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 0.687 +- 0.202 & 0.787 +- 0.206 \\ \hline
+\bf{backache} & 0.841 +- 0.142 & 0.808 +- 0.206 \\ \hline
+\bf{breast-cancer-wisconsin} & 0.548 +- 0.130 & 0.601 +- 0.079 \\ \hline
+\bf{clean1} & 0.592 +- 0.117 & 0.574 +- 0.128 \\ \hline
+\bf{clean2} & 0.809 +- 0.174 & 0.840 +- 0.136 \\ \hline
+\bf{coil2000} & 0.889 +- 0.197 & 0.911 +- 0.161 \\ \hline
+\bf{credit-g} & 0.606 +- 0.173 & 0.659 +- 0.123 \\ \hline
+\bf{diabetes} & 0.556 +- 0.140 & 0.615 +- 0.094 \\ \hline
+\bf{dis} & 0.952 +- 0.177 & 0.985 +- 0.002 \\ \hline
+\bf{hill-valley-without-noise} & 0.493 +- 0.044 & 0.499 +- 0.009 \\ \hline
+\bf{hill-valley-with-noise} & 0.505 +- 0.027 & 0.500 +- 0.013 \\ \hline
+\bf{hypothyroid} & 0.862 +- 0.249 & 0.922 +- 0.165 \\ \hline
+\bf{ionosphere} & 0.671 +- 0.161 & 0.803 +- 0.146 \\ \hline
+\bf{kr-vs-kp} & 0.694 +- 0.214 & 0.884 +- 0.154 \\ \hline
+\bf{molecular-biology-promoters} & 0.583 +- 0.178 & 0.617 +- 0.205 \\ \hline
+\bf{sonar} & 0.515 +- 0.056 & 0.532 +- 0.070 \\ \hline
+\bf{spambase} & 0.666 +- 0.117 & 0.620 +- 0.037 \\ \hline
+\bf{spectf} & 0.653 +- 0.173 & 0.586 +- 0.216 \\ \hline
+\bf{tokyo1} & 0.523 +- 0.139 & 0.631 +- 0.142
+\end{tabular}
+\end{table*}

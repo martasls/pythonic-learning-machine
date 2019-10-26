@@ -1,0 +1,28 @@
+\begin{table*}
+\centering
+\caption{RST and RWT use in the BLS and the OLS variants}
+\label{tab:rst-rwt-use}
+\begin{tabular}{lcccccc}
+\multirow{2}{*}{\bf{Dataset}} & \multicolumn{3}{c}{\bf{OLS variants}} & \multicolumn{3}{c}{\bf{BLS variants}} \\ \cline{2-7}
+& \bf{None} & \bf{RST} & \bf{RWT} & \bf{None} & \bf{RST} & \bf{RWT} \\ \hline
+\bf{agaricus-lepiota} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{backache} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{breast-cancer-wisconsin} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{clean1} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{clean2} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{coil2000} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{credit-g} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{diabetes} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{dis} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{hill-valley-without-noise} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{hill-valley-with-noise} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{hypothyroid} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{ionosphere} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{kr-vs-kp} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{molecular-biology-promoters} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{sonar} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{spambase} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{spectf} & 30 & 0 & 0 & 30 & 0 & 0 \\ \cline{2-7}
+\bf{tokyo1} & 30 & 0 & 0 & 30 & 0 & 0
+\end{tabular}
+\end{table*}

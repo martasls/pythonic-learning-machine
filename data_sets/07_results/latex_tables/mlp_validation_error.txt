@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Validation error for each MLP variant considered}
+\label{tab:validation-error-per-mlp-variant}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 0.711 +- 0.148 & 0.822 +- 0.148 \\ \hline
+\bf{backache} & 0.861 +- 0.002 & 0.861 +- 0.002 \\ \hline
+\bf{breast-cancer-wisconsin} & 0.673 +- 0.054 & 0.630 +- 0.012 \\ \hline
+\bf{clean1} & 0.628 +- 0.052 & 0.595 +- 0.062 \\ \hline
+\bf{clean2} & 0.855 +- 0.022 & 0.862 +- 0.029 \\ \hline
+\bf{coil2000} & 0.940 +- 0.000 & 0.940 +- 0.000 \\ \hline
+\bf{credit-g} & 0.700 +- 0.001 & 0.700 +- 0.000 \\ \hline
+\bf{diabetes} & 0.653 +- 0.003 & 0.652 +- 0.001 \\ \hline
+\bf{dis} & 0.985 +- 0.000 & 0.985 +- 0.000 \\ \hline
+\bf{hill-valley-without-noise} & 0.511 +- 0.007 & 0.508 +- 0.007 \\ \hline
+\bf{hill-valley-with-noise} & 0.515 +- 0.009 & 0.502 +- 0.003 \\ \hline
+\bf{hypothyroid} & 0.952 +- 0.000 & 0.952 +- 0.001 \\ \hline
+\bf{ionosphere} & 0.768 +- 0.059 & 0.825 +- 0.061 \\ \hline
+\bf{kr-vs-kp} & 0.733 +- 0.163 & 0.891 +- 0.131 \\ \hline
+\bf{molecular-biology-promoters} & 0.768 +- 0.101 & 0.615 +- 0.093 \\ \hline
+\bf{sonar} & 0.546 +- 0.022 & 0.561 +- 0.053 \\ \hline
+\bf{spambase} & 0.690 +- 0.068 & 0.625 +- 0.029 \\ \hline
+\bf{spectf} & 0.728 +- 0.001 & 0.728 +- 0.001 \\ \hline
+\bf{tokyo1} & 0.662 +- 0.024 & 0.668 +- 0.041
+\end{tabular}
+\end{table*}

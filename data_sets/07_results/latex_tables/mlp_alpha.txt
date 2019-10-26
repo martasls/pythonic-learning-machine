@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{L2 penalty by MLP variant}
+\label{tab:L2-penalty}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 5.072 +- 3.310 & 4.913 +- 2.927 \\ \hline
+\bf{backache} & 5.099 +- 3.093 & 5.196 +- 3.121 \\ \hline
+\bf{breast-cancer-wisconsin} & 5.289 +- 2.859 & 4.580 +- 2.970 \\ \hline
+\bf{clean1} & 5.060 +- 2.716 & 4.137 +- 3.183 \\ \hline
+\bf{clean2} & 4.591 +- 2.716 & 4.454 +- 3.025 \\ \hline
+\bf{coil2000} & 4.721 +- 3.063 & 4.969 +- 2.536 \\ \hline
+\bf{credit-g} & 5.325 +- 2.944 & 3.669 +- 2.784 \\ \hline
+\bf{diabetes} & 4.941 +- 2.890 & 4.722 +- 2.597 \\ \hline
+\bf{dis} & 4.880 +- 2.741 & 4.870 +- 3.165 \\ \hline
+\bf{hill-valley-without-noise} & 4.109 +- 2.771 & 5.083 +- 3.114 \\ \hline
+\bf{hill-valley-with-noise} & 5.237 +- 2.528 & 4.365 +- 3.006 \\ \hline
+\bf{hypothyroid} & 5.231 +- 2.749 & 4.253 +- 2.692 \\ \hline
+\bf{ionosphere} & 4.292 +- 3.260 & 3.207 +- 2.925 \\ \hline
+\bf{kr-vs-kp} & 3.758 +- 3.051 & 3.303 +- 2.667 \\ \hline
+\bf{molecular-biology-promoters} & 4.800 +- 3.266 & 5.223 +- 2.918 \\ \hline
+\bf{sonar} & 4.795 +- 3.064 & 4.730 +- 2.944 \\ \hline
+\bf{spambase} & 4.859 +- 2.783 & 5.724 +- 2.844 \\ \hline
+\bf{spectf} & 4.865 +- 2.740 & 5.044 +- 2.663 \\ \hline
+\bf{tokyo1} & 4.642 +- 2.871 & 4.632 +- 3.267
+\end{tabular}
+\end{table*}

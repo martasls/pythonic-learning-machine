@@ -1,5 +1,5 @@
-from benchmark.benchmarker import pickup_benchmark
-
+#from benchmark.benchmarker import pickup_benchmark
+from benchmark.pmlb_benchmarker import pickup_benchmark
 
 def run_ensembles(dataset_name, benchmark_file_name):
     pickup_benchmark(dataset_name, benchmark_file_name)
@@ -7,56 +7,64 @@ def run_ensembles(dataset_name, benchmark_file_name):
 
 if __name__ == '__main__':
     
-    run_ensembles('r_concrete', 'r_concrete_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_concrete', 'r_concrete_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_concrete', 'r_concrete_mlp__2019_02_05__19_26_39.pkl')
+    run_ensembles('agaricus-lepiota', 'c_agaricus-lepiota_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('agaricus-lepiota', 'c_agaricus-lepiota_slm__2019_09_17__19_56_46.pkl')
     
-    run_ensembles('c_cancer', 'c_cancer_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('c_cancer', 'c_cancer_mlp-sgd-adam__2019_02_05__22_12_15.pkl')
-    #  run_ensembles('c_cancer', 'c_cancer_mlp__2019_02_05__19_12_26.pkl')
+    run_ensembles('backache', 'c_backache_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('backache', 'c_backache_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('breast-cancer-wisconsin', 'c_breast-cancer-wisconsin_mlp__2019_09_19__17_42_05.pkl')
+    run_ensembles('breast-cancer-wisconsin', 'c_breast-cancer-wisconsin_slm__2019_09_19__17_42_05.pkl')
     
-    run_ensembles('c_sonar', 'c_sonar_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('c_sonar', 'c_sonar_mlp-sgd-adam__2019_02_05__22_12_15.pkl')
-    #  run_ensembles('c_sonar', 'c_sonar_mlp__2019_02_05__19_12_26.pkl')
+    run_ensembles('clean1', 'c_clean1_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('clean1', 'c_clean1_slm__2019_09_17__19_56_46.pkl')
     
-    run_ensembles('r_parkinsons', 'r_parkinsons_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_parkinsons', 'r_parkinsons_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_parkinsons', 'r_parkinsons_mlp__2019_02_05__18_43_45.pkl')
+    run_ensembles('clean2', 'c_clean2_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('clean2', 'c_clean2_slm__2019_09_17__19_56_46.pkl')
     
-    run_ensembles('r_music', 'r_music_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_music', 'r_music_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_music', 'r_music_mlp__2019_02_05__18_43_45.pkl')
+    run_ensembles('coil2000', 'c_coil2000_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('coil2000', 'c_coil2000_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('credit-g', 'c_credit-g_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('credit-g', 'c_credit-g_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('diabetes', 'c_diabetes_mlp__2019_09_19__17_42_05.pkl')
+    run_ensembles('diabetes', 'c_diabetes_slm__2019_09_19__17_42_05.pkl')
+
+    run_ensembles('dis', 'c_dis_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('dis', 'c_dis_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('Hill_Valley_with_noise', 'c_Hill_Valley_with_noise_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('Hill_Valley_with_noise', 'c_Hill_Valley_with_noise_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('Hill_Valley_without_noise', 'c_Hill_Valley_without_noise_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('Hill_Valley_without_noise', 'c_Hill_Valley_without_noise_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('hypothyroid', 'c_hypothyroid_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('hypothyroid', 'c_hypothyroid_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('ionosphere', 'c_ionosphere_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('ionosphere', 'c_ionosphere_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('kr-vs-kp', 'c_kr-vs-kp_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('kr-vs-kp', 'c_kr-vs-kp_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('molecular-biology_promoters', 'c_molecular-biology_promoters_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('molecular-biology_promoters', 'c_molecular-biology_promoters_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('sonar', 'c_sonar_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('sonar', 'c_sonar_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('spambase', 'c_spambase_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('spambase', 'c_spambase_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('spectf', 'c_spectf_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('spectf', 'c_spectf_slm__2019_09_17__19_56_46.pkl')
+
+    run_ensembles('tokyo1', 'c_tokyo1_mlp__2019_09_17__19_56_46.pkl')
+    run_ensembles('tokyo1', 'c_tokyo1_slm__2019_09_17__19_56_46.pkl')
+
+
     
-    run_ensembles('c_credit', 'c_credit_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('c_credit', 'c_credit_mlp-sgd-adam__2019_02_05__22_12_15.pkl')
-    #  run_ensembles('c_credit', 'c_credit_mlp__2019_02_05__18_10_54.pkl')
-    
-    run_ensembles('c_diabetes', 'c_diabetes_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('c_diabetes', 'c_diabetes_mlp-sgd-adam__2019_02_05__22_12_15.pkl')
-    #  run_ensembles('c_diabetes', 'c_diabetes_mlp__2019_02_05__18_10_54.pkl')
-    
-    run_ensembles('r_bio', 'r_bio_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_bio', 'r_bio_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_bio', 'r_bio_mlp__2019_02_05__06_13_51.pkl')
-    
-    run_ensembles('r_ppb', 'r_ppb_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_ppb', 'r_ppb_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_ppb', 'r_ppb_mlp__2019_02_05__06_13_51.pkl')
-    
-    run_ensembles('r_student', 'r_student_slm__2019_02_05__06_13_44.pkl')
-    run_ensembles('r_student', 'r_student_mlp-sgd-adam__2019_02_05__21_14_31.pkl')
-    #  run_ensembles('r_student', 'r_student_mlp__2019_02_05__06_13_51.pkl')]  
-    
-    """ not updated: SLM """
-    # run_ensembles("c_credit", "c_credit_slm__2019_01_27__23_03_36.pkl")
-    # run_ensembles("c_diabetes", "c_diabetes_slm__2019_01_27__23_03_36.pkl")
-    # run_ensembles("r_bio", "r_bio_slm__2019_01_27__23_03_36.pkl")
-    # run_ensembles("r_ppb", "r_ppb_slm__2019_01_27__23_03_36.pkl")
-    # run_ensembles("r_student", "r_student_slm__2019_01_27__23_03_36.pkl")
-    
-    """ not updated: MLP """
-    # run_ensembles("c_credit", "c_credit_mlp__2019_01_29__13_57_03.pkl")
-    # run_ensembles("c_diabetes", "c_diabetes_mlp__2019_01_29__13_57_03.pkl")
-    # run_ensembles("r_bio", "r_bio_mlp__2019_01_27__23_03_38.pkl")
-    # run_ensembles("r_ppb", "r_ppb_mlp__2019_01_27__23_03_38.pkl")
-    # run_ensembles("r_student", "r_student_mlp__2019_01_27__23_03_38.pkl")
+
+

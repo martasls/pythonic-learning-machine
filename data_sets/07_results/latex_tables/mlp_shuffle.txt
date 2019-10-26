@@ -1,0 +1,28 @@
+\begin{table*}
+\centering
+\caption{Batch shuffle use by MLP variant}
+\label{tab:batch-shuffle}
+\begin{tabular}{lcccc}
+\multirow{2}{*}{\bf{Dataset}} & \multicolumn{2}{c}{\bf{Adam}} & \multicolumn{2}{c}{\bf{SGD}} \\ \cline{2-5}
+& \bf{With shuffle} & \bf{Without shuffle} & \bf{With shuffle} & \bf{Without shuffle} \\ \hline
+\bf{agaricus-lepiota} & 11 & 19 & 15 & 15 \\ \cline{2-5}
+\bf{backache} & 21 & 9 & 14 & 16 \\ \cline{2-5}
+\bf{breast-cancer-wisconsin} & 16 & 14 & 11 & 19 \\ \cline{2-5}
+\bf{clean1} & 12 & 18 & 16 & 14 \\ \cline{2-5}
+\bf{clean2} & 14 & 16 & 14 & 16 \\ \cline{2-5}
+\bf{coil2000} & 11 & 19 & 18 & 12 \\ \cline{2-5}
+\bf{credit-g} & 10 & 20 & 19 & 11 \\ \cline{2-5}
+\bf{diabetes} & 15 & 15 & 15 & 15 \\ \cline{2-5}
+\bf{dis} & 15 & 15 & 10 & 20 \\ \cline{2-5}
+\bf{hill-valley-without-noise} & 13 & 17 & 16 & 14 \\ \cline{2-5}
+\bf{hill-valley-with-noise} & 15 & 15 & 14 & 16 \\ \cline{2-5}
+\bf{hypothyroid} & 22 & 8 & 19 & 11 \\ \cline{2-5}
+\bf{ionosphere} & 14 & 16 & 12 & 18 \\ \cline{2-5}
+\bf{kr-vs-kp} & 22 & 8 & 15 & 15 \\ \cline{2-5}
+\bf{molecular-biology-promoters} & 17 & 13 & 16 & 14 \\ \cline{2-5}
+\bf{sonar} & 13 & 17 & 11 & 19 \\ \cline{2-5}
+\bf{spambase} & 14 & 16 & 18 & 12 \\ \cline{2-5}
+\bf{spectf} & 13 & 17 & 11 & 19 \\ \cline{2-5}
+\bf{tokyo1} & 17 & 13 & 18 & 12
+\end{tabular}
+\end{table*}

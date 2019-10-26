@@ -6,6 +6,7 @@ from data.extract import get_target_variable
 from data.io_plm import load_pmlb_samples
 
 MODELS_TO_RUN = {'slm': SLM_MODELS, 'mlp': MLP_MODELS_SGD_ADAM}
+test = {'mlp' : MLP_MODELS_SGD_ADAM}
 
 def continue_b(data_set_name, file_name):
     """ continues benchmark """
@@ -26,5 +27,5 @@ if __name__ == '__main__':
         # print("\n"+classification_dataset)
         # print(target_var)
         # print("\n")
-        for model_to_run in MODELS_TO_RUN: 
+        for model_to_run in test: 
             start_b(classification_dataset, models=MODELS_TO_RUN[model_to_run], ensembles=None, benchmark_id=model_to_run)

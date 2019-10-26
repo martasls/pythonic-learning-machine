@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Number of layers for each MLP variant considered}
+\label{tab:number-of-layers-per-mlp-variant}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 1.600 +- 1.003 & 1.967 +- 1.351 \\ \hline
+\bf{backache} & 3.200 +- 1.518 & 3.400 +- 1.163 \\ \hline
+\bf{breast-cancer-wisconsin} & 2.500 +- 1.548 & 3.000 +- 1.313 \\ \hline
+\bf{clean1} & 1.400 +- 0.894 & 2.700 +- 1.442 \\ \hline
+\bf{clean2} & 2.967 +- 1.542 & 3.233 +- 1.431 \\ \hline
+\bf{coil2000} & 2.800 +- 1.270 & 2.733 +- 1.285 \\ \hline
+\bf{credit-g} & 2.700 +- 1.393 & 2.600 +- 1.276 \\ \hline
+\bf{diabetes} & 2.967 +- 1.450 & 2.867 +- 1.592 \\ \hline
+\bf{dis} & 3.467 +- 1.224 & 2.567 +- 1.431 \\ \hline
+\bf{hill-valley-without-noise} & 2.100 +- 1.242 & 2.600 +- 1.380 \\ \hline
+\bf{hill-valley-with-noise} & 2.367 +- 1.351 & 2.133 +- 1.137 \\ \hline
+\bf{hypothyroid} & 2.833 +- 1.464 & 2.867 +- 1.456 \\ \hline
+\bf{ionosphere} & 2.400 +- 1.248 & 2.067 +- 1.258 \\ \hline
+\bf{kr-vs-kp} & 2.233 +- 1.478 & 2.033 +- 0.964 \\ \hline
+\bf{molecular-biology-promoters} & 1.400 +- 0.770 & 2.467 +- 1.358 \\ \hline
+\bf{sonar} & 2.567 +- 1.569 & 2.500 +- 1.526 \\ \hline
+\bf{spambase} & 1.667 +- 1.155 & 2.700 +- 1.368 \\ \hline
+\bf{spectf} & 3.000 +- 1.597 & 2.733 +- 1.363 \\ \hline
+\bf{tokyo1} & 2.233 +- 1.382 & 2.800 +- 1.472
+\end{tabular}
+\end{table*}

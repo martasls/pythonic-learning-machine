@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Learning rate by MLP variant}
+\label{tab:learning-rate}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 3.594 +- 3.360 & 0.885 +- 1.265 \\ \hline
+\bf{backache} & 5.606 +- 2.550 & 5.529 +- 2.359 \\ \hline
+\bf{breast-cancer-wisconsin} & 4.505 +- 3.109 & 4.472 +- 3.170 \\ \hline
+\bf{clean1} & 4.956 +- 2.585 & 3.691 +- 3.062 \\ \hline
+\bf{clean2} & 5.443 +- 3.338 & 3.061 +- 3.461 \\ \hline
+\bf{coil2000} & 5.290 +- 2.796 & 4.516 +- 2.991 \\ \hline
+\bf{credit-g} & 4.424 +- 3.280 & 4.069 +- 2.946 \\ \hline
+\bf{diabetes} & 5.352 +- 2.849 & 4.537 +- 3.255 \\ \hline
+\bf{dis} & 5.259 +- 2.787 & 4.586 +- 2.787 \\ \hline
+\bf{hill-valley-without-noise} & 5.198 +- 2.496 & 3.542 +- 2.928 \\ \hline
+\bf{hill-valley-with-noise} & 5.341 +- 3.253 & 4.148 +- 3.178 \\ \hline
+\bf{hypothyroid} & 5.261 +- 2.650 & 4.342 +- 3.018 \\ \hline
+\bf{ionosphere} & 4.656 +- 3.165 & 1.644 +- 2.095 \\ \hline
+\bf{kr-vs-kp} & 2.042 +- 2.507 & 1.049 +- 1.405 \\ \hline
+\bf{molecular-biology-promoters} & 4.767 +- 2.781 & 2.093 +- 2.190 \\ \hline
+\bf{sonar} & 4.945 +- 2.919 & 3.675 +- 3.475 \\ \hline
+\bf{spambase} & 3.389 +- 3.182 & 3.020 +- 3.280 \\ \hline
+\bf{spectf} & 3.884 +- 2.712 & 4.867 +- 3.480 \\ \hline
+\bf{tokyo1} & 4.847 +- 3.097 & 2.054 +- 2.264
+\end{tabular}
+\end{table*}

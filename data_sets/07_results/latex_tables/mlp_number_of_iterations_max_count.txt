@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{[Internal results] Number of times that the maximum number of iterations was reached}
+\label{tab:mlp-number-of-iterations-max-count}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 27 & 24 \\ \hline
+\bf{backache} & 20 & 26 \\ \hline
+\bf{breast-cancer-wisconsin} & 25 & 27 \\ \hline
+\bf{clean1} & 19 & 21 \\ \hline
+\bf{clean2} & 22 & 26 \\ \hline
+\bf{coil2000} & 23 & 24 \\ \hline
+\bf{credit-g} & 22 & 25 \\ \hline
+\bf{diabetes} & 25 & 24 \\ \hline
+\bf{dis} & 22 & 26 \\ \hline
+\bf{hill-valley-without-noise} & 25 & 25 \\ \hline
+\bf{hill-valley-with-noise} & 25 & 24 \\ \hline
+\bf{hypothyroid} & 26 & 25 \\ \hline
+\bf{ionosphere} & 26 & 24 \\ \hline
+\bf{kr-vs-kp} & 25 & 27 \\ \hline
+\bf{molecular-biology-promoters} & 27 & 28 \\ \hline
+\bf{sonar} & 24 & 22 \\ \hline
+\bf{spambase} & 21 & 24 \\ \hline
+\bf{spectf} & 24 & 24 \\ \hline
+\bf{tokyo1} & 25 & 19
+\end{tabular}
+\end{table*}

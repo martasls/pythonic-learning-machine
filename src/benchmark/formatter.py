@@ -65,7 +65,7 @@ def _format_rst_rwt_frequency(results):
     best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
     values_saved = {}
     for key, value in best_configurations.items(): 
-        if (key == 'slm_fls_group' or key == 'slm_ols_group'):
+        if (key == 'slm_bls_group' or key == 'slm_ols_group'):
             nr_no_RST_RWT = 0 
             nr_RST = 0
             nr_RWT = 0
@@ -88,7 +88,7 @@ def _format_tie_edv_frequency(results):
     best_configurations = {k: _get_values_from_dictionary(dictionaries[k], 'best_configuration') for k in dictionaries.keys()}
     values_saved = {}
     for key, value in best_configurations.items(): 
-        if (key == 'slm_fls_tie_edv_group'): 
+        if (key == 'slm_bls_tie_edv_group'): 
             nr_TIE = 0 
             nr_EDV = 0
             for run in value: 
@@ -104,25 +104,25 @@ def _format_tie_edv_frequency(results):
 
 
 def _format_slm_best_overall_configuration_frequency(best_result):
-    slm_fls_group_frequency = 0
+    slm_bls_group_frequency = 0
     slm_ols_group_frequency = 0
-    slm_fls_tie_edv_group_frequency = 0
+    slm_bls_tie_edv_group_frequency = 0
     slm_ols_edv_frequency = 0
     values = {} 
     for run in best_result:
-        if run['best_overall_key'] == 'slm_fls_group':
-            slm_fls_group_frequency += 1
+        if run['best_overall_key'] == 'slm_bls_group':
+            slm_bls_group_frequency += 1
         elif run['best_overall_key'] == 'slm_ols_group':
             slm_ols_group_frequency += 1
-        elif run['best_overall_key'] == 'slm_fls_tie_edv_group':
-            slm_fls_tie_edv_group_frequency += 1
+        elif run['best_overall_key'] == 'slm_bls_tie_edv_group':
+            slm_bls_tie_edv_group_frequency += 1
         elif run['best_overall_key'] == 'slm_ols_edv':
             slm_ols_edv_frequency += 1
         else:
             print('\n\t\t\t[_format_slm_best_overall_configuration_frequency] Should not happen!')
-    values['slm_fls_group'] = slm_fls_group_frequency
+    values['slm_bls_group'] = slm_bls_group_frequency
     values['slm_ols_group'] = slm_ols_group_frequency
-    values['slm_fls_tie_edv_group'] = slm_fls_tie_edv_group_frequency
+    values['slm_bls_tie_edv_group'] = slm_bls_tie_edv_group_frequency
     values['slm_ols_edv'] = slm_ols_edv_frequency
     df = pd.DataFrame.from_dict(values, orient='index')  # check this
     df = df.T
@@ -342,9 +342,9 @@ def format_results(results, classification):
     formatted_results['slm_number_layers'] = _format_configuration_table(results, 'layers')
     
     #===========================================================================
-    # formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
-    # formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
-    # formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
+    formatted_results['slm_subset_ratio'] = _format_configuration_table(results, 'subset_ratio')
+    formatted_results['slm_RST_RWT_frequency'] = _format_rst_rwt_frequency(results)
+    formatted_results['slm_TIE_EDV_frequency'] = _format_tie_edv_frequency(results)
     #===========================================================================
     
     formatted_results['slm_training_time'] = _format_static_table(results, 'training_time')
@@ -399,8 +399,8 @@ def format_results_mlp(results, classification):
     formatted_results['mlp_nesterovs_momentum'] = _format_mlp_sgd_adam_table(results, 'nesterovs_momentum')
     formatted_results['mlp_beta_1'] = _format_mlp_sgd_adam_table(results, 'beta_1')
     formatted_results['mlp_beta_2'] = _format_mlp_sgd_adam_table(results, 'beta_2')
-    # formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
-    # formatted_results['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(results)
+    formatted_results['mlp_training_time'] = _format_static_table(results, 'training_time')
+    
     return formatted_results 
 
 
@@ -438,15 +438,13 @@ def format_best_result(formatted_benchmark, best_result, classification, algo):
     formatted_benchmark[algo + '_best_result_configuration'] = _format_static_list(best_result, 'best_overall_configuration', algo)
     # formatted_benchmark[algo + '_best_result_processing_time'] = _format_static_list(best_result, 'processing_time', algo)
     # formatted_benchmark[algo + '_best_result_training_time'] = _format_static_list(best_result, 'training_time', algo)
-    
-    #===========================================================================
-    # if algo == 'slm':
-    #     formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
-    # elif algo == 'mlp':
-    #     formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
-    # else:
-    #     print('\n\t\t\t[format_best_result] Should not happen!')
-    #===========================================================================
+
+    if algo == 'slm': 
+        formatted_benchmark['slm_best_overall_configuration_frequency'] = _format_slm_best_overall_configuration_frequency(best_result)
+    elif algo == 'mlp': 
+        formatted_benchmark['mlp_best_overall_configuration_frequency'] = _format_mlp_best_overall_configuration_frequency(best_result, classification)
+    else: 
+        print('\n\t\t\t[format_best_result] Should not happen!')
     
     return formatted_benchmark
 
@@ -670,11 +668,11 @@ def format_benchmark(benchmark):
     
     if benchmark.benchmark_id == 'slm':
         formatted_benchmark = format_results(benchmark.results, benchmark.classification)
-        #formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
+        # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'slm')
         formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'slm')
     elif benchmark.benchmark_id == 'mlp':
         formatted_benchmark = format_results_mlp(benchmark.results, benchmark.classification)
-        formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
+        # formatted_benchmark = format_ensemble_results(formatted_benchmark, benchmark.results_ensemble, benchmark.classification, 'mlp')
         formatted_benchmark = format_best_result(formatted_benchmark, benchmark.best_result, benchmark.classification, 'mlp')
     else: 
         print('None of the above - should not happen')

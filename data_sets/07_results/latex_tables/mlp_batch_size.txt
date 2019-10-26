@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Batch size by MLP variant}
+\label{tab:batch-size}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 2032.867 +- 1036.705 & 2183.500 +- 1138.781 \\ \hline
+\bf{backache} & 64.967 +- 11.476 & 70.733 +- 10.359 \\ \hline
+\bf{breast-cancer-wisconsin} & 147.533 +- 73.545 & 151.233 +- 67.280 \\ \hline
+\bf{clean1} & 119.933 +- 52.941 & 135.100 +- 44.614 \\ \hline
+\bf{clean2} & 1285.333 +- 847.205 & 1625.067 +- 564.817 \\ \hline
+\bf{coil2000} & 2188.000 +- 1352.068 & 2342.000 +- 1477.521 \\ \hline
+\bf{credit-g} & 256.033 +- 116.700 & 307.000 +- 100.820 \\ \hline
+\bf{diabetes} & 217.967 +- 105.310 & 209.933 +- 80.720 \\ \hline
+\bf{dis} & 889.367 +- 528.706 & 890.900 +- 516.999 \\ \hline
+\bf{hill-valley-without-noise} & 312.867 +- 163.095 & 321.633 +- 135.026 \\ \hline
+\bf{hill-valley-with-noise} & 312.633 +- 126.680 & 296.733 +- 146.240 \\ \hline
+\bf{hypothyroid} & 828.833 +- 367.796 & 733.200 +- 402.333 \\ \hline
+\bf{ionosphere} & 104.467 +- 33.308 & 104.567 +- 25.504 \\ \hline
+\bf{kr-vs-kp} & 803.300 +- 371.698 & 744.300 +- 423.243 \\ \hline
+\bf{molecular-biology-promoters} & 50.667 +- 0.606 & 50.800 +- 0.551 \\ \hline
+\bf{sonar} & 74.333 +- 14.131 & 70.900 +- 12.925 \\ \hline
+\bf{spambase} & 1172.767 +- 744.982 & 1188.000 +- 635.328 \\ \hline
+\bf{spectf} & 108.100 +- 35.175 & 117.667 +- 39.467 \\ \hline
+\bf{tokyo1} & 269.233 +- 115.860 & 236.800 +- 107.278
+\end{tabular}
+\end{table*}

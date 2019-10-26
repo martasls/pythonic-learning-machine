@@ -23,10 +23,10 @@ from pmlb import fetch_data
 _now = datetime.datetime.now()
 
 
-_SLM_MAX_COMBINATIONS_PER_VARIANT = 1
-_MLP_MAX_COMBINATIONS_PER_VARIANT = 1
+_SLM_MAX_COMBINATIONS_PER_VARIANT = 1 #changed from 30
+_MLP_MAX_COMBINATIONS_PER_VARIANT = 1 #changed from 30
 
-_OUTER_FOLDS = 2 # changed from 30
+_OUTER_FOLDS = 3 # changed from 30
 _INNER_FOLDS = 2
 
 #_MAX_COMBINATIONS = 50
@@ -35,25 +35,6 @@ _INNER_FOLDS = 2
 
 #_MAX_COMBINATIONS_ADAM = 52
 #_MAX_COMBINATIONS_SGD = 52
-
-#==============================================================================
-# SLM_MODELS_NO_SSC = {
-
-#     'slm_ols_group': {
-#         'name_long': 'Semantic Learning Machine (Optimized Learning Step) Group',
-#         'name_short': 'SLM (OLS), SLM (OLS) + RST, SLM (OLS) + RWT',
-#         'algorithms': [EvaluatorSLM],
-#         'configuration_method': get_random_config_slm_ols_grouped,
-#         'max_combinations': _SLM_MAX_COMBINATIONS_PER_VARIANT},
-    
-#     'slm_fls_group': {
-#         'name_long': 'Semantic Learning Machine (Fixed Learning Step) Group',
-#         'name_short': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT',
-#         'algorithms':  [EvaluatorSLM],
-#         'configuration_method': get_random_config_slm_fls_grouped,
-#         'max_combinations': _SLM_MAX_COMBINATIONS_PER_VARIANT},
-# }
-#===============================================================================
 
 # Default models to be compared.
 #===============================================================================
@@ -86,96 +67,8 @@ SLM_MODELS = {
         'algorithms': [EvaluatorSLM],
         'configuration_method': generate_random_slm_ols_edv_configuration,
         'max_combinations': _SLM_MAX_COMBINATIONS_PER_VARIANT},
-    
-    #===========================================================================
-    # 'slm_fls_group': {
-    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step) Group',
-    #     'name_short': 'SLM (FLS), SLM (FLS) + RST, SLM (FLS) + RWT',
-    #     'algorithms':  [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
-    #     'configuration_method': get_random_config_slm_fls_grouped,
-    #     'max_combinations': _MAX_COMBINATIONS},
-    # 'slm_ols_group': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step) Group',
-    #     'name_short': 'SLM (OLS), SLM (OLS) + RST, SLM (OLS) + RWT',
-    #     'algorithms': [EvaluatorSLM, EvaluatorSLM_RST, EvaluatorSLM_RWT],
-    #     'configuration_method': get_random_config_slm_ols_grouped,
-    #     'max_combinations': _MAX_COMBINATIONS},
-    # 'slm_fls_tie_edv_group': {
-    #     'name_long': 'Semantic Learning Machine (Fixed Learning Step) Stopping Criteria Group',
-    #     'name_short': 'SLM (FLS) + TIE, SLM (FLS) + EDV',
-    #     'algorithms': [EvaluatorSLM],
-    #     'configuration_method': get_random_config_slm_fls_tie_edv,
-    #     'max_combinations': _MAX_COMBINATIONS},
-    # 'slm_ols_edv': {
-    #     'name_long': 'Semantic Learning Machine (Optimized Learning Step) + Error Deviation Variation Crit',
-    #     'name_short': 'SLM (OLS) + EDV',
-    #     'algorithms': [EvaluatorSLM],
-    #     'configuration_method': get_random_config_slm_ols_edv,
-    #     'max_combinations': _MAX_COMBINATIONS},
-    #===========================================================================
-    
-    # 'slm_ensemble': {
-    #     'name_long': 'Semantic Learning Machine Ensemble',
-    #     'name_short': 'SLM (Ensemble)',
-    #     'algorithms': EvaluatorEnsemble,
-    #     'configurations': ENSEMBLE_CONFIGURATIONS},
-    # 'slm_fls_ensemble':{
-    #     'name_long': 'Semantic Learning Machine(FLS) Ensemble',
-    #     'name_short': 'SLM-FLS (Ensemble)',
-    #     'algorithms': EvaluatorEnsemble,
-    #     'configurations': ENSEMBLE_FLS_CONFIGURATIONS},
-    # 'slm_ensemble_rst': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Random Sampling Technique',
-    #     'name_short': 'SLM (Ensemble) + RST',
-    #     'algorithms': EvaluatorEnsemble,
-    #     'configurations': ENSEMBLE_RST_CONFIGURATIONS},
-    # 'slm_ensemble_rwt': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Random Weighting Technique',
-    #     'name_short': 'SLM (Ensemble) + RWT',
-    #     'algorithms': EvaluatorEnsemble,
-    #     'configurations': ENSEMBLE_RWT_CONFIGURATIONS},    
-    # 'slm_ensemble_bagging': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Bagging',
-    #     'name_short': 'SLM (Ensemble-Bagging)',
-    #     'algorithms': EvaluatorEnsembleBagging,
-    #     'configurations': ENSEMBLE_BAGGING_CONFIGURATIONS}, 
-    # 'slm_fls_ensemble_bagging': {
-    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Bagging',
-    #     'name_short': 'SLM-FLS (Ensemble-Bagging)',
-    #     'algorithms': EvaluatorEnsembleBagging,
-    #     'configurations': ENSEMBLE_BAGGING_FLS_CONFIGURATIONS}, 
-    # 'slm_ensemble_bagging_rst': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Bagging and Random Sampling Technique',
-    #     'name_short': 'SLM (Ensemble-Bagging) + RST',
-    #     'algorithms': EvaluatorEnsembleBagging,
-    #     'configurations': ENSEMBLE_BAGGING_RST_CONFIGURATIONS},
-    # 'slm_ensemble_bagging_rwt': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Bagging and Random Weighting Technique',
-    #     'name_short': 'SLM (Ensemble-Bagging) + RWT',
-    #     'algorithms': EvaluatorEnsembleBagging,
-    #     'configurations': ENSEMBLE_BAGGING_RWT_CONFIGURATIONS},   
-    # 'slm_random_independent_weighting': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Random Independent Weighting',
-    #     'name_short': 'SLM (Ensemble-RIW)',
-    #     'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
-    #     'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_CONFIGURATIONS}, 
-    # 'slm_fls_random_independent_weighting': {
-    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Random Independent Weighting',
-    #     'name_short': 'SLM-FLS (Ensemble-RIW)',
-    #     'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
-    #     'configurations': ENSEMBLE_RANDOM_INDEPENDENT_WEIGHTING_FLS_CONFIGURATIONS},
-    # 'slm_ensemble_boosting': {
-    #     'name_long': 'Semantic Learning Machine Ensemble with Boosting',
-    #     'name_short': 'SLM (Ensemble-Boosting)',
-    #     'algorithms': EvaluatorEnsembleBoosting,
-    #     'configurations': ENSEMBLE_BOOSTING_CONFIGURATIONS},  
-    # 'slm_fls_ensemble_boosting': {
-    #     'name_long': 'Semantic Learning Machine (FLS) Ensemble with Boosting',
-    #     'name_short': 'SLM-FLS (Ensemble-Boosting)',
-    #     'algorithms': EvaluatorEnsembleBoosting,
-    #     'configurations': ENSEMBLE_BOOSTING_FLS_CONFIGURATIONS},
 }
-#===============================================================================
+
 
 MLP_MODELS_SGD_ADAM = {
     'mlpc_adam': {
@@ -184,22 +77,10 @@ MLP_MODELS_SGD_ADAM = {
         'algorithms': [EvaluatorMLPC],
         'configuration_method': generate_random_adam_configuration,
         'max_combinations': _MLP_MAX_COMBINATIONS_PER_VARIANT},
-    'mlpr_adam': {
-        'name_long': 'Multilayer Perceptron (ADAM Solver)',
-        'name_short': 'MLP (ADAM)',
-        'algorithms': [EvaluatorMLPR],
-        'configuration_method': generate_random_adam_configuration,
-        'max_combinations': _MLP_MAX_COMBINATIONS_PER_VARIANT},
     'mlpc_sgd': {
         'name_long': 'Multilayer Perceptron (SGD Solver)',
         'name_short': 'MLP (SGD)',
         'algorithms': [EvaluatorMLPC],
-        'configuration_method': generate_random_sgd_configuration,
-        'max_combinations': _MLP_MAX_COMBINATIONS_PER_VARIANT},
-    'mlpr_sgd': {
-        'name_long': 'Multilayer Perceptron (SGD Solver)',
-        'name_short': 'MLP (SGD)',
-        'algorithms': [EvaluatorMLPR],
         'configuration_method': generate_random_sgd_configuration,
         'max_combinations': _MLP_MAX_COMBINATIONS_PER_VARIANT},
 }
@@ -514,8 +395,9 @@ class Benchmarker():
                     config = self.ensembles[key]['configuration_method'](best_algorithm, best_configuration, training_outer, testing, metric)
                 
                 self.results_ensemble[key][iteration] = self._evaluate_algorithm(algorithm=value['algorithms'], configurations=config, training_set=training_outer,
-                                                validation_set=None, testing_set=testing, metric=self.metric)
+                                                validation_set=None, testing_set=testing, metric=self.learning_metric)
                 self.results_ensemble[key][iteration]['algorithm'] = best_algorithm
+
                 self.results_ensemble[key][iteration]['configuration'] = best_configuration
     
     def pickup(self):
@@ -533,7 +415,7 @@ class Benchmarker():
             
             algorithm = self.best_result[outer_cv]['best_overall_algorithm']
             configuration = self.best_result[outer_cv]['best_overall_configuration']
-            self._run_ensembles(outer_cv, algorithm.get_corresponding_algo(), configuration, training_outer, testing, self.metric)
+            self._run_ensembles(outer_cv, algorithm.get_corresponding_algo(), configuration, training_outer, testing, self.learning_metric)
             
             outer_cv += 1
         

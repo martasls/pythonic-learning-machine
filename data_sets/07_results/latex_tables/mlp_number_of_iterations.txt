@@ -1,0 +1,27 @@
+\begin{table*}
+\centering
+\caption{Number of iterations for each MLP variant considered}
+\label{tab:number-of-iterations-per-mlp-variant}
+\begin{tabular}{lcc}
+\bf{Dataset} & \bf{Adam} & \bf{SGD} \\ \hline
+\bf{agaricus-lepiota} & 272.933 +- 126.049 & 240.333 +- 131.312 \\ \hline
+\bf{backache} & 183.767 +- 139.432 & 275.300 +- 120.879 \\ \hline
+\bf{breast-cancer-wisconsin} & 225.400 +- 141.829 & 266.633 +- 115.873 \\ \hline
+\bf{clean1} & 220.533 +- 166.135 & 199.467 +- 147.436 \\ \hline
+\bf{clean2} & 226.400 +- 138.225 & 262.433 +- 130.362 \\ \hline
+\bf{coil2000} & 247.667 +- 132.319 & 253.067 +- 154.584 \\ \hline
+\bf{credit-g} & 206.867 +- 131.816 & 202.133 +- 113.909 \\ \hline
+\bf{diabetes} & 271.833 +- 138.926 & 264.500 +- 145.427 \\ \hline
+\bf{dis} & 262.900 +- 164.204 & 227.833 +- 126.289 \\ \hline
+\bf{hill-valley-without-noise} & 273.933 +- 138.379 & 260.267 +- 145.556 \\ \hline
+\bf{hill-valley-with-noise} & 238.800 +- 137.485 & 260.933 +- 155.704 \\ \hline
+\bf{hypothyroid} & 284.700 +- 133.127 & 250.133 +- 145.903 \\ \hline
+\bf{ionosphere} & 250.433 +- 123.560 & 286.333 +- 157.222 \\ \hline
+\bf{kr-vs-kp} & 254.833 +- 143.281 & 267.367 +- 141.060 \\ \hline
+\bf{molecular-biology-promoters} & 260.500 +- 122.259 & 279.767 +- 138.709 \\ \hline
+\bf{sonar} & 235.500 +- 140.537 & 243.600 +- 155.645 \\ \hline
+\bf{spambase} & 239.467 +- 157.586 & 221.000 +- 125.729 \\ \hline
+\bf{spectf} & 250.433 +- 146.385 & 298.233 +- 164.636 \\ \hline
+\bf{tokyo1} & 232.800 +- 131.624 & 191.667 +- 145.127
+\end{tabular}
+\end{table*}
