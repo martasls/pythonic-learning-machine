@@ -6,6 +6,8 @@ from timeit import default_timer
 from numpy import mean, median, arange, zeros, float64, log, power, argsort, array, newaxis, \
                     abs, full, empty
 from numpy.random import choice, uniform
+
+
 from sklearn.utils.extmath import stable_cumsum
 
 from algorithms.common.metric import WeightedRootMeanSquaredError  # , RootMeanSquaredError
@@ -293,7 +295,10 @@ class EnsembleBoosting(Ensemble):
             # calculate the maximum absolute error 
             max_abs_error = error_vector.max() 
             # calculate the normalized error vector (with values between 0 and 1): ENi = Ei / max absolute error 
-            error_vector = error_vector / max_abs_error  
+            if max_abs_error == 0:
+                error_vector = error_vector
+            else:
+                error_vector = error_vector / max_abs_error  
             # take into account the loss function - square in this case
             error_vector **= 2 
             # calculate the weighted error of this element: EEk = sum(wi*Ei)
@@ -314,7 +319,7 @@ class EnsembleBoosting(Ensemble):
             self.learners.append(learner)
         
         fit_time = default_timer() - start_time
-        print('\t\t\tfit_time:', fit_time)
+        print('\t\t\tfit_time:', fit_time) 
     
     def _get_median_predict(self, input_matrix, limit):
         # Evaluate predictions of all estimators

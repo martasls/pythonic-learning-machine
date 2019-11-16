@@ -86,21 +86,21 @@ MLP_MODELS_SGD_ADAM = {
 }
 
 ENSEMBLES = { 
-    'simple': {
-        'name_long': 'Simple Ensemble',
-        'name_short': 'Simple Ensemble',
-        'algorithms': EvaluatorEnsemble,
-        'configuration_method': get_config_simple_bagging_ensemble},
-    'bagging': {
-        'name_long': 'Bagging Ensemble',
-        'name_short': 'Bagging Ensemble',
-        'algorithms': EvaluatorEnsembleBagging,
-        'configuration_method': get_config_simple_bagging_ensemble},
-    'riw': { 
-        'name_long': 'Random Independent Weighting Ensemble',
-        'name_short': 'RIW Ensemble',
-        'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
-        'configuration_method': get_config_riw_ensemble},
+    # 'simple': {
+    #     'name_long': 'Simple Ensemble',
+    #     'name_short': 'Simple Ensemble',
+    #     'algorithms': EvaluatorEnsemble,
+    #     'configuration_method': get_config_simple_bagging_ensemble},
+    # 'bagging': {
+    #     'name_long': 'Bagging Ensemble',
+    #     'name_short': 'Bagging Ensemble',
+    #     'algorithms': EvaluatorEnsembleBagging,
+    #     'configuration_method': get_config_simple_bagging_ensemble},
+    # 'riw': { 
+    #     'name_long': 'Random Independent Weighting Ensemble',
+    #     'name_short': 'RIW Ensemble',
+    #     'algorithms': EvaluatorEnsembleRandomIndependentWeighting,
+    #     'configuration_method': get_config_riw_ensemble},
     'boosting_1': {
         'name_long': 'Boosting Ensemble with Median and Fixed Learning Rate',
         'name_short': 'Boosting Ensemble (Median + FLR)',
